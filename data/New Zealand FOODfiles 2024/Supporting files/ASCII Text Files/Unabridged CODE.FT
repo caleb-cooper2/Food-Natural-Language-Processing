@@ -1,0 +1,436 @@
+© Copyright The New Zealand Institute for Plant & Food Research Limited and the Ministry of Health (New Zealand), 2024.
+Code~Description~Unit Code~Matrix Unit Code
+ACEAC_G~Acetic acid (g)~g~W
+AL~Aluminium~µg~W
+ALA~Alanine~mg~W
+ALA_G~Alanine (g)~g~W
+ALAN~Alanine (/g N)~mg~N
+ALC~Alcohol~g~W
+ARG~Arginine~mg~W
+ARG_G~Arginine (g)~g~W
+ARGN~Arginine (/g N)~mg~N
+AS~Arsenic~µg~W
+ASH~Ash~g~W
+ASN~Asparagine~mg~W
+ASN_G~Asparagine (g)~g~W
+ASNN~Asparagine (/g N)~mg~N
+ASP~Aspartic acid~mg~W
+ASP_G~Aspartic acid (g)~g~W
+ASPN~Aspartic acid (/g N)~mg~N
+B~Boron~µg~W
+BIOT~Biotin~µg~W
+CA~Calcium~mg~W
+CAFFN~Caffeine~mg~W
+CARTA~Alpha-carotene~µg~W
+CARTB~Beta-carotene~µg~W
+CARTBEQ~Beta-carotene equivalents~µg~W
+CD~Cadmium~µg~W
+CHOAVL~Available carbohydrates by weight~g~W
+CHOAVLDF~Available carbohydrate by difference~g~W
+CHOAVLDF_FSANZ~Carbohydrate by difference, FSANZ~g~W
+CHOAVL_FSANZ~Available carbohydrate, FSANZ~g~W
+CHOAVLM~Available carbohydrates in monosaccharide equivalent~g~W
+CHOCAL~Cholecalciferol (Vitamin D3)~µg~W
+CHOCALOH~25-hydroxyvitamin D3~µg~W
+CHOCDF~Total carbohydrate by difference~g~W
+CHOCSM~Total carbohydrates by summation~g~W
+CHOLE~Cholesterol~mg~W
+CHOLN~Choline~mg~W
+CITAC_G~Citric acid (g)~g~W
+CLD~Chloride~mg~W
+CO~Cobalt~µg~W
+CR~Chromium~µg~W
+CS~Cesium~µg~W
+CU~Copper~mg~W
+CYS~Cystine~mg~W
+CYS_G~Cystine (g)~g~W
+CYSN~Cystine (/g N)~mg~N
+DISAC~Disaccharides, total~g~W
+DISACM~Disaccharides, total (monosaccharide equivalents)~g~W
+DM~Dry matter~g~W
+ENERC~Energy, total metabolisable (kJ)~kJ~W
+ENERC1~Energy, total metabolisable (kJ, including dietary fibre)~kJ~W
+ENERC1_KCAL~Energy, total metabolisable (kcal, including dietary fibre)~kcal~W
+ENERC_FSANZ1~Energy, total metabolisable, carbohydrate by difference, FSANZ (kJ)~kJ~W
+ENERC_FSANZ1_KCAL~Energy, total metabolisable, carbohydrate by difference, FSANZ (kcal)~kcal~W
+ENERC_FSANZ2~Energy, total metabolisable, available carbohydrate, FSANZ (kJ)~kJ~W
+ENERC_FSANZ2_KCAL~Energy, total metabolisable, available carbohydrate, FSANZ (kcal)~kcal~W
+ENERC_KCAL~Energy, total metabolisable (kcal)~kcal~W
+ERGCAL~Ergocalciferol (Vitamin D2)~µg~W
+ERGCALOH~25-hydroxyvitamin D2~µg~W
+F10D0~Fatty acid 10:0~g~W
+F10D0F~Fatty acid 10:0 (/100 g TFA)~g~F
+F10D1~Fatty acid 10:1~g~W
+F10D1F~Fatty acid 10:1 (/100 g TFA)~g~F
+F11D0~Fatty acid 11:0~g~W
+F11D0F~Fatty acid 11:0 (/100 g TFA)~g~F
+F12D0~Fatty acid 12:0~g~W
+F12D0F~Fatty acid 12:0 (/100 g TFA)~g~F
+F12D1~Fatty acid 12:1~g~W
+F12D1F~Fatty acid 12:1 (/100 g TFA)~g~F
+F13D0~Fatty acid 13:0~g~W
+F13D0F~Fatty acid 13:0 (/100 g TFA)~g~F
+F14D0~Fatty acid 14:0~g~W
+F14D0F~Fatty acid 14:0 (/100 g TFA)~g~F
+F14D1~Fatty acid 14:1~g~W
+F14D1C~Fatty acid cis 14:1~g~W
+F14D1CF~Fatty acid cis 14:1 (/100 g TFA)~g~F
+F14D1CN5~Fatty acid cis 14:1 omega-5~g~W
+F14D1CN5F~Fatty acid cis 14:1 omega-5 (/100 g TFA)~g~F
+F14D1F~Fatty acid 14:1 (/100 g TFA)~g~F
+F14D1N5~Fatty acid 14:1 omega-5~g~W
+F14D1N5F~Fatty acid 14:1 omega-5 (/100 g TFA)~g~F
+F15D0~Fatty acid 15:0~g~W
+F15D0F~Fatty acid 15:0 (/100 g TFA)~g~F
+F15D1~Fatty acid 15:1~g~W
+F15D1C~Fatty acid cis 15:1~g~W
+F15D1CF~Fatty acid cis 15:1 (/100 g TFA)~g~F
+F15D1CN5~Fatty acid cis 15:1 omega-5~g~W
+F15D1CN5F~Fatty acid cis 15:1 omega-5 (/100 g TFA)~g~F
+F15D1F~Fatty acid 15:1 (/100 g TFA)~g~F
+F15D1N5~Fatty acid 15:1 omega-5~g~W
+F15D1N5F~Fatty acid 15:1 omega-5 (/100 g TFA)~g~F
+F16D0~Fatty acid 16:0~g~W
+F16D0F~Fatty acid 16:0 (/100 g TFA)~g~F
+F16D1~Fatty acid 16:1~g~W
+F16D1C~Fatty acid cis 16:1~g~W
+F16D1CF~Fatty acid cis 16:1 (/100 g TFA)~g~F
+F16D1CN7~Fatty acid cis 16:1 omega-7~g~W
+F16D1CN7F~Fatty acid cis 16:1 omega-7 (/100 g TFA)~g~F
+F16D1F~Fatty acid 16:1 (/100 g TFA)~g~F
+F16D1N7~Fatty acid 16:1 omega-7~g~W
+F16D1N7F~Fatty acid 16:1 omega-7 (/100 g TFA)~g~F
+F16D1T~Fatty acid trans 16:1~g~W
+F16D1TF~Fatty acid trans 16:1 (/100 g TFA)~g~F
+F17D0~Fatty acid 17:0~g~W
+F17D0F~Fatty acid 17:0 (/100 g TFA)~g~F
+F17D1~Fatty acid 17:1~g~W
+F17D1C~Fatty acid cis 17:1~g~W
+F17D1CF~Fatty acid cis 17:1 (/100 g TFA)~g~F
+F17D1CN7~Fatty acid cis 17:1 omega-7~g~W
+F17D1CN7F~Fatty acid cis 17:1 omega-7 (/100 g TFA)~g~F
+F17D1F~Fatty acid 17:1 (/100 g TFA)~g~F
+F17D1N7~Fatty acid 17:1 omega-7~g~W
+F17D1N7F~Fatty acid 17:1 omega-7 (/100 g TFA)~g~F
+F18D0~Fatty acid 18:0~g~W
+F18D0F~Fatty acid 18:0 (/100 g TFA)~g~F
+F18D1~Fatty acid 18:1~g~W
+F18D1C~Fatty acid cis 18:1~g~W
+F18D1CF~Fatty acid cis 18:1 (/100 g TFA)~g~F
+F18D1CN7~Fatty acid cis 18:1 omega-7~g~W
+F18D1CN7F~Fatty acid cis 18:1 omega-7 (/100 g TFA)~g~F
+F18D1CN9~Fatty acid cis 18:1 omega-9~g~W
+F18D1CN9F~Fatty acid cis 18:1 omega-9 (/100 g TFA)~g~F
+F18D1F~Fatty acid 18:1 (/100 g TFA)~g~F
+F18D1N7~Fatty acid 18:1 omega-7~g~W
+F18D1N7F~Fatty acid 18:1 omega-7 (/100 g TFA)~g~F
+F18D1N9~Fatty acid 18:1 omega-9~g~W
+F18D1N9F~Fatty acid 18:1 omega-9 (/100 g TFA)~g~F
+F18D1T~Fatty acid trans 18:1~g~W
+F18D1TF~Fatty acid trans 18:1 (/100 g TFA)~g~F
+F18D1TN7~Fatty acid trans 18:1 omega-7~g~W
+F18D1TN7F~Fatty acid trans 18:1 omega-7 (/100 g TFA)~g~F
+F18D1TN9~Fatty acid trans 18:1 omega-9~g~W
+F18D1TN9F~Fatty acid trans 18:1 omega-9 (/100 g TFA)~g~F
+F18D2~Fatty acid 18:2~g~W
+F18D2C~Fatty acid cis 18:2~g~W
+F18D2CF~Fatty acid cis 18:2 (/100 g TFA)~g~F
+F18D2CN6~Fatty acid cis,cis 18:2 omega-6~g~W
+F18D2CN6F~Fatty acid cis,cis 18:2 omega-6 (/100 g TFA)~g~F
+F18D2CN9TN11~Fatty acid cis, trans 18:2 omega-9, 11~g~W
+F18D2CN9TN11F~Fatty acid cis, trans 18:2 omega-9, 11 (/100 g TFA)~g~F
+F18D2F~Fatty acid 18:2 (/100 g TFA)~g~F
+F18D2N6~Fatty acid 18:2 omega-6~g~W
+F18D2N6F~Fatty acid 18:2 omega-6 (/100 g TFA)~g~F
+F18D2T~Fatty acid trans 18:2~g~W
+F18D2TF~Fatty acid trans 18:2 (/100 g TFA)~g~F
+F18D2TN6~Fatty acid trans 18:2 omega-6~g~W
+F18D2TN6F~Fatty acid trans 18:2 omega-6 (/100 g TFA)~g~F
+F18D3~Fatty acid 18:3~g~W
+F18D3C~Fatty acid cis 18:3~g~W
+F18D3CF~Fatty acid cis 18:3 (/100 g TFA)~g~F
+F18D3CN3~Fatty acid cis,cis,cis 18:3 omega-3~g~W
+F18D3CN3F~Fatty acid cis,cis,cis 18:3 omega-3 (/100 g TFA)~g~F
+F18D3CN6~Fatty acid cis 18:3 omega-6~g~W
+F18D3CN6F~Fatty acid cis 18:3 omega-6 (/100 g TFA)~g~F
+F18D3F~Fatty acid 18:3 (/100 g TFA)~g~F
+F18D3N3~Fatty acid 18:3 omega-3~g~W
+F18D3N3F~Fatty acid 18:3 omega-3 (/100 g TFA)~g~F
+F18D3N6~Fatty acid 18:3 omega-6~g~W
+F18D3N6F~Fatty acid 18:3 omega-6 (/100 g TFA)~g~F
+F18D3TN3~Fatty acid trans 18:3 omega-3~g~W
+F18D3TN3F~Fatty acid trans 18:3 omega-3 (/100 g TFA)~g~F
+F18D4~Fatty acid 18:4~g~W
+F18D4F~Fatty acid 18:4 (/100 g TFA)~g~F
+F18D4N3~Fatty acid 18:4 omega-3~g~W
+F18D4N3F~Fatty acid 18:4 omega-3 (/100 g TFA)~g~F
+F19D0~Fatty acid 19:0~g~W
+F19D0F~Fatty acid 19:0 (/100 g TFA)~g~F
+F20D0~Fatty acid 20:0~g~W
+F20D0F~Fatty acid 20:0 (/100 g TFA)~g~F
+F20D1~Fatty acid 20:1~g~W
+F20D1C~Fatty acid cis 20:1~g~W
+F20D1CF~Fatty acid cis 20:1 (/100 g TFA)~g~F
+F20D1CN9~Fatty acid cis 20:1 omega-9~g~W
+F20D1CN9F~Fatty acid cis 20:1 omega-9 (/100 g TFA)~g~F
+F20D1F~Fatty acid 20:1 (/100 g TFA)~g~F
+F20D1N11~Fatty acid 20:1 omega-11~g~W
+F20D1N11F~Fatty acid 20:1 omega-11 (/100 g TFA)~g~F
+F20D1N9~Fatty acid 20:1 omega-9~g~W
+F20D1N9F~Fatty acid 20:1 omega-9 (/100 g TFA)~g~F
+F20D2~Fatty acid 20:2~g~W
+F20D2CN6~Fatty acid cis, cis 20:2 omega-6~g~W
+F20D2CN6F~Fatty acid cis,cis 20:2 omega-6 (/100 g TFA)~g~F
+F20D2F~Fatty acid 20:2 (/100 g TFA)~g~F
+F20D2N6~Fatty acid 20:2 omega-6~g~W
+F20D2N6F~Fatty acid 20:2 omega-6 (/100 g TFA)~g~F
+F20D3~Fatty acid 20:3~g~W
+F20D3C~Fatty acid cis 20:3~g~W
+F20D3CF~Fatty acid cis 20:3 (/100 g TFA)~g~F
+F20D3CN3~Fatty acid cis 20:3 omega-3~g~W
+F20D3CN3F~Fatty acid cis 20:3 omega-3 (/100 g TFA)~g~F
+F20D3CN6~Fatty acid cis 20:3 omega-6~g~W
+F20D3CN6F~Fatty acid cis 20:3 omega-6 (/100 g TFA)~g~F
+F20D3F~Fatty acid 20:3 (/100 g TFA)~g~F
+F20D3N3~Fatty acid 20:3 omega-3~g~W
+F20D3N3F~Fatty acid 20:3 omega-3 (/100 g TFA)~g~F
+F20D3N6~Fatty acid 20:3 omega-6~g~W
+F20D3N6F~Fatty acid 20:3 omega-6 (/100 g TFA)~g~F
+F20D4~Fatty acid 20:4~g~W
+F20D4CN6~Fatty acid cis 20:4 omega-6~g~W
+F20D4CN6F~Fatty acid cis 20:4 omega-6 (/100 g TFA)~g~F
+F20D4F~Fatty acid 20:4 (/100 g TFA)~g~F
+F20D4N3~Fatty acid 20:4 omega-3~g~W
+F20D4N3F~Fatty acid 20:4 omega-3 (/100 g TFA)~g~F
+F20D4N6~Fatty acid 20:4 omega-6~g~W
+F20D4N6F~Fatty acid 20:4 omega-6 (/100 g TFA)~g~F
+F20D5~Fatty acid 20:5~g~W
+F20D5C~Fatty acid cis 20:5~g~W
+F20D5CF~Fatty acid cis 20:5 (/100 g TFA)~g~F
+F20D5CN3~Fatty acid cis 20:5 omega-3~g~W
+F20D5CN3F~Fatty acid cis 20:5 omega-3 (/100 g TFA)~g~F
+F20D5F~Fatty acid 20:5 (/100 g TFA)~g~F
+F20D5N3~Fatty acid 20:5 omega-3~g~W
+F20D5N3F~Fatty acid 20:5 omega-3 (/100 g TFA)~g~F
+F21D0~Fatty acid 21:0~g~W
+F21D0F~Fatty acid 21:0 (/100 g TFA)~g~F
+F21D5~Fatty acid 21:5~g~W
+F21D5F~Fatty acid 21:5 (/100 g TFA)~g~F
+F21D5N3~Fatty acid 21:5 omega-3~g~W
+F21D5N3F~Fatty acid 21:5 omega-3 (/100 g TFA)~g~F
+F22D0~Fatty acid 22:0~g~W
+F22D0F~Fatty acid 22:0 (/100 g TFA)~g~F
+F22D1~Fatty acid 22:1~g~W
+F22D1C~Fatty acid cis 22:1~g~W
+F22D1CF~Fatty acid cis 22:1 (/100 g TFA)~g~F
+F22D1CN9~Fatty acid cis 22:1 omega-9~g~W
+F22D1CN9F~Fatty acid cis 22:1 omega-9 (/100 g TFA)~g~F
+F22D1F~Fatty acid 22:1 (/100 g TFA)~g~F
+F22D1N11~Fatty acid 22:1 omega-11~g~W
+F22D1N11F~Fatty acid 22:1 omega-11 (/100 g TFA)~g~F
+F22D1N9~Fatty acid 22:1 omega-9~g~W
+F22D1N9F~Fatty acid 22:1 omega-9 (/100 g TFA)~g~F
+F22D2~Fatty acid 22:2~g~W
+F22D2C~Fatty acid cis 22:2~g~W
+F22D2CF~Fatty acid cis 22:2 (/100 g TFA)~g~F
+F22D2CN6~Fatty acid cis 22:2 omega-6~g~W
+F22D2CN6F~Fatty acid cis 22:2 omega-6 (/100 g TFA)~g~F
+F22D2F~Fatty acid 22:2 (/100 g TFA)~g~F
+F22D2N6~Fatty acid 22:2 omega-6~g~W
+F22D2N6F~Fatty acid 22:2 omega-6 (/100 g TFA)~g~F
+F22D4~Fatty acid 22:4~g~W
+F22D4F~Fatty acid 22:4 (/100 g TFA)~g~F
+F22D4N6~Fatty acid 22:4 omega-6~g~W
+F22D4N6F~Fatty acid 22:4 omega-6 (/100 g TFA)~g~F
+F22D5~Fatty acid 22:5~g~W
+F22D5C~Fatty acid cis 22:5~g~W
+F22D5CF~Fatty acid cis 22:5 (/100 g TFA)~g~F
+F22D5CN3~Fatty acid cis 22:5 omega-3~g~W
+F22D5CN3F~Fatty acid cis 22:5 omega-3 (/100 g TFA)~g~F
+F22D5F~Fatty acid 22:5 (/100 g TFA)~g~F
+F22D5N3~Fatty acid 22:5 omega-3~g~W
+F22D5N3F~Fatty acid 22:5 omega-3 (/100 g TFA)~g~F
+F22D5N6~Fatty acid 22:5 omega-6~g~W
+F22D5N6F~Fatty acid 22:5 omega-6 (/100 g TFA)~g~F
+F22D6~Fatty acid 22:6~g~W
+F22D6C~Fatty acid cis 22:6~g~W
+F22D6CF~Fatty acid cis 22:6 (/100 g TFA)~g~F
+F22D6CN3~Fatty acid cis 22:6 omega-3~g~W
+F22D6CN3F~Fatty acid cis 22:6 omega-3 (/100 g TFA)~g~F
+F22D6F~Fatty acid 22:6 (/100 g TFA)~g~F
+F22D6N3~Fatty acid 22:6 omega-3~g~W
+F22D6N3F~Fatty acid 22:6 omega-3 (/100 g TFA)~g~F
+F23D0~Fatty acid 23:0~g~W
+F23D0F~Fatty acid 23:0 (/100 g TFA)~g~F
+F24D0~Fatty acid 24:0~g~W
+F24D0F~Fatty acid 24:0 (/100 g TFA)~g~F
+F24D1~Fatty acid 24:1~g~W
+F24D1C~Fatty acid cis 24:1~g~W
+F24D1CF~Fatty acid cis 24:1 (/100 g TFA)~g~F
+F24D1CN9~Fatty acid cis 24:1 omega-9~g~W
+F24D1CN9F~Fatty acid cis 24:1 omega-9 (/100 g TFA)~g~F
+F24D1F~Fatty acid 24:1 (/100 g TFA)~g~F
+F24D1N9~Fatty acid 24:1 omega-9~g~W
+F24D1N9F~Fatty acid 24:1 omega-9 (/100 g TFA)~g~F
+F4D0~Fatty acid 4:0~g~W
+F4D0F~Fatty acid 4:0 (/100 g TFA)~g~F
+F6D0~Fatty acid 6:0~g~W
+F6D0F~Fatty acid 6:0 (/100 g TFA)~g~F
+F8D0~Fatty acid 8:0~g~W
+F8D0F~Fatty acid 8:0 (/100 g TFA)~g~F
+FACID~Fatty acids, total~g~W
+FALCPUN3~Fatty acids, total long chain polyunsaturated omega-3~g~W
+FALCPUN3F~Fatty acids, total long chain polyunsaturated omega-3 (/100 g TFA)~g~F
+FAMS~Fatty acids, total monounsaturated~g~W
+FAMSF~Fatty acids, total monounsaturated (/100 g TFA)~g~F
+FAMST~Fatty acids, total monounsaturated trans~g~W
+FAMSTF~Fatty acids, total monounsaturated trans (/100 g TFA)~g~F
+FAPU~Fatty acids, total polyunsaturated~g~W
+FAPUF~Fatty acids, total polyunsaturated (/100 g TFA)~g~F
+FAPUN3~Fatty acids, total polyunsaturated omega-3~g~W
+FAPUN3F~Fatty acids, total polyunsaturated omega-3 (/100 g TFA)~g~F
+FAPUN6~Fatty acids, total polyunsaturated omega-6~g~W
+FAPUN6F~Fatty acids, total polyunsaturated omega-6 (/100 g TFA)~g~F
+FAPUT~Fatty acids, total polyunsaturated trans~g~W
+FAPUTF~Fatty acids, total polyunsaturated trans (/100 g TFA)~g~F
+FASAT~Fatty acids, total saturated~g~W
+FASATF~Fatty acids, total saturated (/100 g TFA)~g~F
+FAT~Fat, total~g~W
+FATRN~Fatty acids, total trans~g~W
+FATRNF~Fatty acids, total trans (/100 g TFA)~g~F
+FD~Fluoride~µg~W
+FE~Iron~mg~W
+FIBHMW~Fibre, high molecular weight (LC)~g~W
+FIBINS~Fibre, water-insoluble~g~W
+FIBLMW~Fibre, low molecular weight (LC)~g~W
+FIBSOL~Fibre, water-soluble~g~W
+FIBTG~Fibre, total dietary~g~W
+FIBTLC~Fibre, total dietary (LC method) ~g~W
+FOL~Folate, total~µg~W
+FOLAC~Folic acid, synthetic folic acid~µg~W
+FOLDFE~Dietary folate equivalents~µg~W
+FOLFD~Folate food, naturally occurring food folates~µg~W
+FRUS~Fructose~g~W
+GALS~Galactose~g~W
+GLU~Glutamic acid~mg~W
+GLU_G~Glutamic acid (g)~g~W
+GLUN~Glutamic acid (/g N)~mg~N
+GLUS~Glucose~g~W
+GLY~Glycine~mg~W
+GLYC~Glycogen~g~W
+GLYCM~Glycogen (monosaccharide equivalents)~g~W
+GLY_G~Glycine (g)~g~W
+GLYN~Glycine (/g N)~mg~N
+HG~Mercury~µg~W
+HIS~Histidine~mg~W
+HIS_G~Histidine (g)~g~W
+HISN~Histidine (/g N)~mg~N
+HYP~Hydroxyproline~mg~W
+HYP_G~Hydroxyproline (g)~g~W
+HYPN~Hydroxyproline (/g N)~mg~N
+ID~Iodide~µg~W
+ILE~Isoleucine~mg~W
+ILE_G~Isoleucine (g)~g~W
+ILEN~Isoleucine (/g N)~mg~N
+K~Potassium~mg~W
+LACAC_G~Lactic acid (g)~g~W
+LACS~Lactose~g~W
+LACSM~Lactose (monosaccharide equivalents)~g~W
+LEU~Leucine~mg~W
+LEU_G~Leucine (g)~g~W
+LEUN~Leucine (/g N)~mg~N
+LI~Lithium~µg~W
+LUTN~Lutein~µg~W
+LYCPN~Lycopene~µg~W
+LYS~Lysine~mg~W
+LYS_G~Lysine (g)~g~W
+LYSN~Lysine (/g N)~mg~N
+MALAC_G~Malic acid (g)~g~W
+MALS~Maltose~g~W
+MALSM~Maltose (monosaccharide equivalents)~g~W
+MALTDEX~Maltodextrin~g~W
+MET~Methionine~mg~W
+MET_G~Methionine (g)~g~W
+METN~Methionine (/g N)~mg~N
+MG~Magnesium~mg~W
+MN~Manganese~µg~W
+MNSAC~Monosaccharides, total~g~W
+MO~Molybdenum~µg~W
+NA~Sodium~mg~W
+NI~Nickel~µg~W
+NIA~Niacin, preformed~mg~W
+NIAEQ~Niacin equivalents, total~mg~W
+NIATRP~Niacin equivalents from tryptophan~mg~W
+NT~Nitrogen, total~g~W
+OA_G~Organic acids, total (g)~g~W
+OXALAC_G~Oxalic acid (g)~g~W
+P~Phosphorus~mg~W
+PANTAC~Pantothenic acid~mg~W
+PB~Lead~µg~W
+PHE~Phenylalanine~mg~W
+PHE_G~Phenylalanine (g)~g~W
+PHEN~Phenylalanine (/g N)~mg~N
+PHYSTR~Phytosterols, total~mg~W
+PRO~Proline~mg~W
+PRO_G~Proline (g)~g~W
+PRON~Proline (/g N)~mg~N
+PROT~Protein, total; calculated from total nitrogen~g~W
+PROXTOT~Proximates, total~g~W
+PSACNS~Polysaccharides, non-starch~g~W
+PSACNSI~Polysaccharides, non-starch, water-insoluble~g~W
+PSACNSS~Polysaccharides, non-starch, water-soluble~g~W
+QUINAC_G~Quinic acid (g)~g~W
+RB~Rubidium~mg~W
+RETOL~Retinol~µg~W
+RIBF~Riboflavin~mg~W
+S~Sulphur~mg~W
+SE~Selenium~µg~W
+SER~Serine~mg~W
+SER_G~Serine (g)~g~W
+SERN~Serine (/g N)~mg~N
+SISOL~Silicon (acid soluble)~µg~W
+SN~Tin~µg~W
+SORTL_G~Sorbitol (g)~g~W
+STARCH~Starch, total~g~W
+STARCHM~Starch, total (monosaccharide equivalents)~g~W
+STARES~Starch, resistant~g~W
+SUCAC_G~Succinic acid (g)~g~W
+SUCS~Sucrose~g~W
+SUCSM~Sucrose (monosaccharide equivalents)~g~W
+SUGAD~Sugar, added~g~W
+SUGAR~Sugars, total~g~W
+SUGARM~Sugars, total (monosaccharide equivalents)~g~W
+SUGFR~Sugar, free~g~W
+TAU~Taurine~mg~W
+TAU_G~Taurine (g)~g~W
+TAUN~Taurine (/g N)~mg~N
+THIA~Thiamin~mg~W
+THR~Threonine~mg~W
+THR_G~Threonine (g)~g~W
+THRN~Threonine (/g N)~mg~N
+TOCPHA~Alpha-tocopherol~mg~W
+TOCPHB~Beta-tocopherol~mg~W
+TOCPHBG~Beta-tocopherol + Gamma-tocopherol~µg~W
+TOCPHD~Delta-tocopherol~mg~W
+TOCPHG~Gamma-tocopherol~mg~W
+TRP~Tryptophan~mg~W
+TRP_G~Tryptophan (g)~g~W
+TRPN~Tryptophan (/g N)~mg~N
+TYR~Tyrosine~mg~W
+TYR_G~Tyrosine (g)~g~W
+TYRN~Tyrosine (/g N)~mg~N
+V~Vanadium~µg~W
+VAL~Valine~mg~W
+VAL_G~Valine (g)~g~W
+VALN~Valine (/g N)~mg~N
+VITA~Vitamin A, retinol equivalents~µg~W
+VITA_RAE~Vitamin A, retinol activity equivalents~µg~W
+VITB12~Vitamin B12~µg~W
+VITB6A~Vitamin B6~mg~W
+VITC~Vitamin C~mg~W
+VITD~Vitamin D; calculated by summation~µg~W
+VITE~Vitamin E, alpha-tocopherol equivalents~mg~W
+VITK~Vitamin K~µg~W
+WATER~Water~g~W
+ZEAX~Zeaxanthin~µg~W
+ZN~Zinc~mg~W

@@ -1,0 +1,882 @@
+© Copyright The New Zealand Institute for Plant & Food Research Limited and the Ministry of Health (New Zealand), 2024.
+Recipe FoodID~Ingredient FoodID~Ingredient Food Name~Weight Fraction(%)~Nutrient Retention Factor Classification~Preparation Method
+A1120~A1119~Crumpet, white, as purchased, commercial~100~FLOUR/MEAL~TOASTED
+A1122~A1121~Bagels, white, plain, as purchased, commercial~100~FLOUR/MEAL~TOASTED
+A1139~A1138~Bread, ciabatta, Italian style, loaf, white wheat flour, plain, as purchased, commercial, composite~100~FLOUR/MEAL~TOASTED
+A1141~A1140~Bread, French, stick or loaf, from white wheat flour, plain, as purchased, commercial, composite~100~FLOUR/MEAL~TOASTED
+A1162~A1161~Bread, from white wheat flour, sliced, prepacked, as purchased, commercial, composite~100~FLOUR/MEAL~TOASTED
+A1164~A1163~Bread, from wholemeal or wholegrain wheat flour, sliced, prepacked, as purchased, commercial, composite~100~FLOUR/MEAL~TOASTED
+A1166~A1165~Bread, from wheatmeal flour, sliced, prepacked, as purchased, commercial, composite~100~FLOUR/MEAL~TOASTED
+A1168~A1167~Bread, from wheat flour with multigrain, heavy (dense), sliced, prepacked, as purchased, commercial, composite~100~FLOUR/MEAL~TOASTED
+A1170~A1169~Bread, from white wheat flour with multigrain, light, sliced, prepacked, as purchased, commercial, composite~100~FLOUR/MEAL~TOASTED
+A1172~A1171~Bread, from wheat flour, soy & linseed added, sliced, prepacked, as purchased, commercial, composite~100~FLOUR/MEAL~TOASTED
+A1174~A1173~Bread, from wheat flour with multigrain & seeds, heavy (dense), sliced, prepacked, as purchased, commercial, composite~100~FLOUR/MEAL~TOASTED
+A1176~A1175~Bread, from white wheat flour, seeds added, light, sliced, prepacked, as purchased, commercial, composite~100~FLOUR/MEAL~TOASTED
+A1178~A1177~Bread, from rye flour, sliced, prepacked, as purchased, commercial, composite~100~FLOUR/MEAL~TOASTED
+A1180~A1179~Wrap, flat bread, from white wheat flour, plain, as purchased, commercial, composite~100~FLOUR/MEAL~TOASTED
+A1182~A1181~Wrap, flat bread, from wholemeal wheat flour, as purchased, commercial, composite~100~FLOUR/MEAL~TOASTED
+A1184~A1183~Wrap, flat bread, from wheat flour with multigrain, plain, as purchased, commercial, composite~100~FLOUR/MEAL~TOASTED
+A1186~A1185~Bread, from gluten free flours & sprouted seeds (<10%), sliced, as purchased, commercial, composite ~100~FLOUR/MEAL~TOASTED
+A1188~A1187~Bread, sourdough, from white wheat flour, loaf, as purchased, commercial, composite~100~FLOUR/MEAL~TOASTED
+A1190~A1189~Croissant, from wheat flour, plain, as purchased, commercial, composite~100~FLOUR/MEAL~TOASTED
+A1192~A1191~Bread, from sprouted wheat flour, organic, loaf, as purchased, commercial, composite~100~FLOUR/MEAL~TOASTED
+A1196~A1195~Bread, from white wheat flour and banana, loaf, as purchased, commercial, composite~100~FLOUR/MEAL~TOASTED
+A1198~A1197~Muffin split, English style, from white wheat flour, plain, as purchased, commercial, composite~100~FLOUR/MEAL~TOASTED
+A1200~A1199~Muffin split, English style, from white wheat flour, with cheese, as purchased, commercial~100~FLOUR/MEAL~TOASTED
+A1202~A1201~Muffin split, English style, white wheat flour, with spicy dried fruits, as purchased, commercial, composite~100~FLOUR/MEAL~TOASTED
+A1204~A1203~Muffin split, English style, from wholegrain flour, plain, as purchased, commercial, composite~100~FLOUR/MEAL~TOASTED
+A1209~A1208~Bread, from white wheat flour, garlic filling with vegetable oil, as purchased, commercial, composite~100~FLOUR/MEAL~TOASTED
+A1211~A1210~Bread, from white wheat flour, garlic filling with butter, as purchased, commercial, composite~100~FLOUR/MEAL~TOASTED
+C10001~C1042~Coffee, instant, dry powder, composite~0.7~~
+C10001~C40~Water, tap~87.0~~
+C10001~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~12.3~~
+C10002~C1043~Coffee, instant, decaffeinated, dry powder, composite~0.7~~
+C10002~C40~Water, tap~87.1~~
+C10002~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~12.3~~
+C10003~F1114~Milk, cow, trim (<1% fat), fluid, fresh, composite~12.3~~
+C10003~C1042~Coffee, instant, dry powder, composite~0.7~~
+C10003~C40~Water, tap~87.0~~
+C10004~F1114~Milk, cow, trim (<1% fat), fluid, fresh, composite~12.3~~
+C10004~C1043~Coffee, instant, decaffeinated, dry powder, composite~0.7~~
+C10004~C40~Water, tap~87.1~~
+C10005~C1045~Coffee beverage, espresso, ready to drink, cafe variety, composite~32.9~~
+C10005~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~67.1~MILK~REHEATED
+C10006~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~77.6~MILK~REHEATED
+C10006~C1045~Coffee beverage, espresso, ready to drink, cafe variety, composite~22.4~~
+C10007~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~81.5~MILK~REHEATED
+C10007~C1045~Coffee beverage, espresso, ready to drink, cafe variety, composite~18.5~~
+C10008~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~87.6~MILK~REHEATED
+C10008~C1045~Coffee beverage, espresso, ready to drink, cafe variety, composite~12.4~~
+C10009~C1045~Coffee beverage, espresso, ready to drink, cafe variety, composite~32.9~~
+C10009~F1114~Milk, cow, trim (<1% fat), fluid, fresh, composite~67.1~MILK~REHEATED
+C10010~F1114~Milk, cow, trim (<1% fat), fluid, fresh, composite~77.6~MILK~REHEATED
+C10010~C1045~Coffee beverage, espresso, ready to drink, cafe variety, composite~22.4~~
+C10011~F1114~Milk, cow, trim (<1% fat), fluid, fresh, composite~81.5~MILK~REHEATED
+C10011~C1045~Coffee beverage, espresso, ready to drink, cafe variety, composite~18.5~~
+C10012~C1045~Coffee beverage, espresso, ready to drink, cafe variety, composite~12.4~~
+C10012~F1114~Milk, cow, trim (<1% fat), fluid, fresh, composite~87.6~MILK~REHEATED
+C10013~C1045~Coffee beverage, espresso, ready to drink, cafe variety, composite~25.1~~
+C10013~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~74.9~MILK~REHEATED
+C10014~C1045~Coffee beverage, espresso, ready to drink, cafe variety, composite~19.2~~
+C10014~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~80.8~MILK~REHEATED
+C10015~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~85.8~MILK~REHEATED
+C10015~C1045~Coffee beverage, espresso, ready to drink, cafe variety, composite~14.2~~
+C10016~C1045~Coffee beverage, espresso, ready to drink, cafe variety, composite~10.8~~
+C10016~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~89.2~MILK~REHEATED
+C10017~C1045~Coffee beverage, espresso, ready to drink, cafe variety, composite~25.1~~
+C10017~F1114~Milk, cow, trim (<1% fat), fluid, fresh, composite~74.9~MILK~REHEATED
+C10018~F1114~Milk, cow, trim (<1% fat), fluid, fresh, composite~80.8~MILK~REHEATED
+C10018~C1045~Coffee beverage, espresso, ready to drink, cafe variety, composite~19.2~~
+C10019~C1045~Coffee beverage, espresso, ready to drink, cafe variety, composite~14.2~~
+C10019~F1114~Milk, cow, trim (<1% fat), fluid, fresh, composite~85.8~MILK~REHEATED
+C10020~F1114~Milk, cow, trim (<1% fat), fluid, fresh, composite~89.2~MILK~REHEATED
+C10020~C1045~Coffee beverage, espresso, ready to drink, cafe variety, composite~10.8~~
+C10021~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~62.0~MILK~REHEATED
+C10021~C1045~Coffee beverage, espresso, ready to drink, cafe variety, composite~37.7~~
+C10021~C1036~Baking cocoa, cocoa, powder, Cocoa, Bournville®, Cadbury®~0.3~~
+C10022~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~73.5~MILK~REHEATED
+C10022~C1045~Coffee beverage, espresso, ready to drink, cafe variety, composite~26.3~~
+C10022~C1036~Baking cocoa, cocoa, powder, Cocoa, Bournville®, Cadbury®~0.2~~
+C10023~C1045~Coffee beverage, espresso, ready to drink, cafe variety, composite~21.8~~
+C10023~C1036~Baking cocoa, cocoa, powder, Cocoa, Bournville®, Cadbury®~0.4~~
+C10023~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~77.8~MILK~REHEATED
+C10024~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~84.9~MILK~REHEATED
+C10024~C1036~Baking cocoa, cocoa, powder, Cocoa, Bournville®, Cadbury®~0.2~~
+C10024~C1045~Coffee beverage, espresso, ready to drink, cafe variety, composite~14.9~~
+C10025~C1045~Coffee beverage, espresso, ready to drink, cafe variety, composite~37.5~~
+C10025~F1114~Milk, cow, trim (<1% fat), fluid, fresh, composite~62.1~MILK~REHEATED
+C10025~C1036~Baking cocoa, cocoa, powder, Cocoa, Bournville®, Cadbury®~0.3~~
+C10026~C1045~Coffee beverage, espresso, ready to drink, cafe variety, composite~26.3~~
+C10026~F1114~Milk, cow, trim (<1% fat), fluid, fresh, composite~73.5~MILK~REHEATED
+C10026~C1036~Baking cocoa, cocoa, powder, Cocoa, Bournville®, Cadbury®~0.2~~
+C10027~F1114~Milk, cow, trim (<1% fat), fluid, fresh, composite~77.8~MILK~REHEATED
+C10027~C1045~Coffee beverage, espresso, ready to drink, cafe variety, composite~21.8~~
+C10027~C1036~Baking cocoa, cocoa, powder, Cocoa, Bournville®, Cadbury®~0.4~~
+C10028~C1045~Coffee beverage, espresso, ready to drink, cafe variety, composite~14.9~~
+C10028~C1036~Baking cocoa, cocoa, powder, Cocoa, Bournville®, Cadbury®~0.2~~
+C10028~F1114~Milk, cow, trim (<1% fat), fluid, fresh, composite~84.9~MILK~REHEATED
+C10029~C1045~Coffee beverage, espresso, ready to drink, cafe variety, composite~24.6~~
+C10029~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~73.4~MILK~REHEATED
+C10029~C1036~Baking cocoa, cocoa, powder, Cocoa, Bournville®, Cadbury®~2.0~~
+C10030~C1045~Coffee beverage, espresso, ready to drink, cafe variety, composite~18.9~~
+C10030~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~79.5~MILK~REHEATED
+C10030~C1036~Baking cocoa, cocoa, powder, Cocoa, Bournville®, Cadbury®~1.5~~
+C10031~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~84.0~MILK~REHEATED
+C10031~C1045~Coffee beverage, espresso, ready to drink, cafe variety, composite~13.9~~
+C10031~C1036~Baking cocoa, cocoa, powder, Cocoa, Bournville®, Cadbury®~2.1~~
+C10032~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~87.8~MILK~REHEATED
+C10032~C1045~Coffee beverage, espresso, ready to drink, cafe variety, composite~10.6~~
+C10032~C1036~Baking cocoa, cocoa, powder, Cocoa, Bournville®, Cadbury®~1.6~~
+C10033~C1045~Coffee beverage, espresso, ready to drink, cafe variety, composite~24.6~~
+C10033~F1114~Milk, cow, trim (<1% fat), fluid, fresh, composite~73.4~MILK~REHEATED
+C10033~C1036~Baking cocoa, cocoa, powder, Cocoa, Bournville®, Cadbury®~2.0~~
+C10034~C1036~Baking cocoa, cocoa, powder, Cocoa, Bournville®, Cadbury®~1.5~~
+C10034~F1114~Milk, cow, trim (<1% fat), fluid, fresh, composite~79.5~MILK~REHEATED
+C10034~C1045~Coffee beverage, espresso, ready to drink, cafe variety, composite~18.9~~
+C10035~F1114~Milk, cow, trim (<1% fat), fluid, fresh, composite~75.3~MILK~REHEATED
+C10035~C1036~Baking cocoa, cocoa, powder, Cocoa, Bournville®, Cadbury®~1.9~~
+C10035~C1045~Coffee beverage, espresso, ready to drink, cafe variety, composite~22.9~~
+C10036~F1114~Milk, cow, trim (<1% fat), fluid, fresh, composite~80.7~MILK~REHEATED
+C10036~C1045~Coffee beverage, espresso, ready to drink, cafe variety, composite~17.9~~
+C10036~C1036~Baking cocoa, cocoa, powder, Cocoa, Bournville®, Cadbury®~1.5~~
+C10037~C67~Cocoa, instant, dry powder, KoKo Samoa~1.9~~
+C10037~W24~Sugar, white~3.8~~
+C10037~C40~Water, tap~78.6~~
+C10037~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~15.7~~
+D10001~E1075~Oats, grains rolled, raw, New Zealand~20.6~CEREAL~REG/QUICK,COOKED
+D10001~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~79.4~MILK~REHEATED
+D10002~E1075~Oats, grains rolled, raw, New Zealand~20.6~CEREAL~REG/QUICK,COOKED
+D10002~F1114~Milk, cow, trim (<1% fat), fluid, fresh, composite~79.4~~
+D10003~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~75.4~MILK~REHEATED
+D10003~D1061~Oats, quick sachets, plain, sweetened with honey and/or sugar, dry, composite~24.6~CEREAL~REG/QUICK,COOKED
+D10004~D1061~Oats, quick sachets, plain, sweetened with honey and/or sugar, dry, composite~24.9~CEREAL~REG/QUICK,COOKED
+D10004~F1114~Milk, cow, trim (<1% fat), fluid, fresh, composite~75.1~MILK~REHEATED
+D10005~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~75.4~MILK~REHEATED
+D10005~D1062~Oats, quick sachets, assorted fruits flavoured, sugar-sweetened, dry, composite~24.6~CEREAL~REG/QUICK,COOKED
+D10006~F1114~Milk, cow, trim (<1% fat), fluid, fresh, composite~74.9~MILK~REHEATED
+D10006~D1062~Oats, quick sachets, assorted fruits flavoured, sugar-sweetened, dry, composite~25.1~CEREAL~REG/QUICK,COOKED
+D1060~C40~Water, tap~79.4~~
+D1060~E1075~Oats, grains rolled, raw, New Zealand~20.6~CEREAL~REG/QUICK,COOKED
+D1066~D1061~Oats, quick sachets, plain, sweetened with honey and/or sugar, dry, composite~25.2~CEREAL~REG/QUICK,COOKED
+D1066~C40~Water, tap~74.8~~
+D1069~D1062~Oats, quick sachets, assorted fruits flavoured, sugar-sweetened, dry, composite~25.2~CEREAL~REG/QUICK,COOKED
+D1069~C40~Water, tap~74.8~~
+E10001~E1060~Pasta & sauce, dry mix,  assorted flavours, as purchased, composite~22.8~PASTA~BOILED,NOT DRAINED
+E10001~C40~Water, tap~56.1~~
+E10001~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~19.6~MILK~HEATED APPROX 10MIN
+E10001~F1046~Butter, salted, composite~1.5~~
+E10004~E10002~Pasta, fresh, from wheat flour and egg, plain, unfilled, as purchased~100~PASTA~BOILED,DRAINED
+E10016~E10005~Noodle, wheat flour, instant, plain, dry, uncooked, composite~100~PASTA~BOILED,DRAINED
+E10017~C40~Water, tap~85.0~~
+E10017~E10005~Noodle, wheat flour, instant, plain, dry, uncooked, composite~15.0~PASTA~BOILED,NOT DRAINED
+E1049~E1048~Noodle, wheat flour hot & spicy flavour ramen, dry, Shin Ramyun Noodle Soup, Nong Shim~15.0~PASTA~BOILED,NOT DRAINED
+E1049~C40~Water, tap~85.0~~
+E1050~E1047~Noodle, wheat flour & assorted flavours, dry, 2 Minute Noodles, Baked Not Fried, Maggi®~19.7~PASTA~BOILED,NOT DRAINED
+E1050~C40~Water, tap~80.3~~
+E1053~C40~Water, tap~79.9~~
+E1053~E1051~Noodle, rice flour, dry, composite~20.1~PASTA~BOILED,DRAINED
+E1056~E1055~Noodle, wheat flour, shelf-fresh, raw, Japanese Udon Noodles~100~PASTA~BOILED,DRAINED
+E1057~E1055~Noodle, wheat flour, shelf-fresh, raw, Japanese Udon Noodles~95.4~PASTA~BAKED
+E1057~J1033~Oil, canola, composite~4.6~~
+E1064~E1063~Pasta, white wheat flour, assorted shapes, regular, dry, composite~100~PASTA~BOILED,DRAINED
+E1066~E1065~Pasta, wholemeal wheat flour, assorted shapes, dry, composite~100~PASTA~BOILED,DRAINED
+E1068~E1067~Couscous, white wheat, dry, composite~100~PASTA~BOILED,NOT DRAINED
+E1071~E1070~Couscous, wholemeal wheat, dry, composite~100~PASTA~BOILED,NOT DRAINED
+E1078~E1077~Rice, white, regular, assorted grains, polished, raw, dry, composite~100~RICE~WHITE/BROWN,COOKED,WATER USED
+E1080~E1079~Rice, brown, regular, assorted grains, unpolished, raw, dry, composite~100~RICE~WHITE/BROWN,COOKED,WATER USED
+E118~E115~Pasta, wheat flour with egg, dry~100~PASTA~BOILED,DRAINED
+E119~E116~Pasta, wheat flour with vegetable flavours, dry~100~PASTA~BOILED,DRAINED
+F10055~J1033~Oil, canola, composite~1.5~~
+F10055~F10052~Cheese, paneer, from cow’s milk, fresh acid-set, plain, non-aged, soft-cheese, uncooked, composite ~98.5~CHEESE~BROILED
+G10001~G1016~Egg, chicken, white & yolk (whole), raw, fresh, composite~100~EGGS~FRIED,SCRAMBLED
+G10002~G1017~Egg, chicken, yolk, raw, fresh, composite~100~EGGS~FRIED,SCRAMBLED
+G10003~G1025~Egg, chicken, white, raw, fresh, composite~100~EGGS~FRIED,SCRAMBLED
+G1019~G1025~Egg, chicken, white, raw, fresh, composite~100~EGGS~HARD COOKED
+G1020~G1017~Egg, chicken, yolk, raw, fresh, composite~100~EGGS~HARD COOKED
+G1021~G1016~Egg, chicken, white & yolk (whole), raw, fresh, composite~100~EGGS~HARD COOKED
+G1022~G1016~Egg, chicken, white & yolk (whole), raw, fresh, composite~100~EGGS~POACHED
+G1023~G1016~Egg, chicken, white & yolk (whole), raw, fresh, composite~100~EGGS~FRIED,SCRAMBLED
+G1024~G1016~Egg, chicken, white & yolk (whole), raw, fresh, composite~97.4~EGGS~FRIED,SCRAMBLED
+G1024~J10001~Oil, olive, composite~2.6~~
+H10001~H1059~Patty, shredded potato, hash brown, pre-cooked, frozen, commercial, composite~99.5~POTATOES~CKD FROM FRZN,HASH BROWN
+H10001~J10001~Oil, olive, composite~0.5~~
+H10021~H10019~Hash brown or rosti, from shredded kumara, flavoured, salt added, frozen, as purchased  ~100~SWEETPOTATOES~CKD FROM FRN,BAKED
+H1061~H1059~Patty, shredded potato, hash brown, pre-cooked, frozen, commercial, composite~100~POTATOES~CKD FROM FRZN,HASH BROWN
+K10001~J10001~Oil, olive, composite~2.2~~
+K10001~K1017~Salmon, king, farmed, fillet, skin & bones removed, fresh, raw, composite, New Zealand~97.8~FINFISH, >5%FAT~FRIED,W/OCOATING
+K1014~K1013~Hoki, fillet, flesh, frozen, raw~96.8~FINFISH, <5%FAT~FRIED,W/OCOATING
+K1014~J1033~Oil, canola, composite~3.2~~
+K1016~J1033~Oil, canola, composite~0.1~~
+K1016~K1015~Basa, fillet, flesh, frozen, raw, composite~99.9~FINFISH, <5%FAT~FRIED,W/OCOATING
+K1018~K1017~Salmon, king, farmed, fillet, skin & bones removed, fresh, raw, composite, New Zealand~100~FINFISH, >5%FAT~BAKED,W DRIPPINGS
+K1019~K1017~Salmon, king, farmed, fillet, skin & bones removed, fresh, raw, composite, New Zealand~100~FINFISH, >5%FAT~SIMMERED,W/O DRIP
+K1035~J1033~Oil, canola, composite~1.4~~
+K1035~K1034~Snapper, fillet, flesh, fresh, raw~98.6~FINFISH, <5%FAT~FRIED,W/OCOATING
+K1036~K1034~Snapper, fillet, flesh, fresh, raw~100~FINFISH, <5%FAT~BAKED,W/O DRIPPINGS
+K1037~K1034~Snapper, fillet, flesh, fresh, raw~100~FINFISH, <5%FAT~SIMMERED,W/O DRIPPING
+K1038~K1034~Snapper, fillet, flesh, fresh, raw~100~FINFISH, <5%FAT~SIMMERED,W/O DRIPPING
+K1039~C40~Water, tap~1.8~~
+K1039~J1033~Oil, canola, composite~7.3~~
+K1039~A1206~Bread, crumbs, regular, from white wheat bread, dried, commercial, composite~12.2~FLOUR/MEAL~BAKED
+K1039~E1088~Flour, wheat, white, standard, plain, composite~3.3~FLOUR/MEAL~BAKED
+K1039~K1034~Snapper, fillet, flesh, fresh, raw~70.3~FINFISH, <5%FAT~FRIED,W/COATING
+K1039~G1016~Egg, chicken, white & yolk (whole), raw, fresh, composite~5.1~EGGS~FRIED,SCRAMBLED
+K1040~J1033~Oil, canola, composite~11.4~~
+K1040~C40~Water, tap~17.8~~
+K1040~K1034~Snapper, fillet, flesh, fresh, raw~60.5~FINFISH, <5%FAT~FRIED,W/COATING
+K1040~E1089~Flour, wheat, white, self-raising, composite~10.2~FLOUR/MEAL~BAKED
+K1041~C40~Water, tap~1.9~~
+K1041~G1016~Egg, chicken, white & yolk (whole), raw, fresh, composite~5.4~EGGS~FRIED,SCRAMBLED
+K1041~A1206~Bread, crumbs, regular, from white wheat bread, dried, commercial, composite~12.7~FLOUR/MEAL~TOASTED
+K1041~J1033~Oil, canola, composite~5.9~~
+K1041~E1088~Flour, wheat, white, standard, plain, composite~3.5~FLOUR/MEAL~TOASTED
+K1041~K1034~Snapper, fillet, flesh, fresh, raw~70.6~FINFISH, <5%FAT~FRIED,W/COATING
+K1043~K1042~Tarakihi, fillet, flesh, fresh, raw~97.9~FINFISH, <5%FAT~FRIED,W/OCOATING
+K1043~J1033~Oil, canola, composite~2.1~~
+K1044~K1042~Tarakihi, fillet, flesh, fresh, raw~100~FINFISH, <5%FAT~SIMMERED,W/O DRIPPING
+K1046~J1033~Oil, canola, composite~1.4~~
+K1046~K1045~Gurnard, fillet, flesh, fresh, raw~98.6~FINFISH, <5%FAT~FRIED,W/OCOATING
+K1047~K1045~Gurnard, fillet, flesh, fresh, raw~100~FINFISH, <5%FAT~SIMMERED,W/O DRIPPING
+K1049~J1033~Oil, canola, composite~9.5~~
+K1049~C40~Water, tap~13.4~~
+K1049~K1048~Shark or Lemonfish, fillet, flesh, fresh, raw~69.3~FINFISH, <5%FAT~FRIED,W/COATING
+K1049~E1089~Flour, wheat, white, self-raising, composite~7.8~FLOUR/MEAL~BAKED
+K1051~K1050~Hoki, fillet, flesh, fresh, raw~98.7~FINFISH, <5%FAT~FRIED,W/OCOATING
+K1051~J1033~Oil, canola, composite~1.3~~
+K1054~K1053~Kahawai, fillet, flesh, fresh, raw~98.7~FINFISH, <5%FAT~FRIED,W/OCOATING
+K1054~J1033~Oil, canola, composite~1.3~~
+K1055~K1053~Kahawai, fillet, flesh, fresh, raw~99.3~FINFISH, <5%FAT~BAKED,W/O DRIPPINGS
+K1055~J1033~Oil, canola, composite~0.7~~
+K1056~J1033~Oil, canola, composite~13.0~~
+K1056~E1089~Flour, wheat, white, self-raising, composite~10.2~FLOUR/MEAL~BAKED
+K1056~C40~Water, tap~17.4~~
+K1056~K1053~Kahawai, fillet, flesh, fresh, raw~59.4~FINFISH, <5%FAT~FRIED,W/COATING
+K1057~K1053~Kahawai, fillet, flesh, fresh, raw~100~FINFISH, <5%FAT~SIMMERED,W/O DRIPPING
+K1058~K1053~Kahawai, fillet, flesh, fresh, raw~100~FINFISH, <5%FAT~SIMMERED,W/O DRIPPING
+K1059~E1088~Flour, wheat, white, standard, plain, composite~2.5~FLOUR/MEAL~BAKED
+K1059~C40~Water, tap~1.4~~
+K1059~G1016~Egg, chicken, white & yolk (whole), raw, fresh, composite~3.9~EGGS~FRIED,SCRAMBLED
+K1059~A1206~Bread, crumbs, regular, from white wheat bread, dried, commercial, composite~9.2~FLOUR/MEAL~BAKED
+K1059~J1033~Oil, canola, composite~8.4~~
+K1059~K1053~Kahawai, fillet, flesh, fresh, raw~74.6~FINFISH, <5%FAT~FRIED,W/COATING
+K1060~E1088~Flour, wheat, white, standard, plain, composite~2.5~FLOUR/MEAL~BAKED
+K1060~C40~Water, tap~1.3~~
+K1060~J1033~Oil, canola, composite~5.3~~
+K1060~G1016~Egg, chicken, white & yolk (whole), raw, fresh, composite~3.7~EGGS~FRIED,SCRAMBLED
+K1060~K1053~Kahawai, fillet, flesh, fresh, raw~78.3~FINFISH, <5%FAT~FRIED,W/COATING
+K1060~A1206~Bread, crumbs, regular, from white wheat bread, dried, commercial, composite~8.9~FLOUR/MEAL~BAKED
+K1063~J1033~Oil, canola, composite~1.3~~
+K1063~K1062~Blue cod, fillet, flesh, fresh, raw~98.7~FINFISH, <5%FAT~FRIED,W/OCOATING
+K1065~K1064~Groper, fillet, flesh, fresh, raw~100~FINFISH, <5%FAT~FRIED,W/OCOATING
+K1067~K1066~Kingfish, fillet, flesh, fresh, raw~99.2~FINFISH, <5%FAT~FRIED,W/OCOATING
+K1067~J1033~Oil, canola, composite~0.8~~
+K179~K19~Eel, long finned, feeding, flesh & skin, raw~95.2~SEAFOOD,FROG,TURTLE~REHEATED
+K179~P10006~Salt, from sea, non-iodised, composite~4.8~~
+L10150~L10070~Feijoa, pale white-flesh & seeds, raw, fresh, composite~81.6~FRUITS,FRESH(NOT CITRUS)~STEWED
+L10150~C40~Water, tap~18.4~~
+L10152~L10071~Tamarillo, red, flesh & seed, raw, fresh, composite~82.4~FRUITS,FRESH(NOT CITRUS)~STEWED
+L10152~C40~Water, tap~17.6~~
+L10153~C40~Water, tap~13.4~~
+L10153~L10075~Apple, cooking ('Granny Smith'), peeled, flesh, raw, fresh, composite~86.6~FRUITS,FRESH(NOT CITRUS)~STEWED
+L10154~L1152~Apple, flesh & skin, raw, 'Granny Smith'~100~FRUITS,FRESH(NOT CITRUS)~BAKED
+L10155~L10070~Feijoa, pale white-flesh & seeds, raw, fresh, composite~66.8~FRUITS,FRESH(NOT CITRUS)~STEWED
+L10155~C40~Water, tap~15.0~~
+L10155~W24~Sugar, white~18.2~~
+L10156~W24~Sugar, white~25.8~~
+L10156~L10071~Tamarillo, red, flesh & seed, raw, fresh, composite~61.3~FRUITS,FRESH(NOT CITRUS)~STEWED
+L10156~C40~Water, tap~12.9~~
+L10157~W24~Sugar, white~7.9~~
+L10157~L10075~Apple, cooking ('Granny Smith'), peeled, flesh, raw, fresh, composite~78.9~FRUITS,FRESH(NOT CITRUS)~STEWED
+L10157~C40~Water, tap~13.2~~
+L10158~W24~Sugar, white~9.1~~
+L10158~L1152~Apple, flesh & skin, raw, 'Granny Smith'~90.9~FRUITS,FRESH(NOT CITRUS)~BAKED
+L10161~C40~Water, tap~10.6~~
+L10161~L10074~Raspberry, red colour, raw, fresh~89.4~FRUITS,FRESH(NOT CITRUS)~STEWED
+L10162~L10074~Raspberry, red colour, raw, fresh~86.2~FRUITS,FRESH(NOT CITRUS)~STEWED
+L10162~C40~Water, tap~10.3~~
+L10162~W24~Sugar, white~3.4~~
+L1209~L1208~Rhubarb, stalk, raw, fresh~82.8~VEGETABLE,OTHER~BLD,WATER USED
+L1209~C40~Water, tap~17.2~~
+M10040~M10007~Chicken, breast, flesh, lean, fresh, raw, composite~100~CHICKEN~ROASTED
+M10041~M10007~Chicken, breast, flesh, lean, fresh, raw, composite~100~CHICKEN~SIMMERED,W/O DRIPPINGS
+M10042~M10009~Chicken, wing, flesh, lean, fresh, raw, composite~100~CHICKEN~ROASTED
+M10043~M10009~Chicken, wing, flesh, lean, fresh, raw, composite~100~CHICKEN~SIMMERED,W/O DRIPPINGS
+M10044~M10042~Chicken, wing, flesh, lean, baked or roasted, no fat or salt added, composite~12.9~~
+M10044~M10040~Chicken, breast, lean, fresh, baked or roasted, no fat or salt added, composite~87.1~~
+M10046~M10040~Chicken, breast, lean, fresh, baked or roasted, no fat or salt added, composite~73.2~~
+M10046~M10004~Chicken, skin, baked or roasted, no salt added, composite~13.5~~
+M10046~M10042~Chicken, wing, flesh, lean, baked or roasted, no fat or salt added, composite~10.8~~
+M10046~M10002~Chicken, separable fat, baked or roasted, no salt added, composite~2.4~~
+M10047~M10041~Chicken, breast, lean, fresh, stewed or boiled, no salt added, composite~87.2~~
+M10047~M10043~Chicken, wing, flesh, lean, fresh, stewed or boiled, no salt added, composite~12.8~~
+M10048~M10011~Chicken, drumstick, flesh, lean, fresh, raw, composite~100~CHICKEN~ROASTED
+M10049~M10011~Chicken, drumstick, flesh, lean, fresh, raw, composite~100~CHICKEN~SIMMERED,W/O DRIPPINGS
+M10053~M10013~Chicken, thigh, flesh, lean, fresh, raw, composite~100~CHICKEN~ROASTED
+M10054~M10013~Chicken, thigh, flesh, lean, fresh, raw, composite~100~CHICKEN~SIMMERED,W/O DRIPPINGS
+M10061~M10048~Chicken, drumstick, flesh, lean, fresh, baked or roasted, no salt or fat added, composite~39.8~~
+M10061~M10053~Chicken, thigh, flesh, lean, fresh, baked or roasted, no salt or fat added, composite~60.2~~
+M10062~M10048~Chicken, drumstick, flesh, lean, fresh, baked or roasted, no salt or fat added, composite~34.4~~
+M10062~M10004~Chicken, skin, baked or roasted, no salt added, composite~10.6~~
+M10062~M10053~Chicken, thigh, flesh, lean, fresh, baked or roasted, no salt or fat added, composite~52.0~~
+M10062~M10002~Chicken, separable fat, baked or roasted, no salt added, composite~2.9~~
+M10063~M10054~Chicken, thigh, flesh, lean, fresh, stewed or boiled, no salt and fat added, composite ~54.4~~
+M10063~M10049~Chicken, drumstick, flesh, lean, fresh, stewed or boiled, no salt added, composite~45.6~~
+M10069~M10048~Chicken, drumstick, flesh, lean, fresh, baked or roasted, no salt or fat added, composite~12.1~~
+M10069~M10053~Chicken, thigh, flesh, lean, fresh, baked or roasted, no salt or fat added, composite~18.3~~
+M10069~M10040~Chicken, breast, lean, fresh, baked or roasted, no fat or salt added, composite~60.7~~
+M10069~M10042~Chicken, wing, flesh, lean, baked or roasted, no fat or salt added, composite~9.0~~
+M10070~M10004~Chicken, skin, baked or roasted, no salt added, composite~12.7~~
+M10070~M10048~Chicken, drumstick, flesh, lean, fresh, baked or roasted, no salt or fat added, composite~10.2~~
+M10070~M10042~Chicken, wing, flesh, lean, baked or roasted, no fat or salt added, composite~7.6~~
+M10070~M10002~Chicken, separable fat, baked or roasted, no salt added, composite~2.6~~
+M10070~M10053~Chicken, thigh, flesh, lean, fresh, baked or roasted, no salt or fat added, composite~15.5~~
+M10070~M10040~Chicken, breast, lean, fresh, baked or roasted, no fat or salt added, composite~51.4~~
+M10071~M10043~Chicken, wing, flesh, lean, fresh, stewed or boiled, no salt added, composite~7.5~~
+M10071~M10041~Chicken, breast, lean, fresh, stewed or boiled, no salt added, composite~50.8~~
+M10071~M10054~Chicken, thigh, flesh, lean, fresh, stewed or boiled, no salt and fat added, composite ~14.3~~
+M10071~M10049~Chicken, drumstick, flesh, lean, fresh, stewed or boiled, no salt added, composite~27.4~~
+M10072~M10021~Chicken, offal, liver, fresh, raw, composite~100~LIVER~FRIED
+M1021~M1017~Venison, hind leg muscles, denuded, raw, Medallion, Silver Fern®~100~BEEF~ROAST,SIMMERED,W/O DRIPPINGS
+M1022~M1018~Venison, hind leg, muscles, skin and visible fat removed, raw, Stir Fry, Silver Fern®~100~BEEF~FRIED
+M1023~M1019~Venison, forequarter muscles, visible fat removed, raw, Diced, Silver Fern®~100~BEEF~ROAST,SIMMERED,W/O DRIPPINGS
+M1024~M1020~Venison, mince, trim & whole muscles, raw, Mince, Silver Fern®~100~BEEF,GROUND~BRWN,SIMMER,W DRIPPINGS
+M1153~M1152~Chicken, mince, raw, premium, Tegel®~100~CHICKEN~ROASTED
+M1220~M1163~Beef, hindquarter silverside, excluding the eye, separable lean & fat, raw~6.7~~
+M1220~M1155~Beef, forequarter brisket navel end, separable lean & fat, raw~6.7~~
+M1220~M1159~Beef, forequarter oyster blade, separable lean & fat, raw~6.7~~
+M1220~M1165~Beef, hindquarter topside cap off, separable lean & fat, raw~6.7~~
+M1220~M1158~Beef, forequarter scotch fillet, separable lean & fat, raw~6.7~~
+M1220~M1154~Beef, forequarter bolar, separable lean & fat, raw~6.7~~
+M1220~M1169~Beef, hindquarter fillet, separable lean & fat, raw~6.7~~
+M1220~M1167~Beef, hindquarter rump steak, separable lean & fat, raw~6.7~~
+M1220~M1161~Beef, hindquarter silverside, separable lean & fat, raw~6.7~~
+M1220~M1162~Beef, hindquarter skirt steak, separable lean & fat, raw~6.7~~
+M1220~M1166~Beef, hindquarter thick flank, separable lean & fat, raw~6.7~~
+M1220~M1160~Beef, forequarter ribs prepared, separable lean & fat, raw~6.7~~
+M1220~M1164~Beef, hindquarter shank, separable lean & fat, raw~6.7~~
+M1220~M1157~Beef, forequarter chuck steak, separable lean & fat, raw~6.7~~
+M1220~M1156~Beef, forequarter brisket point end, separable lean & fat, raw~6.7~~
+M1221~M1177~Beef, hindquarter silverside, separable lean & fat, slow-roasted~6.2~~
+M1221~M1179~Beef, hindquarter silverside, excluding the eye, separable lean & fat, braised~6.2~~
+M1221~M1183~Beef, hindquarter rump steak, separable lean & fat, fast-fried~6.2~~
+M1221~M1181~Beef, hindquarter topside cap off, separable lean & fat, braised~6.2~~
+M1221~M1182~Beef, hindquarter thick flank, separable lean & fat, fast-fried~6.2~~
+M1221~M1173~Beef, forequarter chuck steak, separable lean & fat, braised~6.2~~
+M1221~M1174~Beef, forequarter scotch fillet, separable lean & fat, fast-roasted~6.2~~
+M1221~M1171~Beef, forequarter brisket navel end, separable lean & fat, braised~6.2~~
+M1221~M1175~Beef, forequarter oyster blade, separable lean & fat, braised~6.2~~
+M1221~M1180~Beef, hindquarter shank, separable lean & fat, braised~6.2~~
+M1221~M1178~Beef, hindquarter skirt steak, separable lean & fat, braised~6.2~~
+M1221~M1172~Beef, forequarter brisket point end, separable lean & fat, braised~6.2~~
+M1221~M1176~Beef, forequarter ribs prepared, separable lean & fat, fast-roasted~6.2~~
+M1221~M1185~Beef, hindquarter fillet, separable lean & fat, fast-fried~6.2~~
+M1221~M1170~Beef, forequarter bolar, separable lean & fat, braised~6.2~~
+M1221~M1184~Beef, hindquarter sirloin, separable lean & fat, fast-fried~6.2~~
+M1222~M1188~Lamb, forequarter fore-shank, separable lean & fat, raw~5.9~~
+M1222~M1190~Lamb, forequarter rack fully frenched, separable lean & fat, raw~5.9~~
+M1222~M1195~Lamb, hindquarter rump, separable lean & fat, raw~5.9~~
+M1222~M1202~Lamb, hindquarter leg boned, separable lean & fat, raw~5.9~~
+M1222~M1197~Lamb, hindquarter striploin, separable lean & fat, raw~5.9~~
+M1222~M1199~Lamb, hindquarter middle loin chop, separable lean & fat, raw~5.9~~
+M1222~M1196~Lamb, hindquarter flap boneless, separable lean & fat, raw~5.9~~
+M1222~M1191~Lamb, forequarter rack partially frenched, separable lean & fat, raw~5.9~~
+M1222~M1187~Lamb, forequarter breast, separable lean & fat, raw~5.9~~
+M1222~M1200~Lamb, hindquarter double loin, separable lean & fat, raw~5.9~~
+M1222~M1186~Lamb, forequarter shoulder boneless rolled & netted, separable lean & fat, raw~5.9~~
+M1222~M1194~Lamb, hindquarter leg chop, separable lean & fat, raw~5.9~~
+M1222~M1192~Lamb, forequarter shoulder square cut, separable lean & fat, raw~5.9~~
+M1222~M1193~Lamb, forequarter shoulder chops, separable lean & fat, raw~5.9~~
+M1222~M1189~Lamb, forequarter round neck chops, separable lean & fat, raw~5.9~~
+M1222~M1198~Lamb, hindquarter knuckle, separable lean & fat, raw~5.9~~
+M1222~M1201~Lamb, hindquarter fillet, separable lean & fat, raw~5.9~~
+M1223~M1203~Lamb, forequarter shoulder boneless rolled & netted, separable lean & fat, slow-roasted~5.9~~
+M1223~M1213~Lamb, hindquarter flap boneless, separable lean & fat, simmered~5.9~~
+M1223~M1210~Lamb, forequarter shoulder chops, separable lean & fat, braised~5.9~~
+M1223~M1207~Lamb, forequarter rack fully Frenched, separable lean & fat, fast-roasted~5.9~~
+M1223~M1211~Lamb, hindquarter leg chop, separable lean & fat, fast-fried~5.9~~
+M1223~M1205~Lamb, forequarter fore-shank, separable lean & fat, braised~5.9~~
+M1223~M1216~Lamb, hindquarter middle loin chop, separable lean & fat, fast-fried~5.9~~
+M1223~M1204~Lamb, forequarter breast, separable lean & fat, braised~5.9~~
+M1223~M1208~Lamb, forequarter rack partially Frenched, separable  lean & fat, fast-roasted~5.9~~
+M1223~M1206~Lamb, forequarter round neck chops, separable lean & fat, braised~5.9~~
+M1223~M1215~Lamb, hindquarter knuckle, separable lean & fat, braised~5.9~~
+M1223~M1218~Lamb, hindquarter fillet, separable lean & fat, fast-fried~5.9~~
+M1223~M1219~Lamb, hindquarter leg boned, separable lean & fat, slow-roasted~5.9~~
+M1223~M1217~Lamb, hindquarter double loin, separable lean & fat, fast-roasted~5.9~~
+M1223~M1212~Lamb, hindquarter rump, separable lean & fat, fast-roasted~5.9~~
+M1223~M1209~Lamb, forequarter shoulder square cut, separable lean & fat, slow-roasted~5.9~~
+M1223~M1214~Lamb, hindquarter striploin, separable lean & fat, fast-roasted~5.9~~
+M1226~M1193~Lamb, forequarter shoulder chops, separable lean & fat, raw~12.5~~
+M1226~M1186~Lamb, forequarter shoulder boneless rolled & netted, separable lean & fat, raw~12.5~~
+M1226~M1189~Lamb, forequarter round neck chops, separable lean & fat, raw~12.5~~
+M1226~M1187~Lamb, forequarter breast, separable lean & fat, raw~12.5~~
+M1226~M1190~Lamb, forequarter rack fully frenched, separable lean & fat, raw~12.5~~
+M1226~M1188~Lamb, forequarter fore-shank, separable lean & fat, raw~12.5~~
+M1226~M1191~Lamb, forequarter rack partially frenched, separable lean & fat, raw~12.5~~
+M1226~M1192~Lamb, forequarter shoulder square cut, separable lean & fat, raw~12.5~~
+M1227~M1209~Lamb, forequarter shoulder square cut, separable lean & fat, slow-roasted~12.5~~
+M1227~M1210~Lamb, forequarter shoulder chops, separable lean & fat, braised~12.5~~
+M1227~M1208~Lamb, forequarter rack partially Frenched, separable  lean & fat, fast-roasted~12.5~~
+M1227~M1207~Lamb, forequarter rack fully Frenched, separable lean & fat, fast-roasted~12.5~~
+M1227~M1205~Lamb, forequarter fore-shank, separable lean & fat, braised~12.5~~
+M1227~M1206~Lamb, forequarter round neck chops, separable lean & fat, braised~12.5~~
+M1227~M1204~Lamb, forequarter breast, separable lean & fat, braised~12.5~~
+M1227~M1203~Lamb, forequarter shoulder boneless rolled & netted, separable lean & fat, slow-roasted~12.5~~
+M1230~M1195~Lamb, hindquarter rump, separable lean & fat, raw~11.1~~
+M1230~M1196~Lamb, hindquarter flap boneless, separable lean & fat, raw~11.1~~
+M1230~M1200~Lamb, hindquarter double loin, separable lean & fat, raw~11.1~~
+M1230~M1202~Lamb, hindquarter leg boned, separable lean & fat, raw~11.1~~
+M1230~M1199~Lamb, hindquarter middle loin chop, separable lean & fat, raw~11.1~~
+M1230~M1198~Lamb, hindquarter knuckle, separable lean & fat, raw~11.1~~
+M1230~M1197~Lamb, hindquarter striploin, separable lean & fat, raw~11.1~~
+M1230~M1194~Lamb, hindquarter leg chop, separable lean & fat, raw~11.1~~
+M1230~M1201~Lamb, hindquarter fillet, separable lean & fat, raw~11.1~~
+M1231~M1219~Lamb, hindquarter leg boned, separable lean & fat, slow-roasted~11.1~~
+M1231~M1212~Lamb, hindquarter rump, separable lean & fat, fast-roasted~11.1~~
+M1231~M1214~Lamb, hindquarter striploin, separable lean & fat, fast-roasted~11.1~~
+M1231~M1216~Lamb, hindquarter middle loin chop, separable lean & fat, fast-fried~11.1~~
+M1231~M1217~Lamb, hindquarter double loin, separable lean & fat, fast-roasted~11.1~~
+M1231~M1215~Lamb, hindquarter knuckle, separable lean & fat, braised~11.1~~
+M1231~M1218~Lamb, hindquarter fillet, separable lean & fat, fast-fried~11.1~~
+M1231~M1211~Lamb, hindquarter leg chop, separable lean & fat, fast-fried~11.1~~
+M1231~M1213~Lamb, hindquarter flap boneless, separable lean & fat, simmered~11.1~~
+M285~M421~Pork, leg steak, separable lean, raw~100~PORK,FRESH~FRESH,BROILED
+M286~M87~Pork, separable hard fat, cooked~2.2~~
+M286~M449~Pork, composite cuts, separable intramuscular fat, cooked~0.8~~
+M286~M285~Pork, leg steak, separable lean, grilled~95.0~~
+M286~M446~Pork, separable soft fat, cooked~1.9~~
+N1021~N1015~Sausage, beef, fresh, raw, composite~100~SAUSAGE,RAW~BROILED
+N1022~N1015~Sausage, beef, fresh, raw, composite~100~SAUSAGE,RAW~BROILED
+N1023~N1015~Sausage, beef, fresh, raw, composite~100~SAUSAGE,RAW~BROILED
+N1024~N1015~Sausage, beef, fresh, raw, composite~100~SAUSAGE,RAW~CKD,W/O DRIP
+N1025~N1016~Sausage, pork, fresh, raw, composite~100~SAUSAGE,RAW~BROILED
+N1026~N1016~Sausage, pork, fresh, raw, composite~100~SAUSAGE,RAW~BROILED
+N1027~N1016~Sausage, pork, fresh, raw, composite~100~SAUSAGE,RAW~BROILED
+N1028~N1016~Sausage, pork, fresh, raw, composite~100~SAUSAGE,RAW~CKD,W/O DRIP
+N1029~N1017~Sausage, chicken, fresh, raw, composite~100~SAUSAGE,RAW~BROILED
+N1030~N1017~Sausage, chicken, fresh, raw, composite~100~SAUSAGE,RAW~BROILED
+N1031~N1017~Sausage, chicken, fresh, raw, composite~100~SAUSAGE,RAW~BROILED
+N1032~N1017~Sausage, chicken, fresh, raw, composite~100~SAUSAGE,RAW~CKD,W/O DRIP
+N1033~N1018~Sausage, lamb, fresh, raw, composite~100~SAUSAGE,RAW~BROILED
+N1034~N1018~Sausage, lamb, fresh, raw, composite~100~SAUSAGE,RAW~BROILED
+N1035~N1018~Sausage, lamb, fresh, raw, composite~100~SAUSAGE,RAW~BROILED
+N1036~N1018~Sausage, lamb, fresh, raw, composite~100~SAUSAGE,RAW~CKD,W/O DRIP
+N1041~N1040~Pork, bacon, rasher, whole loin including belly, rindless, raw, Middle, composite~100~BACON~FRIED
+N1042~N1040~Pork, bacon, rasher, whole loin including belly, rindless, raw, Middle, composite~100~BACON~BROILED
+N1044~N1043~Pork, bacon, rasher, whole loin including belly, rindless & fat trimmed, raw, Middle, composite~100~PORK,CURED, SLICE~SIMMERED,W/O DRIP
+N1045~N1043~Pork, bacon, rasher, whole loin including belly, rindless & fat trimmed, raw, Middle, composite~100~PORK,CURED, SLICE~BRWN,SIMMR,W/O DRIP
+N1047~N1046~Pork, bacon, rasher, rindless, raw, Shoulder, composite~100~PORK,CURED, SLICE~SIMMERED,W/O DRIP
+N1049~N1048~Pork, bacon, rasher, tail end of loin or belly, rindless, raw, streaky, composite~100~PORK,CURED, SLICE~SIMMERED,W/O DRIP
+N1051~N1041~Pork, bacon, rasher, whole loin including belly, rindless, pan-fried with no added fat, Middle, composite~33.3~~
+N1051~N1047~Pork, bacon, rasher, rindless, pan-fried with no fat added, Shoulder, composite~33.3~~
+N1051~N1049~Pork, bacon, rasher, tail end of loin or belly, rindless, pan-fried with no added fat, streaky, composite~33.3~~
+N1053~N1052~Patty, burger, beef, not crumbed, frozen, raw, commercial, composite ~100~BEEF,GROUND~BRWN,SIMMER,W/O DRIPPING
+N1055~N1054~Patty, burger, chicken, crumbed, frozen, raw, commercial, composite ~100~CHICKEN~BROWN,SIMMER,W DRIPPINGS
+N52~N50~Chicken, nugget, battered, raw, Ingham's®~100~CHICKEN~ROASTED
+N55~N53~Chicken, nugget, cheesy, raw, Tegel®~100~CHICKEN~ROASTED
+N58~N56~Chicken, nugget, crumbed, raw~100~CHICKEN~ROASTED
+N61~N59~Sausage, assorted meat & flavours, precooked, composite~100~SAUSAGE,RAW~BROILED
+N64~N62~Sausage, assorted meats & flavours, fresh, raw, composite~100~SAUSAGE,RAW~BROILED
+N76~N49~Chicken, nugget, battered, baked, Tegel®~50.0~~
+N76~N52~Chicken, nugget, battered, baked, Ingham's®~50.0~~
+P10009~P10004~Meat alternative, mycoprotein/fungus base, refrigerated, commercial, as purchased~100~VEGETABLE,OTHER~STIR FRY
+P10017~M10085~Venison, offal, gelatin, raw, dried, powdered~100~~
+Q10006~Q1041~Nut, almond, dried, blanched, composite~50.0~NUTS~ROASTED
+Q10006~Q1025~Nut, almonds, kernel, dried, whole, raw, unblanched, composite~50.0~NUTS~ROASTED
+Q10007~Q1023~Nut, hazelnut, kernel, whole, raw, unblanched, composite~100~NUTS~ROASTED
+Q1038~Q1037~Seed and nut mix, linseed (50%), sunflower seed (33%) and almond (17%) (LSA), dry, ground~90.0~~
+Q1038~Q1026~Seed, chia, black or white, whole, dried, raw, composite~10.0~~
+Q1047~Q1043~Nut, pine, dried, raw, composite~100~NUTS~ROASTED
+Q1048~Q1044~Nut, pecan, dried, raw, composite~100~NUTS~ROASTED
+Q1049~Q1045~Nut, macadamia, dried, raw, composite~100~NUTS~ROASTED
+Q1050~Q1045~Nut, macadamia, dried, raw, composite~100~NUTS~ROASTED
+Q1051~Q1046~Nut, pistachio, dried, raw, unsalted~100~NUTS~ROASTED
+Q1052~Q1046~Nut, pistachio, dried, raw, unsalted~100~NUTS~ROASTED
+Q1057~Q1056~Nut, cashew, raw ~100~NUTS~ROASTED
+Q1058~Q1056~Nut, cashew, raw ~100~NUTS~ROASTED
+Q1060~Q1059~Nut, peanut, with skin, raw~100~NUTS~ROASTED
+Q1061~Q1059~Nut, peanut, with skin, raw~100~NUTS~ROASTED
+Q1063~Q1062~Nut, peanut, blanched, raw~100~NUTS~ROASTED
+Q1064~Q1062~Nut, peanut, blanched, raw~100~NUTS~ROASTED
+R10001~C40~Water, tap~7.0~~
+R10001~P10006~Salt, from sea, non-iodised, composite~0.3~~
+R10001~E1088~Flour, wheat, white, standard, plain, composite~63.7~~
+R10001~F1046~Butter, salted, composite~29.0~~
+R10002~F1046~Butter, salted, composite~35.3~~
+R10002~E1088~Flour, wheat, white, standard, plain, composite~48.5~~
+R10002~C40~Water, tap~15.9~~
+R10002~P10006~Salt, from sea, non-iodised, composite~0.2~~
+R10003~P47~Spice, pepper, red or cayenne~0.1~~
+R10003~P1~Baking powder~0.8~~
+R10003~F1046~Butter, salted, composite~17.8~~
+R10003~E1088~Flour, wheat, white, standard, plain, composite~48.9~~
+R10003~P10006~Salt, from sea, non-iodised, composite~0.3~~
+R10003~F1014~Cheese, Cheddar, Tasty, composite~21.0~~
+R10003~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~11.0~~
+R10004~C40~Water, tap~7.3~~
+R10004~P10006~Salt, from sea, non-iodised, composite~0.3~~
+R10004~F1046~Butter, salted, composite~30.6~~
+R10004~E1091~Flour, wheat, wholemeal, plain, composite~60.9~~
+R10004~P1~Baking powder~0.8~~
+R10005~P10006~Salt, from sea, non-iodised, composite~0.5~~
+R10005~C40~Water, tap~21.0~~
+R10005~E1088~Flour, wheat, white, standard, plain, composite~46.0~~
+R10005~P1~Baking powder~1.1~~
+R10005~J1031~Shortening, vegetable, Kremelta™~31.4~~
+R10006~R10001~Pastry, short, butter, raw~100~FLOUR/MEAL~BAKED
+R10007~E1088~Flour, wheat, white, standard, plain, composite~44.6~~
+R10007~P10006~Salt, from sea, non-iodised, composite~0.2~~
+R10007~C40~Water, tap~14.6~~
+R10007~F1046~Butter, salted, composite~40.6~~
+R10008~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~8.4~MILK~HEATED APPROX 10MIN
+R10008~R10001~Pastry, short, butter, raw~54.2~FLOUR/MEAL~BAKED
+R10008~W14~Jam, berry fruit, composite~35.2~~
+R10008~W24~Sugar, white~2.2~~
+R10009~F1046~Butter, salted, composite~18.3~~
+R10009~L184~Lemon, peel, raw~0.9~FRUITS~CITRUS,CKD
+R10009~G1016~Egg, chicken, white & yolk (whole), raw, fresh, composite~22.5~EGGS~REHEATED
+R10009~W24~Sugar, white~27.1~~
+R10009~L91~Juice, lemon, raw~31.2~FRUITS~CITRUS,CKD
+R10010~W14~Jam, berry fruit, composite~6.6~~
+R10010~G1016~Egg, chicken, white & yolk (whole), raw, fresh, composite~16.3~EGGS~BAKED
+R10010~P1~Baking powder~0.4~~
+R10010~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~6.4~MILK~HEATED APPROX 10MIN
+R10010~R10001~Pastry, short, butter, raw~10.6~FLOUR/MEAL~BAKED
+R10010~J1028~Margarine, original, Flora®, fortified vitamin D~18.0~~
+R10010~W20~Sugar, caster~18.0~~
+R10010~E1088~Flour, wheat, white, standard, plain, composite~23.8~~
+R10011~C1036~Baking cocoa, cocoa, powder, Cocoa, Bournville®, Cadbury®~2.0~~
+R10011~Q1015~Coconut, milk, standard, composite~23.6~~
+R10011~W23~Sugar, raw~11.4~~
+R10011~C40~Water, tap~52.1~~
+R10011~E1077~Rice, white, regular, assorted grains, polished, raw, dry, composite~10.7~RICE~WHITE/BROWN,COOKED,WATER USED
+R10011~P10006~Salt, from sea, non-iodised, composite~0.3~~
+R10012~W25~Syrup, golden~10.9~~
+R10012~G1016~Egg, chicken, white & yolk (whole), raw, fresh, composite~9.3~EGGS~BAKED
+R10012~L91~Juice, lemon, raw~0.9~FRUITS~CITRUS,CKD
+R10012~L184~Lemon, peel, raw~0.4~FRUITS~CITRUS,CKD
+R10012~R10001~Pastry, short, butter, raw~45.2~FLOUR/MEAL~BAKED
+R10012~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~5.6~MILK~HEATED APPROX 1 HOUR
+R10012~A1206~Bread, crumbs, regular, from white wheat bread, dried, commercial, composite~16.3~~
+R10012~L173~Sultana~6.9~~
+R10012~F1046~Butter, salted, composite~4.5~~
+R10013~R10003~Pastry, cheese, raw~100~FLOUR/MEAL~BAKED
+R10014~G1016~Egg, chicken, white & yolk (whole), raw, fresh, composite~6.0~EGGS~REHEATED
+R10014~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~60.6~MILK~HEATED APPROX 30MIN
+R10014~E6~Custard, corn flour, colour & flavour, dry powder~4.0~FLOUR/MEAL~SAUTEED
+R10014~W32~Sugar, icing~2.9~~
+R10014~R10002~Pastry, flaky, butter, raw~20.5~FLOUR/MEAL~BAKED
+R10014~F1046~Butter, salted, composite~5.9~~
+R10015~G1016~Egg, chicken, white & yolk (whole), raw, fresh, composite~9.5~EGGS~BAKED
+R10015~F1046~Butter, salted, composite~10.8~~
+R10015~E1088~Flour, wheat, white, standard, plain, composite~17.0~FLOUR/MEAL~BAKED
+R10015~C40~Water, tap~1.9~~
+R10015~W32~Sugar, icing~18.6~~
+R10015~P1~Baking powder~0.4~~
+R10015~W20~Sugar, caster~23.4~~
+R10015~C1036~Baking cocoa, cocoa, powder, Cocoa, Bournville®, Cadbury®~2.3~~
+R10015~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~16.0~MILK~HEATED APPROX 1 HOUR
+R10015~F1046~Butter, salted, composite~10.8~~
+R10017~W20~Sugar, caster~26.1~~
+R10017~F1046~Butter, salted, composite~1.8~~
+R10017~R10001~Pastry, short, butter, raw~24.1~~
+R10017~C40~Water, tap~22.6~~
+R10017~G1016~Egg, chicken, white & yolk (whole), raw, fresh, composite~19.9~EGGS~BAKED
+R10017~L184~Lemon, peel, raw~1.4~FRUITS~CITRUS,CKD
+R10017~E9~Flour, corn~4.1~FLOUR/MEAL~BAKED
+R10018~E1088~Flour, wheat, white, standard, plain, composite~30.8~FLOUR/MEAL~TOASTED
+R10018~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~43.8~MILK~HEATED APPROX 10MIN
+R10018~G1016~Egg, chicken, white & yolk (whole), raw, fresh, composite~12.3~EGGS~FRIED,SCRAMBLED
+R10018~W24~Sugar, white~12.1~~
+R10018~P1~Baking powder~0.9~~
+R10018~P10005~Salt, from sea, iodised, composite~0.2~~
+R10019~G1016~Egg, chicken, white & yolk (whole), raw, fresh, composite~14.3~EGGS~FRIED,SCRAMBLED
+R10019~E1088~Flour, wheat, white, standard, plain, composite~34.4~FLOUR/MEAL~TOASTED
+R10019~P10005~Salt, from sea, iodised, composite~0.2~~
+R10019~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~51.2~MILK~HEATED APPROX 10MIN
+R10020~E6~Custard, corn flour, colour & flavour, dry powder~5.4~~
+R10020~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~89.1~MILK~HEATED APPROX 10MIN
+R10020~W24~Sugar, white~5.5~~
+R10021~L1101~Banana, flesh & seed, raw, ripened, yellow, composite~28.2~FRUITS,FRESH(NOT CITRUS)~BAKED
+R10021~W24~Sugar, white~16.3~~
+R10021~P1~Baking powder~0.4~~
+R10021~P62~Baking soda~0.5~~
+R10021~F1046~Butter, salted, composite~12.8~~
+R10021~G1016~Egg, chicken, white & yolk (whole), raw, fresh, composite~11.5~EGGS~BAKED
+R10021~E1088~Flour, wheat, white, standard, plain, composite~28.1~FLOUR/MEAL~BAKED
+R10021~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~2.2~MILK~HEATED APPROX 30MIN
+R10022~W32~Sugar, icing~24.0~~
+R10022~C40~Water, tap~2.2~~
+R10022~F1046~Butter, salted, composite~7.2~~
+R10022~R10021~Cake, banana, baked, home-made, un-iced~66.6~~
+R10023~W20~Sugar, caster~61.7~~
+R10023~G1025~Egg, chicken, white, raw, fresh, composite~38.3~EGGS~BAKED
+R10024~X1130~Onion, bulb vegetable, flesh, fresh, raw, Brown, combined cultivars~12.2~VEGETABLE,ROOTS~STIR FRY
+R10024~X260~Garlic, bulb vegetable, cloves, raw, peeled~0.9~VEGETABLE,ROOTS~STIR FRY
+R10024~X1049~Capsicum, fruit vegetable, stalk & seeds removed, raw, green~8.7~VEGETABLE,OTHER~STIR FRY
+R10024~X1058~Courgette, fruit vegetable, unpeeled, raw, green~18.3~VEGETABLE,OTHER~STIR FRY
+R10024~X1213~Tomato, red, fruit vegetable, medium to large size, fresh, ripe, raw, NZ and imported, all year round~38.0~VEGETABLE,OTHER~STIR FRY
+R10024~J10001~Oil, olive, composite~3.0~~
+R10024~W24~Sugar, white~0.1~~
+R10024~P10001~Spice, pepper, black, dried~0.1~~
+R10024~X1083~Eggplant, fruit vegetable, flesh, skin & seed, raw, combined varieties~18.9~VEGETABLE,OTHER~STIR FRY
+R10025~C40~Water, tap~5.4~~
+R10025~F1046~Butter, salted, composite~5.4~~
+R10025~P10006~Salt, from sea, non-iodised, composite~1.5~~
+R10025~F1015~Cheese, Cheddar Mild, composite~32.4~CHEESE~COOKED W/LIQUID
+R10025~G1016~Egg, chicken, white & yolk (whole), raw, fresh, composite~55.3~EGGS~FRIED,SCRAMBLED
+R10026~G1016~Egg, chicken, white & yolk (whole), raw, fresh, composite~81.8~EGGS~BAKED
+R10026~P10006~Salt, from sea, non-iodised, composite~2.2~~
+R10026~F1046~Butter, salted, composite~8.0~~
+R10026~C40~Water, tap~8.0~~
+R10027~F1046~Butter, salted, composite~4.4~~
+R10027~W14~Jam, berry fruit, composite~8.7~~
+R10027~W24~Sugar, white~17.5~~
+R10027~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~43.7~MILK~HEATED APPROX 30MIN
+R10027~A1206~Bread, crumbs, regular, from white wheat bread, dried, commercial, composite~8.7~FLOUR/MEAL~BAKED
+R10027~G1016~Egg, chicken, white & yolk (whole), raw, fresh, composite~17.0~EGGS~BAKED
+R10028~G1016~Egg, chicken, white & yolk (whole), raw, fresh, composite~17.3~EGGS~BAKED
+R10028~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~10.6~MILK~HEATED APPROX 1 HOUR
+R10028~P1~Baking powder~1.2~~
+R10028~F1046~Butter, salted, composite~17.7~~
+R10028~W20~Sugar, caster~17.7~~
+R10028~E1088~Flour, wheat, white, standard, plain, composite~35.4~FLOUR/MEAL~STEAMED
+R10029~L49~Currant, dried~3.4~~
+R10029~F1046~Butter, salted, composite~15.9~~
+R10029~G1016~Egg, chicken, white & yolk (whole), raw, fresh, composite~15.5~EGGS~POACHED
+R10029~P1~Baking powder~1.1~~
+R10029~L173~Sultana~3.4~FRUITS (DRIED)~STEWED
+R10029~E1088~Flour, wheat, white, standard, plain, composite~31.8~FLOUR/MEAL~STEAMED
+R10029~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~9.5~MILK~HEATED APPROX 1 HOUR
+R10029~L161~Raisin, seedless, composite~3.4~FRUITS (DRIED)~STEWED
+R10029~W20~Sugar, caster~15.9~~
+R10030~E1091~Flour, wheat, wholemeal, plain, composite~50.0~FLOUR/MEAL~BAKED
+R10030~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~31.2~MILK~HEATED APPROX 30MIN
+R10030~F1046~Butter, salted, composite~12.5~~
+R10030~W24~Sugar, white~2.5~~
+R10030~P1~Baking powder~3.5~~
+R10030~P10006~Salt, from sea, non-iodised, composite~0.2~~
+R10031~L49~Currant, dried~37.0~FRUITS (DRIED)~BAKED
+R10031~F1046~Butter, salted, composite~25.5~~
+R10031~E1088~Flour, wheat, white, standard, plain, composite~20.0~FLOUR/MEAL~BAKED
+R10031~W24~Sugar, white~7.5~~
+R10031~C40~Water, tap~10.0~~
+R10032~W32~Sugar, icing~17.5~~
+R10032~E1088~Flour, wheat, white, standard, plain, composite~34.8~~
+R10032~E9~Flour, corn~15.9~FLOUR/MEAL~BAKED
+R10032~F1046~Butter, salted, composite~31.8~~
+R10033~W27~Treacle, black~24.1~~
+R10033~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~9.0~MILK~HEATED APPROX 1 HOUR
+R10033~E1088~Flour, wheat, white, standard, plain, composite~36.2~FLOUR/MEAL~BAKED
+R10033~G1016~Egg, chicken, white & yolk (whole), raw, fresh, composite~5.9~EGGS~BAKED
+R10033~P10011~Spice, ginger, dried, ground~0.4~~
+R10033~F1046~Butter, salted, composite~12.1~~
+R10033~P62~Baking soda~0.2~~
+R10033~W24~Sugar, white~12.1~~
+R10034~P62~Baking soda~0.6~~
+R10034~W20~Sugar, caster~25.0~~
+R10034~G1016~Egg, chicken, white & yolk (whole), raw, fresh, composite~24.4~EGGS~BAKED
+R10034~E1088~Flour, wheat, white, standard, plain, composite~25.0~FLOUR/MEAL~BAKED
+R10034~F1046~Butter, salted, composite~25.0~~
+R10035~E1088~Flour, wheat, white, standard, plain, composite~25.3~FLOUR/MEAL~BAKED
+R10035~G1016~Egg, chicken, white & yolk (whole), raw, fresh, composite~49.4~EGGS~BAKED
+R10035~W20~Sugar, caster~25.3~~
+R10036~C40~Water, tap~34.5~~
+R10036~W16~Jelly, crystals, unprepared~22.4~~
+R10036~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~43.1~~
+R10037~K1052~Hoki, fillet, flesh, smoked, unprepared~47.3~~
+R10037~G1016~Egg, chicken, white & yolk (whole), raw, fresh, composite~23.1~EGGS~HARD COOKED
+R10037~J1005~Margarine, polyunsaturated, 70% fat, composite, fortified vitamins A & D~5.9~~
+R10037~E1078~Rice, white, assorted grains, polished, cooked in unsalted water~23.7~~
+R10038~C40~Water, tap~11.8~~
+R10038~G1025~Egg, chicken, white, raw, fresh, composite~26.1~EGGS~BAKED
+R10038~E9~Flour, corn~2.0~FLOUR/MEAL~BAKED
+R10038~W20~Sugar, caster~58.9~~
+R10038~P11~Vinegar~1.3~~
+R10040~J10001~Oil, olive, composite~71.6~~
+R10040~P10006~Salt, from sea, non-iodised, composite~2.7~~
+R10040~P10001~Spice, pepper, black, dried~1.9~~
+R10040~P11~Vinegar~23.9~~
+R10560~F10002~Cream, sour, from cow's milk and cream, regular fat (20%), composite~34.5~~
+R10560~S42~Sauce, tabasco~0.3~~
+R10560~L1159~Avocado, flesh, fresh, raw, 'Hass', New Zealand~49.3~~
+R10560~P28~Spice, chilli powder~0.4~~
+R10560~J10001~Oil, olive, composite~12.4~~
+R10560~L91~Juice, lemon, raw~3.1~~
+R10635~F10002~Cream, sour, from cow's milk and cream, regular fat (20%), composite~10.4~~
+R10635~P10016~Spice, nutmeg, dried, ground~0.2~~
+R10635~P10006~Salt, from sea, non-iodised, composite~0.2~~
+R10635~R10001~Pastry, short, butter, raw~25.1~FLOUR/MEAL~BAKED
+R10635~G1016~Egg, chicken, white & yolk (whole), raw, fresh, composite~9.2~EGGS~BAKED
+R10635~F1014~Cheese, Cheddar, Tasty, composite~10.1~~
+R10635~X1046~Spinach, leafy vegetable, boiled, drained, no salt added, English~44.7~VEGETABLE,GREENS~BAKED
+R10636~F1014~Cheese, Cheddar, Tasty, composite~4.1~~
+R10636~L1159~Avocado, flesh, fresh, raw, 'Hass', New Zealand~7.2~~
+R10636~U1016~Snack, corn chip, assorted flavours, salted, fried in assorted oils, ready to eat, composite~14.1~~
+R10636~F10003~Cream, sour, from cow's milk and cream, lite (10% fat), composite~3.3~~
+R10636~R5748~Chilli con carne, with beef mince and red kidney beans, Mexican-style, cooked, no salt added, home-made~71.3~~
+R5740~X1079~Tomato, paste, canned, composite~4.4~~
+R5740~X1124~Tomato, in tomato juice, plain, canned, undrained, salt added, composite~28.4~TOMATOES~BOILED/BAKED
+R5740~M1051~Beef, mince, premium, raw~36.1~BEEF,GROUND~BRWN,SIMMER,W/O DRIPPING
+R5740~J1033~Oil, canola, composite~1.1~~
+R5740~C40~Water, tap~18.0~~
+R5740~X1130~Onion, bulb vegetable, flesh, fresh, raw, Brown, combined cultivars~11.9~VEGETABLE,ROOTS~STIR FRY
+R5741~R5740~Sauce, Bolognese, prepared with beef mince, cooked, no salt added, home-made~66.3~~
+R5741~E1064~Pasta, white wheat flour, assorted shapes, regular, boiled, drained, no salt added~33.7~~
+R5745~E6~Custard, corn flour, colour & flavour, dry powder~5.4~~
+R5745~W24~Sugar, white~5.4~~
+R5745~F1086~Milk, cow, whole 4% fat, fluid, non-homogenised, composite~89.2~MILK~HEATED APPROX 10MIN
+R5748~M1051~Beef, mince, premium, raw~29.1~BEEF,GROUND~BRWN,SIMMER,W/O DRIPPING
+R5748~J1033~Oil, canola, composite~0.9~~
+R5748~C40~Water, tap~14.5~~
+R5748~X1049~Capsicum, fruit vegetable, stalk & seeds removed, raw, green~8.5~VEGETABLE,OTHER~STIR FRY
+R5748~X1079~Tomato, paste, canned, composite~17.9~TOMATOES~REHEATED
+R5748~X1147~Bean, red kidney bean, seed, in brine, canned, drained, composite~17.1~LEGUMES~REHEATED
+R5748~X260~Garlic, bulb vegetable, cloves, raw, peeled~0.2~VEGETABLE,ROOTS~STIR FRY
+R5748~X1130~Onion, bulb vegetable, flesh, fresh, raw, Brown, combined cultivars~11.6~VEGETABLE,ROOTS~STIR FRY
+R5748~P28~Spice, chilli powder~0.1~~
+S10005~V10001~Soup or dip, onion flavoured dry mix, commercial ~11.5~~
+S10005~F10058~Cream, reduced, from cow's milk, canned~88.5~~
+T1026~T1024~Mussel, green, meat, fresh, raw~100~SHELLFISH, W/OSHELL~SIMMERED,W/O DRIP
+V10002~C40~Water, tap~95.2~~
+V10002~V10001~Soup or dip, onion flavoured dry mix, commercial ~4.8~~
+X10003~X1229~Capsicum, red, fruit vegetable, sliced, frozen, unprepared, composite~97.5~VEGETABLE,OTHER~STIR FRY
+X10003~J10001~Oil, olive, composite~2.5~~
+X10004~X1236~Onion, bulb vegetable, sliced or diced, frozen, unprepared, composite~95.9~VEGETABLE,OTHER~STIR FRY
+X10004~J10001~Oil, olive, composite~4.1~~
+X10005~X10001~Kumara, purple, root vegetable, tuber, peeled, fresh, raw, 'Purple Dawn'~100~VEGETABLE,ROOTS~BAKED
+X10006~X1083~Eggplant, fruit vegetable, flesh, skin & seed, raw, combined varieties~98.6~VEGETABLE,OTHER~BAKED
+X10006~J10001~Oil, olive, composite~1.4~~
+X10007~X1089~Mushroom, fungus, whole, stem & cap, fresh, raw, Portobello~99.6~VEGETABLE,OTHER~BAKED
+X10007~J10001~Oil, olive, composite~0.4~~
+X10008~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~23.2~~
+X10008~F1046~Butter, salted, composite~4.5~~
+X10008~X1172~Potato, root vegetable, stem tuber, flesh, boiled, drained, mashed, no salt added, floury potatoes for baking, frying and mashing, old (October)~36.0~~
+X10008~X1139~Potato, root vegetable, stem tuber, flesh, boiled, drained, mashed, no salt added, floury potatoes for baking, frying and mashing, new (April)~36.0~~
+X10008~P10001~Spice, pepper, black, dried~0.2~~
+X10009~F1110~Milk, cow, standard (3.3% fat), fluid, fresh, composite~23.2~~
+X10009~J1028~Margarine, original, Flora®, fortified vitamin D~4.5~~
+X10009~P10001~Spice, pepper, black, dried~0.2~~
+X10009~X1172~Potato, root vegetable, stem tuber, flesh, boiled, drained, mashed, no salt added, floury potatoes for baking, frying and mashing, old (October)~36.0~~
+X10009~X1139~Potato, root vegetable, stem tuber, flesh, boiled, drained, mashed, no salt added, floury potatoes for baking, frying and mashing, new (April)~36.0~~
+X10010~X1187~Mushroom, fungus, button, white or brown, fresh, raw, composite~96.2~VEGETABLE,OTHER~STIR FRY
+X10010~J10001~Oil, olive, composite~3.8~~
+X10011~X1195~Snow pea, fruit vegetable, seeds with pod, fresh, raw, composite~98.1~VEGETABLE,OTHER~STIR FRY
+X10011~J10001~Oil, olive, composite~1.9~~
+X10012~J10001~Oil, olive, composite~0.7~~
+X10012~X1053~Taro, root vegetable, corm, flesh, raw, combined cultivars~99.3~VEGETABLE,ROOTS~BAKED
+X10035~J10001~Oil, olive, composite~2.5~~
+X10035~X10013~Fennel, Florence, bulb vegetable, raw, fresh, composite~97.5~VEGETABLE,OTHER~STIR FRY
+X10036~X10013~Fennel, Florence, bulb vegetable, raw, fresh, composite~100~VEGETABLE,OTHER~STIR FRY
+X10037~X10018~Celeriac, root vegetable, taproot, peeled, flesh, raw, fresh, composite ~100~VEGETABLE,ROOTS~BLD,DRAIND,WTR COVER
+X10038~X10021~Okra, fruit vegetable, whole pod, fresh or frozen, raw, composite~100~VEGETABLE,OTHER~BLD,WATER COVER,DRAINED
+X10039~X10026~Squash, butternut, fruit vegetable, flesh, peeled, fresh, raw~100~VEGETABLE,OTHER~BLD,WATER COVER,DRAINED
+X10040~X10026~Squash, butternut, fruit vegetable, flesh, peeled, fresh, raw~100~VEGETABLE,OTHER~BAKED
+X10053~C40~Water, tap~79.5~~
+X10053~X10032~Lentil, red or orange, mature, split, or whole without husk, dried, raw~20.5~LEGUMES, CKD 15/20MIN~CKD 15/20MIN,BLD,WATER USED
+X10054~C40~Water, tap~83.2~~
+X10054~X10033~Lentil, brown or green, mature, whole with husk, dried, raw~16.8~LEGUMES, CKD 15/20MIN~CKD 15/20MIN,BLD,WATER USED
+X10055~X10034~Lentil, French, mature, whole with husk, dry~100~LEGUMES, CKD 15/20MIN~CKD 15/20MIN,BLD,WATER USED
+X10056~X10030~Tempeh, fermented soybeans, uncooked~95.3~VEGETABLE,OTHER~STIR FRY
+X10056~J10001~Oil, olive, composite~4.7~~
+X10061~X10050~Jackfruit, fruit vegetable, unripe (green or young), canned in brine, drained, composite~95.7~VEGETABLE,OTHER~STIR FRY
+X10061~J1033~Oil, canola, composite~4.3~~
+X1026~C40~Water, tap~20.0~~
+X1026~X1025~Yam, root vegetable, tuber, flesh, raw, Pacific~80.0~VEGETABLE,ROOTS~BLD,DRAIND,WTR COVER
+X1063~X1053~Taro, root vegetable, corm, flesh, raw, combined cultivars~100~VEGETABLE,ROOTS~BOILED,WATER USED
+X1064~X1057~Kumara, root vegetable, root tuber, flesh, raw, red, 'Owairaka Red'~100~SWEETPOTATOES~BOILED (PARED)DRAINED
+X1076~X1073~Yam, root vegetable, unpeeled, raw, Red, New Zealand~100~POTATOES~BAKED IN SKIN
+X1077~X1073~Yam, root vegetable, unpeeled, raw, Red, New Zealand~100~POTATOES~BOILED(PARED)DRAIN
+X1086~X1083~Eggplant, fruit vegetable, flesh, skin & seed, raw, combined varieties~100~VEGETABLE,OTHER~BLD,WATER COVER,DRAINED
+X1087~X1083~Eggplant, fruit vegetable, flesh, skin & seed, raw, combined varieties~100~VEGETABLE,OTHER~STEAMED
+X1088~X1083~Eggplant, fruit vegetable, flesh, skin & seed, raw, combined varieties~81.1~VEGETABLE,OTHER~FRIED
+X1088~J1033~Oil, canola, composite~18.9~~
+X1092~J1033~Oil, canola, composite~1.8~~
+X1092~X1091~Celery, stem vegetable, stalk, raw, green, American Green~98.2~VEGETABLE,OTHER~STIR FRY
+X1094~X1093~Brussels sprout, leafy vegetable, inner leaves, raw, combined varieties~100~VEGETABLE,OTHER~BLD,WATER COVER,DRAINED
+X1095~X1093~Brussels sprout, leafy vegetable, inner leaves, raw, combined varieties~100~VEGETABLE,OTHER~STEAMED
+X1099~X1097~Parsnip, root vegetable, taproot, flesh, raw~100~VEGETABLE,ROOTS~BLD,DRAIND,WTR COVER
+X1100~X1097~Parsnip, root vegetable, taproot, flesh, raw~100~VEGETABLE,ROOTS~BAKED
+X1101~X1097~Parsnip, root vegetable, taproot, flesh, raw~100~VEGETABLE,ROOTS~STEAMED
+X1103~X1102~Cabbage, leafy vegetable, leaves, raw, green drumhead~100~VEGETABLE,OTHER~BLD,WATER COVER,DRAINED
+X1104~X1102~Cabbage, leafy vegetable, leaves, raw, green drumhead~100~VEGETABLE,OTHER~STEAMED
+X1106~X1105~Asparagus, stem vegetable, stalk, fresh, raw, combined cultivar~100~VEGETABLE,OTHER~BLD,WATER COVER,DRAINED
+X1107~X1105~Asparagus, stem vegetable, stalk, fresh, raw, combined cultivar~100~VEGETABLE,OTHER~STEAMED
+X1109~X1108~Bean, fruit vegetable, seeds with pod, fresh, raw, green runner or dwarf~100~VEGETABLE,OTHER~BLD,WATER COVER,DRAINED
+X1110~X1108~Bean, fruit vegetable, seeds with pod, fresh, raw, green runner or dwarf~100~VEGETABLE,OTHER~STEAMED
+X1112~X1111~Silverbeet, leafy vegetable, leaves & stems, fresh, raw~100~VEGETABLE,GREENS~BOILD,LITTLE WATER DRAIN
+X1113~X1111~Silverbeet, leafy vegetable, leaves & stems, fresh, raw~100~VEGETABLE,GREENS~REHEATED
+X1115~X1114~Carrot, root vegetable, taproot, flesh, fresh, raw, combined varieties~100~VEGETABLE,ROOTS~BLD,DRAIND,WTR COVER
+X1116~X1114~Carrot, root vegetable, taproot, flesh, fresh, raw, combined varieties~100~VEGETABLE,ROOTS~STEAMED
+X1117~J1033~Oil, canola, composite~0.3~~
+X1117~X1114~Carrot, root vegetable, taproot, flesh, fresh, raw, combined varieties~99.7~VEGETABLE,ROOTS~BAKED
+X1118~J1033~Oil, canola, composite~2.0~~
+X1118~X1114~Carrot, root vegetable, taproot, flesh, fresh, raw, combined varieties~98.0~VEGETABLE,ROOTS~STIR FRY
+X1120~X1119~Pumpkin, fruit vegetable, fruit, flesh, fresh, raw, Whangaparaoa crown~100~VEGETABLE,OTHER~BLD,WATER COVER,DRAINED
+X1121~X1119~Pumpkin, fruit vegetable, fruit, flesh, fresh, raw, Whangaparaoa crown~100~VEGETABLE,OTHER~STEAMED
+X1122~J1033~Oil, canola, composite~0.7~~
+X1122~X1119~Pumpkin, fruit vegetable, fruit, flesh, fresh, raw, Whangaparaoa crown~99.3~VEGETABLE,OTHER~BAKED
+X1129~X1128~Cauliflower, inflorescent vegetable, fresh, raw, composite~100~VEGETABLE,OTHER~BLD,WATER COVER,DRAINED
+X1131~J1033~Oil, canola, composite~1.4~~
+X1131~X1130~Onion, bulb vegetable, flesh, fresh, raw, Brown, combined cultivars~98.6~VEGETABLE,ROOTS~SAUTEED
+X1133~J1033~Oil, canola, composite~1.8~~
+X1133~X1132~Spring onion, bulb vegetable, bulb and stalk, fresh, raw~98.2~VEGETABLE,OTHER~FRIED
+X1135~X1134~Pea, seed vegetable, frozen, raw, green~100~VEGETABLE,OTHER~BLD,WATER COVER,DRAINED
+X1137~X1136~Potato, root vegetable, stem tuber, flesh & skin, raw, floury potatoes for baking, frying and mashing, new (April)~100~POTATOES~BAKED IN SKIN
+X1139~X1138~Potato, root vegetable, stem tuber, flesh, raw, floury potatoes for baking, frying and mashing, new (April)~100~POTATOES~MASHED
+X1141~X1138~Potato, root vegetable, stem tuber, flesh, raw, floury potatoes for baking, frying and mashing, new (April)~96.1~POTATOES~FRIED
+X1141~J1033~Oil, canola, composite~3.9~~
+X1145~X1143~Potato, root vegetable, stem tuber, flesh & skin, raw, waxy, new (April)~100~POTATOES~BOILED IN SKIN
+X1152~X1151~Tofu, soy bean curd, regular, firm, raw, composite~96.3~LEGUMES, CKD 15/20MIN~CKD 15/20MIN,BLD,DRND,FRIED
+X1152~J1033~Oil, canola, composite~3.7~~
+X1153~X1151~Tofu, soy bean curd, regular, firm, raw, composite~100~LEGUMES, CKD 15/20MIN~CKD 15/20MIN,BOILED,DRAINED
+X1155~X1154~Sweet corn, fruit vegetable, kernel, cob & husk removed, fresh, raw, combined cultivars~100~VEGETABLE,OTHER~BLD,WATER COVER,DRAINED
+X1156~X1154~Sweet corn, fruit vegetable, kernel, cob & husk removed, fresh, raw, combined cultivars~100~VEGETABLE,OTHER~STEAMED
+X1160~X1159~Sweet corn, fruit vegetable, kernel, frozen, raw, composite~100~VEGETABLE,OTHER~BLD,WATER COVER,DRAINED
+X1162~J1033~Oil, canola, composite~0.7~~
+X1162~X1161~Leek, bulb vegetable, bulb & stalk, fresh, raw, combined varieties~99.3~VEGETABLE,OTHER~STIR FRY
+X1164~X1163~Kale, leafy vegetable, fresh, raw, combined varieties~97.4~VEGETABLE,GREENS~STIR FRY
+X1164~J1033~Oil, canola, composite~2.6~~
+X1166~X1165~Beetroot, root vegetable, peeled, fresh, raw~100~VEGETABLE,ROOTS~BAKED
+X1168~X1167~Swede, root vegetable, peeled, fresh, raw, composite~100~VEGETABLE,ROOTS~BLD,DRAIND,WTR COVER
+X1170~X1169~Potato, root vegetable, stem tuber, flesh & skin, raw, floury potatoes for baking, frying and mashing, old (October)~100~POTATOES~BAKED IN SKIN
+X1172~X1171~Potato, root vegetable, stem tuber, flesh, raw, floury potatoes for baking, frying and mashing, old (October)~100~POTATOES~MASHED
+X1173~X1171~Potato, root vegetable, stem tuber, flesh, raw, floury potatoes for baking, frying and mashing, old (October)~97.9~POTATOES~FRIED
+X1173~J1033~Oil, canola, composite~2.1~~
+X1175~X1174~Potato, root vegetable, stem tuber, flesh & skin, raw, waxy potatoes for boiling, old (October)~100~POTATOES~BOILED IN SKIN
+X1176~X1169~Potato, root vegetable, stem tuber, flesh & skin, raw, floury potatoes for baking, frying and mashing, old (October)~50.0~~
+X1176~X1136~Potato, root vegetable, stem tuber, flesh & skin, raw, floury potatoes for baking, frying and mashing, new (April)~50.0~~
+X1177~X1137~Potato, root vegetable, stem tuber, flesh & skin,  baked without oil, no added salt, floury potatoes for baking, frying and mashing, new (April)~50.0~~
+X1177~X1170~Potato, root vegetable, stem tuber, flesh & skin, baked without oil, no added salt, floury potatoes for baking, frying and mashing, old (October)~50.0~~
+X1178~X1171~Potato, root vegetable, stem tuber, flesh, raw, floury potatoes for baking, frying and mashing, old (October)~50.0~~
+X1178~X1138~Potato, root vegetable, stem tuber, flesh, raw, floury potatoes for baking, frying and mashing, new (April)~50.0~~
+X1179~X1139~Potato, root vegetable, stem tuber, flesh, boiled, drained, mashed, no salt added, floury potatoes for baking, frying and mashing, new (April)~50.0~~
+X1179~X1172~Potato, root vegetable, stem tuber, flesh, boiled, drained, mashed, no salt added, floury potatoes for baking, frying and mashing, old (October)~50.0~~
+X1181~X1173~Potato, root vegetable, stem tuber, flesh, fried in canola oil, no salt added, floury potatoes for baking, frying and mashing, old (October)~50.0~~
+X1181~X1141~Potato, root vegetable, stem tuber, flesh, fried in canola oil, no salt added, floury potatoes for baking, frying and mashing, new (April)~50.0~~
+X1183~X1174~Potato, root vegetable, stem tuber, flesh & skin, raw, waxy potatoes for boiling, old (October)~50.0~~
+X1183~X1143~Potato, root vegetable, stem tuber, flesh & skin, raw, waxy, new (April)~50.0~~
+X1184~X1175~Potato, root vegetable, stem tuber, flesh & skin, boiled, drained, no salt added, waxy potato, no salt added, (October)~50.0~~
+X1184~X1145~Potato, root vegetable, stem tuber, flesh & skin, boiled, drained, waxy potato, no salt added, new (April)~50.0~~
+X1189~X1187~Mushroom, fungus, button, white or brown, fresh, raw, composite~100~VEGETABLE,OTHER~BLD,WATER COVER,DRAINED
+X1190~X1187~Mushroom, fungus, button, white or brown, fresh, raw, composite~100~VEGETABLE,OTHER~BAKED
+X1192~X1191~Banana, fruit vegetable, green, cooking, peeled, fresh, raw, composite~100~VEGETABLE,OTHER~BLD,WATER COVER,DRAINED
+X1193~J1033~Oil, canola, composite~3.7~~
+X1193~X1191~Banana, fruit vegetable, green, cooking, peeled, fresh, raw, composite~96.3~VEGETABLE,OTHER~FRIED
+X1198~X1197~Mixed vegetables, beans, carrots, corn & peas, frozen, raw, composite~100~VEGETABLE,OTHER~BLD,WATER COVER,DRAINED
+X1200~X1199~Mixed vegetables, carrots, corn & peas, frozen, raw, composite~100~VEGETABLE,OTHER~BLD,WATER COVER,DRAINED
+X1202~X1201~Mixed vegetables, corn & peas, frozen, raw, composite~100~VEGETABLE,OTHER~BLD,WATER COVER,DRAINED
+X1217~X1216~Cauliflower, inflorescent vegetable, floret, frozen, unprepared, composite~100~VEGETABLE,OTHER~CKD FROM FRZN(BLD,DRAIND)
+X1218~X1216~Cauliflower, inflorescent vegetable, floret, frozen, unprepared, composite~100~VEGETABLE,OTHER~STEAMED
+X1220~X1219~Broccoli, inflorescent vegetable, floret, frozen, unprepared, composite~100~VEGETABLE,OTHER~CKD FROM FRZN(BLD,DRAIND)
+X1221~X1219~Broccoli, inflorescent vegetable, floret, frozen, unprepared, composite~100~VEGETABLE,OTHER~STEAMED
+X1223~X1222~Bean, green, fruit vegetable, seeds with pod, frozen, unprepared, composite~100~VEGETABLE,OTHER~CKD FROM FRZN(BLD,DRAIND)
+X1225~X1224~Bean, butter bean, fruit vegetable, seeds with pod, frozen, unprepared, composite~100~VEGETABLE,OTHER~CKD FROM FRZN(BLD,DRAIND)
+X1226~X1224~Bean, butter bean, fruit vegetable, seeds with pod, frozen, unprepared, composite~100~VEGETABLE,OTHER~STEAMED
+X1228~X1227~Carrot, root vegetable, tap root, cubed or sliced, frozen, unprepared, composite~100~VEGETABLE,ROOTS~CKD FROM FRZN,DRAINED
+X1234~X1231~Pea, sugar snap, fruit vegetable, seeds with pod, frozen, unprepared, composite~100~VEGETABLE,OTHER~BLD,WATER COVER,DRAINED
+X1235~X1231~Pea, sugar snap, fruit vegetable, seeds with pod, frozen, unprepared, composite~100~VEGETABLE,OTHER~STEAMED
+X1239~X1238~Spinach, leafy vegetable, chopped, frozen, unprepared, composite~100~VEGETABLE,GREENS~BOILED,WATER USED
+X1241~X1240~Kale, leafy vegetable, chopped, frozen, unprepared, composite~100~VEGETABLE,OTHER~STEAMED
+X1243~X1221~Broccoli, inflorescent vegetable, floret, frozen, steamed or microwaved, no salt added~50.0~~
+X1243~X1218~Cauliflower, inflorescent vegetable, floret, frozen, steamed or microwaved, no salt added~50.0~~
+X1246~X1220~Broccoli, inflorescent vegetable, floret, frozen, boiled, drained, no salt added~32.0~~
+X1246~X1228~Carrot, root vegetable, tap root, cubed or sliced, frozen, boiled, drained, no salt added~36.0~~
+X1246~X1217~Cauliflower, inflorescent vegetable, floret, frozen, boiled, drained, no salt added~32.0~~
+X1247~X1222~Bean, green, fruit vegetable, seeds with pod, frozen, unprepared, composite~100~VEGETABLE,OTHER~STEAMED
+X1250~X1248~Bean, soy, (edamame), seed vegetable, green, immature, shelled, frozen, unprepared, composite~100~LEGUMES, CKD 15/20MIN~CKD 15/20MIN,BOILED,DRAINED
+X1251~X1248~Bean, soy, (edamame), seed vegetable, green, immature, shelled, frozen, unprepared, composite~100~LEGUMES, CKD 15/20MIN~CKD 15/20MIN,BLD,WATER USED
+X1253~X1252~Pea, yellow, split, seed coat removed, dry, composite~100~LEGUMES, CKD 15/20MIN~CKD 15/20MIN,BOILED,DRAINED
+X1255~X1254~Pea, green, split, seed coat removed, raw, dry, composite~100~LEGUMES, CKD 15/20MIN~CKD 15/20MIN,BOILED,DRAINED
+X1258~X1257~Cabbage, red, leafy vegetable, raw, fresh~100~VEGETABLE,GREENS~BOILD,LITTLE WATER DRAIN
+X1259~J10001~Oil, olive, composite~5.6~~
+X1259~X1257~Cabbage, red, leafy vegetable, raw, fresh~94.4~VEGETABLE,GREENS~STIR FRY
+X1261~X1260~Cabbage, savoy, leafy vegetable, inner leaves, raw, fresh~100~VEGETABLE,GREENS~BOILD,LITTLE WATER DRAIN
+X1262~J10001~Oil, olive, composite~6.2~~
+X1262~X1260~Cabbage, savoy, leafy vegetable, inner leaves, raw, fresh~93.8~VEGETABLE,GREENS~STIR FRY
+X1270~J10001~Oil, olive, composite~5.6~~
+X1270~X1269~Onion, red, bulb vegetable, flesh, raw, fresh, combined cultivars~94.4~VEGETABLE,OTHER~FRIED
+X1272~X1271~Squash, buttercup, fruit vegetable, flesh, raw, fresh~100~VEGETABLE,OTHER~STEAMED
+X1281~J10001~Oil, olive, composite~11.5~~
+X1281~X1280~Watercress, leafy vegetable, raw, fresh~88.5~VEGETABLE,GREENS~STIR FRY
+X1283~X1282~Cassava, root vegetable, root tuber, peeled, frozen, raw~100~VEGETABLE,ROOTS~BLD,DRAIND,WTR COVER

@@ -1,0 +1,386 @@
+© Copyright The New Zealand Institute for Plant & Food Research Limited and the Ministry of Health (New Zealand), 2024.
+Recipe Food ID~Recipe Food Name~Weight Yield Factor
+A1120~Crumpet, white, toasted, commercial~0.93
+A1122~Bagels, white, plain, toasted, commercial~0.94
+A1139~Bread, ciabatta, Italian style, loaf, white wheat flour, plain, toasted, commercial, composite~0.86
+A1141~Bread, French, stick or loaf, white wheat flour, plain, toasted, commercial, composite~0.78
+A1162~Bread, from white wheat flour, sliced, prepacked, toasted, commercial, composite~0.83
+A1164~Bread, from wholemeal or wholegrain wheat flour, sliced, prepacked, toasted, commercial, composite~0.82
+A1166~Bread, from wheatmeal flour, sliced, prepacked, toasted, commercial, composite~0.78
+A1168~Bread, from wheat flour with multigrain, heavy (dense), sliced, prepacked, toasted, commercial, composite~0.88
+A1170~Bread, from white wheat flour with multigrain, light, sliced, prepacked, toasted, commercial, composite~0.82
+A1172~Bread, from wheat flour, soy & linseed added, sliced, prepacked, toasted, commercial, composite~0.88
+A1174~Bread, from wheat flour with multigrain & seeds, heavy (dense), sliced, prepacked, toasted, commercial, composite~0.87
+A1176~Bread, from white wheat flour, seeds added, light, sliced, prepacked, toasted, commercial, composite~0.88
+A1178~Bread, from rye flour, sliced, prepacked, toasted, commercial, composite~0.92
+A1180~Wrap, flat bread, from white wheat flour, plain, toasted, commercial, composite~0.97
+A1182~Wrap, flat bread, from wholemeal wheat flour, toasted, commercial, composite~0.96
+A1184~Wrap, flat bread, from wheat flour with multigrain, plain, toasted, commercial, composite~0.98
+A1186~Bread, from gluten free flours & sprouted seeds (<10%), sliced, toasted, commercial, composite ~0.90
+A1188~Bread, sourdough, from white wheat flour, sliced, toasted, commercial, composite~0.88
+A1190~Croissant, from white wheat flour, plain, toasted, commercial, composite~0.96
+A1192~Bread, from sprouted wheat flour, organic, sliced, toasted, commercial, composite~0.96
+A1196~Bread, from white wheat flour and banana, sliced, toasted, commercial, composite~0.92
+A1198~Muffin split, English style, from white wheat flour, plain, toasted, commercial, composite~0.90
+A1200~Muffin split, English style, from white wheat flour, with cheese, toasted, commercial, composite~0.91
+A1202~Muffin split, English style, white wheat flour, with spicy dried fruits, toasted, commercial~0.91
+A1204~Muffin split, English style, from wholegrain flour, plain, toasted, commercial, composite~0.90
+A1209~Bread, from white wheat flour, garlic filling with vegetable oil, baked, commercial, composite~0.96
+A1211~Bread, from white wheat flour, garlic filling with butter, baked, commercial, composite~0.96
+C10001~Coffee beverage, instant, caffeinated, dry powder with water & milk standard (3.3% fat), prepared~1
+C10002~Coffee beverage, instant, decaffeinated, dry powder with water & milk standard (3.3% fat), prepared~1
+C10003~Coffee beverage, instant, caffeinated, dry powder with water & milk trim (<1% fat), prepared~1
+C10004~Coffee beverage, instant, decaffeinated, dry powder with water & milk trim (<1% fat), prepared ~1
+C10005~Coffee beverage, flat white, double shot & milk standard (3.3% fat), regular cafe cup (190 mL), ready to drink, cafe variety~1
+C10006~Coffee beverage, flat white, double shot & milk standard (3.3% fat), regular takeaway cup (285 mL), ready to drink, cafe variety~1
+C10007~Coffee beverage, flat white, single shot & milk standard (3.3% fat), regular cafe cup (190 mL), ready to drink, cafe variety~1
+C10008~Coffee beverage, flat white, single shot & milk standard (3.3% fat), regular takeaway cup (285 mL), ready to drink, cafe variety ~1
+C10009~Coffee beverage, flat white, double shot & milk trim (<1% fat), regular cafe cup (190 mL), ready to drink, cafe variety~1
+C10010~Coffee beverage, flat white, double shot & milk trim (<1% fat), regular takeaway cup (285 mL), ready to drink, cafe variety~1
+C10011~Coffee beverage, flat white, single shot & milk trim (<1% fat), regular cafe cup (190 mL), ready to drink, cafe variety~1
+C10012~Coffee beverage, flat white, single shot & milk trim (<1% fat), regular takeaway cup (285 mL), ready to drink, cafe variety~1
+C10013~Coffee beverage, latte, double shot & milk standard (3.3% fat), large cafe cup (300 mL), ready to drink, cafe variety~1
+C10014~Coffee beverage, latte, double shot & milk standard (3.3% fat), medium takeaway cup (400 mL), ready to drink, cafe variety ~1
+C10015~Coffee beverage, latte, single shot & milk standard (3.3% fat), large cafe cup (300 mL), ready to drink, cafe variety ~1
+C10016~Coffee beverage, latte, single shot & milk standard (3.3% fat), medium takeaway cup (400mL), ready to drink, cafe variety~1
+C10017~Coffee beverage, latte, double shot & milk trim (<1% fat), large cafe cup (300 mL), ready to drink, cafe variety~1
+C10018~Coffee beverage, latte, double shot & milk trim (<1% fat), medium takeaway cup (400 mL), ready to drink, cafe variety~1
+C10019~Coffee beverage, latte, single shot & milk trim (<1% fat), large cafe cup (300 mL), ready to drink, cafe variety~1
+C10020~Coffee beverage, latte, single shot & milk trim (<1% fat), medium takeaway cup (400 mL), ready to drink, cafe variety~1
+C10021~Coffee beverage, cappuccino, double shot & milk standard (3.3% fat), regular cafe cup (190 mL), ready to drink, cafe variety~1
+C10022~Coffee beverage, cappuccino, double shot & milk standard (3.3% fat), regular takeaway cup (285 mL), ready to drink, cafe variety~1
+C10023~Coffee beverage, cappuccino, single shot & milk standard (3.3% fat), regular cafe cup (190 mL), ready to drink, cafe variety~1
+C10024~Coffee beverage, cappuccino, single shot & milk standard (3.3% fat), regular takeaway cup (285 mL), ready to drink, cafe variety~1
+C10025~Coffee beverage, cappuccino, double shot & milk trim (<1% fat), regular cafe cup (190 mL), ready to drink, cafe variety~1
+C10026~Coffee beverage, cappuccino, double shot & milk trim (<1% fat), regular takeaway cup (285 mL), ready to drink, cafe variety~1
+C10027~Coffee beverage, cappuccino, single shot & milk trim (<1% fat), regular cafe cup (190 mL), ready to drink, cafe variety~1
+C10028~Coffee beverage, cappuccino, single shot & milk trim (<1% fat), regular takeaway cup (285 mL), ready to drink, cafe variety~1
+C10029~Coffee beverage, mochaccino, double shot & milk standard (3.3% fat), large cafe cup (300 mL), ready to drink, cafe variety ~1
+C10030~Coffee beverage, mochaccino, double shot & milk standard (3.3% fat), medium takeaway cup (400 mL), ready to drink, cafe variety~1
+C10031~Coffee beverage, mochaccino, single shot & milk standard (3.3% fat), large cafe cup (300 mL), ready to drink, cafe variety~1
+C10032~Coffee beverage, mochaccino, single shot & milk standard (3.3% fat), medium takeaway cup (400 mL), ready to drink, cafe variety~1
+C10033~Coffee beverage, mochaccino, double shot & milk trim (<1% fat), large cafe cup (300 mL), ready to drink, cafe variety~1
+C10034~Coffee beverage, mochaccino, double shot & milk trim (<1% fat), medium takeaway cup (400 mL), ready to drink, cafe variety~1
+C10035~Coffee beverage, mochaccino, single shot & milk trim (<1% fat), large cafe cup (300 mL), ready to drink, cafe variety~1
+C10036~Coffee beverage, mochaccino, single shot & milk trim (<1% fat), medium takeaway cup (400 mL), ready to drink, cafe variety~1
+C10037~Drink, cocoa, instant, dry powder with water, boiled, sweetened, KoKo Samoa hot drink, prepared~1.00
+D10001~Porridge, oats, rolled, prepared with standard milk (3.3% fat), unsweetened, no salt added~0.94
+D10002~Porridge, oats, rolled, prepared with trim milk (<1% fat), unsweetened, no salt added~0.92
+D10003~Porridge, oats, quick sachets, plain, sweetened with honey and/or sugar, prepared with standard milk (3.3% fat)~0.95
+D10004~Porridge, oats, quick sachets, plain, sweetened with honey and/or sugar, prepared with trim milk (0.5% fat)~0.96
+D10005~Porridge, oats, quick sachets, assorted fruits flavoured, sugar-sweetened, prepared with standard milk (3.3% fat)~0.95
+D10006~Porridge, oats, quick sachets, assorted fruits flavoured, sugar-sweetened, prepared with trim milk (1<% fat)~0.96
+D1060~Porridge, oats, rolled, prepared with water, unsweetened, no salt added~0.93
+D1066~Porridge, oats, quick sachets, plain, sweetened with honey and/or sugar, prepared with water~0.96
+D1069~Porridge, oats, quick sachets, assorted fruits flavoured, sugar-sweetened, prepared with water~0.94
+E10001~Pasta & sauce, dry mix, assorted flavours, prepared with water, milk & butter, boiled, composite~0.84
+E10004~Pasta, fresh, from wheat flour and egg, plain, unfilled, boiled, drained, unsalted~1.71
+E10016~Noodle, wheat flour, instant, plain, boiled in unsalted water, without added flavour sachet, drained~2.30
+E10017~Noodle, wheat flour, instant, plain, boiled in unsalted water, without added flavour sachet, undrained~0.78
+E1049~Noodle, wheat flour, flavoured, boiled, undrained, Shin Ramyun Noodle Soup Hot & Spicy, Nong Shim~0.93
+E1050~Noodle, wheat flour & assorted flavours, boiled, undrained, 2 Minutes, Maggi®~0.97
+E1053~Noodle, rice flour, dry, boiled, drained, composite~0.534
+E1056~Noodle, wheat flour, shelf-fresh, boiled, drained, Japanese udon noodles~1.40
+E1057~Noodle, wheat flour, shelf-fresh, stir fried, Japanese Udon Noodles, composite~0.96
+E1064~Pasta, white wheat flour, assorted shapes, regular, boiled, drained, no salt added~2.49
+E1066~Pasta, wholemeal wheat flour, assorted shapes, boiled, drained, no salt added~2.32
+E1068~Couscous, white wheat, cooked in water, not drained, no salt or fat added~2.52
+E1071~Couscous, wholemeal wheat, cooked in water, not drained, no salt or fat added~2.28
+E1078~Rice, white, assorted grains, polished, cooked in unsalted water~2.62
+E1080~Rice, brown, regular, assorted grains, unpolished, cooked in unsalted water~2.37
+E118~Pasta, wheat flour with egg, boiled, drained~2.29
+E119~Pasta, wheat flour with vegetable flavours, boiled, drained~2.38
+F10055~Cheese, paneer, from cow’s milk, fresh acid-set, plain, non-aged, soft-cheese, stir-fried with oil~0.76
+G10001~Egg, chicken, white & yolk (whole), fried without oil, unsalted~0.875
+G10002~Egg chicken, yolk, scrambled without oil, unsalted~0.89
+G10003~Egg, chicken, white, scrambled without oil, unsalted ~0.864
+G1019~Egg, chicken, white, boiled, composite~1.00
+G1020~Egg, chicken, yolk, boiled, composite~1.00
+G1021~Egg, chicken, white & yolk (whole), boiled, composite~1.00
+G1022~Egg, chicken, white & yolk (whole), poached, composite~1.00
+G1023~Egg, chicken, white & yolk (whole), scrambled, no fat added~0.96
+G1024~Egg, chicken, white & yolk, pan-fried with olive oil, composite~0.84
+H10001~Patty, shredded potato, hash brown, pre-cooked, frozen, pan-fried with oil, composite~0.90
+H10021~Hash brown or rosti, from shredded kumara, flavoured, salt added, baked, without added oil~0.93
+H1061~Patty, shredded potato, hash brown, pre-cooked, frozen, baked without oil, composite~0.77
+K10001~Salmon, king, farmed, fillet, skin & bones removed, fresh, pan-fried with oil, composite, New Zealand~0.89
+K1014~Hoki, fillet, flesh, frozen, pan-fried with oil, no salt added~0.82
+K1016~Basa, fillet, flesh, frozen, pan-fried with oil, no salt added, composite~0.73
+K1018~Salmon, king, farmed, fillet, skin & bones removed, fresh, baked without fat, no salt added, composite, New Zealand~0.89
+K1019~Salmon, king, farmed, fillet, skin & bones removed, fresh, steamed, composite, New Zealand~0.94
+K1035~Snapper, fillet, flesh, fresh, pan-fried with canola oil~0.75
+K1036~Snapper, fillet, flesh, fresh, baked without oil~0.80
+K1037~Snapper, fillet, flesh, fresh, steamed or microwaved~0.85
+K1038~Snapper, fillet, flesh, fresh, poached or simmered~0.86
+K1039~Snapper, fillet, flesh, fresh, crumbed, deep-fried in canola oil~0.90
+K1040~Snapper, fillet, flesh, fresh, battered, deep-fried in canola oil~0.84
+K1041~Snapper, fillet, flesh, fresh, crumbed, pan-fried with canola oil~0.95
+K1043~Tarakihi, fillet, flesh, fresh, pan-fried with canola oil~0.63
+K1044~Tarakihi, fillet, flesh, fresh, poached or simmered~0.82
+K1046~Gurnard, fillet, flesh, fresh, pan-fried with canola oil~0.73
+K1047~Gurnard, fillet, flesh, fresh, poached or simmered~0.81
+K1049~Shark or lemonfish, fillet, flesh, fresh battered, deep-fried in canola oil~0.92
+K1051~Hoki, fillet, flesh, fresh, pan-fried with canola oil~0.77
+K1054~Kahawai, fillet, flesh, fresh, pan-fried with canola oil~0.81
+K1055~Kahawai, fillet, flesh, fresh, baked with canola oil~0.83
+K1056~Kahawai, fillet, flesh, fresh, battered, deep-fried in canola oil~0.88
+K1057~Kahawai, fillet, flesh, fresh, poached or simmered~0.87
+K1058~Kahawai, fillet, flesh, fresh, steamed or microwaved~0.88
+K1059~Kahawai,  fillet, flesh, fresh, crumbed, deep-fried in canola oil~0.99
+K1060~Kahawai, fillet, flesh, fresh, crumbed, pan-fried with canola oil~0.91
+K1063~Blue cod, fillet, flesh, fresh, pan-fried with canola oil~0.74
+K1065~Groper, fillet, flesh, fresh, pan-fried with canola oil~0.67
+K1067~Kingfish, fillet, flesh, fresh, pan-fried with canola oil~0.83
+K179~Eel, smoked~0.99
+L10150~Feijoa, pale white-flesh & seeds, stewed, unsweetened~0.74
+L10152~Tamarillo, red flesh & seed, stewed, unsweetened~0.91
+L10153~Apple, cooking ('Granny Smith'), peeled, flesh, stewed, unsweetened~0.72
+L10154~Apple, cooking ('Granny Smith'), unpeeled, skin & flesh, baked without oil, unsweetened~0.71
+L10155~Feijoa, pale white-flesh & seeds, stewed, sweetened~0.79
+L10156~Tamarillo, red-flesh & seeds, stewed, sweetened~0.93
+L10157~Apple, cooking (‘Granny Smith’), peeled, flesh, stewed, sweetened~0.74
+L10158~Apple, cooking (‘Granny Smith’), unpeeled, skin & flesh, baked without oil, sweetened~0.74
+L10161~Raspberry, whole fruit, red colour, stewed, unsweetened~0.814
+L10162~Raspberry, whole fruit, red colour, stewed, sweetened~0.814
+L1209~Rhubarb, stalk, stewed without sugar, little water added~0.78
+M10040~Chicken, breast, lean, fresh, baked or roasted, no fat or salt added, composite~0.80
+M10041~Chicken, breast, lean, fresh, stewed or boiled, no salt added, composite~0.67
+M10042~Chicken, wing, flesh, lean, baked or roasted, no fat or salt added, composite~0.74
+M10043~Chicken, wing, flesh, lean, fresh, stewed or boiled, no salt added, composite~0.83
+M10044~Chicken, light meat, lean, baked or roasted, no fat or salt added, composite~1
+M10046~Chicken, light meat, lean, separable fat & skin, baked or roasted, no salt or fat added~1
+M10047~Chicken, light meat, lean, fresh stewed or boiled, no salt added~1
+M10048~Chicken, drumstick, flesh, lean, fresh, baked or roasted, no salt or fat added, composite~0.70
+M10049~Chicken, drumstick, flesh, lean, fresh, stewed or boiled, no salt added, composite~0.66
+M10053~Chicken, thigh, flesh, lean, fresh, baked or roasted, no salt or fat added, composite~0.88
+M10054~Chicken, thigh, flesh, lean, fresh, stewed or boiled, no salt and fat added, composite ~0.68
+M10061~Chicken, dark meat (leg), flesh, lean, fresh, baked or roasted, no salt & fat added, composite~1
+M10062~Chicken, dark meat (leg), flesh, lean, separable fat & skin, fresh, baked or roasted, no fat or salt added, composite~1
+M10063~Chicken, dark meat (leg), flesh, lean, stewed or boiled, no salt added, composite~1
+M10069~Chicken, whole, composite cuts, flesh, lean, fresh, baked or roasted, no fat or salt added~1
+M10070~Chicken, whole, composite cuts, flesh, lean, separable fat & skin, fresh, baked or roasted, no fat or salt added ~1
+M10071~Chicken, whole, composite cuts, flesh, lean, fresh, stewed or boiled, no salt added~1
+M10072~Chicken, liver, pan-fried, no added salt or fat~0.77
+M1021~Venison, hind leg muscles, cooked, Medallion, Silver Fern®~0.85
+M1022~Venison, hind leg, muscles, cooked, Stir Fry, Silver Fern®~0.85
+M1023~Venison, forequarter muscles, cooked, Diced, Silver Fern®~0.85
+M1024~Venison, mince, trim & whole muscles, cooked, Mince, Silver Fern®~0.85
+M1153~Chicken, mince, pan-fried, with no added fat, premium, Tegel®~0.63
+M1220~Beef, forequarter & hindquarter assorted cuts, separable lean & fat, raw, composite~1.00
+M1221~Beef, forequarter & hindquarter assorted cuts, separable lean & fat, cooked, composite~1.00
+M1222~Lamb, forequarter & hindquarter assorted cuts, separable lean & fat, raw, composite~1.00
+M1223~Lamb, forequarter & hindquarter assorted cuts, separable lean & fat, cooked, composite~1.00
+M1226~Lamb, forequarter assorted cuts, separable lean & fat, raw, composite~1.00
+M1227~Lamb, forequarter assorted cuts, separable lean & fat, cooked, composite~1.00
+M1230~Lamb, hindquarter assorted cuts, separable lean & fat, raw, composite~1.00
+M1231~Lamb, hindquarter assorted cuts, separable lean & fat, cooked, composite~1.00
+M285~Pork, leg steak, separable lean, grilled~0.89
+M286~Pork, leg steak, lean & fat, grilled~1.00
+N1021~Sausage, beef, pan-fried, with no added fat, composite~0.81
+N1022~Sausage, beef, grilled, with no added fat, composite~0.86
+N1023~Sausage, beef, barbecued, with no added fat, composite~0.84
+N1024~Sausage, beef, boiled, drained, composite~0.94
+N1025~Sausage, pork, pan-fried, with no added fat, composite~0.90
+N1026~Sausage, pork, grilled, with no added fat, composite~0.92
+N1027~Sausage, pork, barbecued, with no added fat, composite~0.87
+N1028~Sausage, pork, boiled, drained, composite~1.02
+N1029~Sausage, chicken, pan-fried, with no added fat, composite~0.94
+N1030~Sausage, chicken, grilled, with no added fat, composite~0.86
+N1031~Sausage, chicken, barbecued, with no added fat, composite~0.92
+N1032~Sausage, chicken, boiled, drained, composite~1.01
+N1033~Sausage, lamb, pan-fried, with no added fat, composite~0.89
+N1034~Sausage, lamb, grilled, with no added fat, composite~0.86
+N1035~Sausage, lamb, barbecued, with no added fat, composite~0.84
+N1036~Sausage, lamb, boiled, drained, composite~0.98
+N1041~Pork, bacon, rasher, whole loin including belly, rindless, pan-fried with no added fat, Middle, composite~0.50
+N1042~Pork, bacon, rasher, whole loin including belly, rindless, grilled, Middle, composite~0.55
+N1044~Pork, bacon, rasher, whole loin including belly, rindless & fat trimmed, pan-fried with no added fat, Middle, composite~0.51
+N1045~Pork, bacon, rasher, whole loin including  belly, rindless & fat trimmed, grilled, Middle, composite~0.50
+N1047~Pork, bacon, rasher, rindless, pan-fried with no fat added, Shoulder, composite~0.50
+N1049~Pork, bacon, rasher, tail end of loin or belly, rindless, pan-fried with no added fat, streaky, composite~0.40
+N1051~Pork, bacon, rasher, rindless, pan-fried with no added fat, assorted types, composite~1.00
+N1053~Patty, burger, beef, not crumbed, frozen, pan-fried without oil, commercial~0.85
+N1055~Patty, burger, chicken, crumbed, frozen, pan-fried without oil, commercial~0.94
+N52~Chicken, nugget, battered, baked, Ingham's®~0.85
+N55~Chicken, nugget, cheesy, baked, Tegel®~0.86
+N58~Chicken, nugget, crumbed, baked, composite~0.86
+N61~Sausage, assorted meats & flavours, precooked, grilled, composite~0.85
+N64~Sausage, assorted meats & flavours, grilled, composite~0.85
+N76~Chicken, nugget, battered, baked, composite~1.00
+P10009~Meat alternative, mycoprotein/fungus base, pan-fried or microwaved, no salt or oil added~0.73
+P10017~Gelatine, dry powder, not further defined~1
+Q10006~Nut, almond, kernel, dried, with or without skin, dry roasted, unsalted ~0.98
+Q10007~Nut, hazelnut, kernel, whole, unblanched, dry roasted, unsalted~0.98
+Q1038~Seed and nut mix, linseed, sunflower seed, almond (LSA, 90%)  and chia seed (10%), dry, ground~1.00
+Q1047~Nut, pine, dry roasted, unsalted, composite~0.98
+Q1048~Nut, pecan, dry roasted, unsalted, composite~0.96
+Q1049~Nut, macadamia, dry roasted, unsalted, composite~0.99
+Q1050~Nut, macadamia, dry roasted, salted, composite~1.00
+Q1051~Nut, pistachio, dry roasted, salted~0.97
+Q1052~Nut, pistachio, dry roasted without shell, no salt added~0.97
+Q1057~Nut, cashew, dry roasted, salted, commercial~0.96
+Q1058~Nut, cashew, dry roasted, unsalted~0.96
+Q1060~Nut, peanut, with skin, dry roasted, salted~0.96
+Q1061~Nut, peanut, with skin, roasted, unsalted~0.95
+Q1063~Nut, peanut, blanched, roasted, salted, commercial~0.95
+Q1064~Nut, peanut, blanched, dry roasted, unsalted~0.95
+R10001~Pastry, short, butter, raw~1
+R10002~Pastry, flaky, butter, raw~1
+R10003~Pastry, cheese, raw~1
+R10004~Pastry, short, wholemeal, butter, raw ~1
+R10005~Pastry, short, shortening, raw~1
+R10006~Pastry, short, butter, baked~0.97
+R10007~Pastry, flaky, puff, butter, raw ~1
+R10008~Tart, jam, baked~0.92
+R10009~Lemon curd, dessert spread, cooked~0.98
+R10010~Cake, Welsh cheesecake, baked~0.98
+R10011~Pudding, rice, cocoa & coconut, cooked~0.97
+R10012~Tart, treacle, baked~1
+R10013~Pastry, cheese, baked~0.94
+R10014~Custard square, baked~0.94
+R10015~Cake, chocolate, baked, iced with butter icing ~0.98
+R10017~Pie, lemon meringue, baked~1
+R10018~Pikelet, plain, pan-fried without oil, home-made~0.84
+R10019~Pancake, plain, pan-fried without oil, home-made~0.89
+R10020~Pudding, custard, prepared with standard milk (3.3% fat), simmered~0.91
+R10021~Cake, banana, baked, home-made, un-iced~0.93
+R10022~Cake, banana, baked, iced with butter icing~1
+R10023~Meringue, baked~0.67
+R10024~Ratatouille, with assorted vegetables, cooked, no salt added, home-made~0.76
+R10025~Egg, chicken, omelette, with cheese and butter, cooked ~0.94
+R10026~Omelette, egg, chicken, cooked with butter~0.95
+R10027~Pudding, milk, egg & breadcrumbs, baked ~0.92
+R10028~Pudding, sponge, steamed~0.96
+R10029~Pudding, sponge, fruit, steamed ~1
+R10030~Scone, wholemeal, baked ~0.86
+R10031~Cake, Eccles, baked~0.81
+R10032~Biscuit, shortbread, baked, home-made~0.90
+R10033~Cake, gingerbread, baked~0.88
+R10034~Cake, sponge, fat added, baked~0.86
+R10035~Cake, sponge, no fat added, baked ~0.86
+R10036~Jelly, made with whole milk~1.00
+R10037~Kedgeree, rice with boiled egg & smoked fish~0.9
+R10038~Pavlova, plain not filled, baked~0.8
+R10040~French dressing, home-made~1
+R10560~Dip, guacamole with sour cream, home-made~1
+R10635~Quiche, spinach, baked~0.89
+R10636~Meal, chilli con carne and corn chips, ready to eat~1
+R5740~Sauce, Bolognese, prepared with beef mince, cooked, no salt added, home-made~0.66
+R5741~Meal, spaghetti bolognese, meat base, with spaghetti, no salt added, ready to eat~1.00
+R5745~Pudding, custard, prepared with whole milk (4% fat), simmered~0.90
+R5748~Chilli con carne, with beef mince and red kidney beans, Mexican-style, cooked, no salt added, home-made~0.77
+S10005~Dip, onion dry mix prepared with reduced cream ~1
+T1026~Mussel, green, meat, boiled~0.67
+V10002~Soup, onion dry mix prepared with water  ~89.7
+X10003~Capsicum, red, fruit vegetable, sliced, frozen, pan-fried with olive oil, no salt added~0.72
+X10004~Onion, bulb vegetable, sliced or diced, frozen, pan-fried with olive oil, no salt added~0.67
+X10005~Kumara, purple, root vegetable, tuber, peeled, fresh, roasted, 'Purple Dawn' ~0.59
+X10006~Eggplant, fruit vegetable, flesh, skin & seed, baked with oil, combined varieties~0.61
+X10007~Mushroom, fungus, whole, stem & cap, baked with oil, Portobello~0.72
+X10008~Potato, flesh, boiled, drained, mashed with standard milk (3.3% fat) & butter, no salt added, floury potatoes for baking, frying and mashing~1
+X10009~Potato, flesh, boiled, drained, mashed with standard milk (3.3% fat) & margarine, no salt added, floury potatoes for baking, frying and mashing~1
+X10010~Mushroom, fungus, button, white or brown, fresh, pan-fried with olive oil~0.78
+X10011~Snow pea, fruit vegetable, seeds with pod, fresh, stir-fried with olive oil~0.92
+X10012~Taro, root vegetable, corm, flesh, baked, combined cultivars~1.00
+X10035~Fennel, Florence, bulb vegetable, sautéed with olive oil, unsalted~0.61
+X10036~Fennel, Florence, bulb vegetable, sautéed without oil, unsalted~0.62
+X10037~Celeriac, root vegetable, taproot, peeled, flesh, boiled, drained, unsalted~0.93
+X10038~Okra, fruit vegetable, whole pod, fresh or frozen, boiled, drained, unsalted~1.15
+X10039~Squash, butternut, fruit vegetable, flesh, peeled, boiled, drained, unsalted~0.97
+X10040~Squash, butternut, fruit vegetable, flesh, peeled, baked without oil, unsalted~0.58
+X10053~Lentil, red or orange, mature, split, or whole without husk, boiled, undrained, unsalted~0.89
+X10054~Lentil, brown or green, mature, whole with husk, boiled, undrained, unsalted~0.718
+X10055~Lentil, French, matured, dry, whole with husk, boiled, drained, unsalted~2.58
+X10056~Tempeh, fermented soybeans, stir-fried with olive oil, no salt added~0.881
+X10061~Jackfruit, fruit vegetable, unripe (green or young), canned in brine, drained, stir-fried ~0.7185
+X1026~Yam, root vegetable, root tuber, flesh, boiled, drained, no salt added, Pacific~1.00
+X1063~Taro, root vegetable, corm, flesh, boiled, combined cultivars~1.00
+X1064~Kumara, root vegetable, root tuber, flesh, boiled, drained, no salt added, red, 'Owairaka Red'~1.00
+X1076~Yam, root vegetable, unpeeled, baked without fat, red, New Zealand~0.58
+X1077~Yam, root vegetable, unpeeled, boiled, drained, no salt added, red, New Zealand~0.96
+X1086~Eggplant, fruit vegetable, flesh, skin & seed, boiled, drained, no salt added~1.16
+X1087~Eggplant, fruit vegetable, flesh, skin & seed, steamed, combined varieties~0.98
+X1088~Eggplant, fruit vegetable, flesh, skin & seed, fried with oil, combined varieties~0.72
+X1092~Celery, stem vegetable, stalk, stir fried, green, American Green~0.784
+X1094~Brussels sprout, leafy vegetable, inner leaves, boiled, drained, no salt added~1.12
+X1095~Brussels sprout, leafy vegetable, inner leaves, steamed, combined varieties~1.1
+X1099~Parsnip, root vegetable, taproot, flesh, boiled, drained, no salt added~1.0
+X1100~Parsnip, root vegetable, taproot, flesh, baked without fat~0.75
+X1101~Parsnip, root vegetable, taproot, flesh, steamed~0.96
+X1103~Cabbage, leafy vegetable, leaves, boiled, drained, no salt added, green drumhead~1.02
+X1104~Cabbage, leafy vegetable, leaves, steamed, green drumhead~1.02
+X1106~Asparagus, stem vegetable, stalk, fresh, boiled, drained, no salt added, combined cultivar~0.95
+X1107~Asparagus, stem vegetable, stalk, fresh, steamed, combined cultivar~0.94
+X1109~Bean, fruit vegetable, seeds with pod, fresh, boiled, drained, no salt added,  green runner or dwarf~1.03
+X1110~Bean, fruit vegetable, seeds with pod, fresh, steamed,  green runner or dwarf~0.96
+X1112~Silverbeet, leafy vegetable, leaves & stems, fresh, boiled, drained, no salt added~1.06
+X1113~Silverbeet, leafy vegetable, leaves & stems, fresh, steamed~1.00
+X1115~Carrot, root vegetable, taproot, flesh, fresh, boiled, drained, no salt added, combined varieties~0.92
+X1116~Carrot, root vegetable, taproot, flesh, fresh, steamed,  combined varieties~0.89
+X1117~Carrot, root vegetable, taproot, flesh, fresh, baked with oil, combined varieties~0.64
+X1118~Carrot, root vegetable, taproot, flesh, fresh, stir fried, combined varieties~0.78
+X1120~Pumpkin, fruit vegetable, fruit, flesh, fresh, boiled, drained, no salt added, Whangaparaoa crown~0.95
+X1121~Pumpkin,  fruit vegetable, fruit, flesh, fresh, steamed, Whangaparaoa crown~0.90
+X1122~Pumpkin, fruit vegetable, fruit, flesh, fresh, baked with oil, Whangaparaoa crown~0.58
+X1129~Cauliflower, inflorescent vegetable, boiled, drained, no salt added~1.04
+X1131~Onion, bulb vegetable, flesh, fresh, sautéed with oil, Brown, combined cultivars~0.92
+X1133~Spring onion, bulb vegetable, bulb and stalk, fresh, sautéed with oil~0.90
+X1135~Pea, seed vegetable, frozen, boiled, drained, no salt added, green~0.98
+X1137~Potato, root vegetable, stem tuber, flesh & skin,  baked without oil, no added salt, floury potatoes for baking, frying and mashing, new (April)~0.63
+X1139~Potato, root vegetable, stem tuber, flesh, boiled, drained, mashed, no salt added, floury potatoes for baking, frying and mashing, new (April)~0.96
+X1141~Potato, root vegetable, stem tuber, flesh, fried in canola oil, no salt added, floury potatoes for baking, frying and mashing, new (April)~0.63
+X1145~Potato, root vegetable, stem tuber, flesh & skin, boiled, drained, waxy potato, no salt added, new (April)~0.98
+X1152~Tofu, soy bean curd, regular, firm, stir-fried with oil, no salt added, composite~0.70
+X1153~Tofu, soy bean curd, regular, firm, simmered or pouched, no salt added, composite~0.96
+X1155~Sweet corn, seed vegetable, kernel, cob & husk removed, fresh, boiled, drained, no salt added, combined cultivars~0.99
+X1156~Sweet corn, fruit vegetable, kernel, cob & husk removed, fresh, microwaved, no salt added, combined cultivars~0.82
+X1160~Sweet corn, fruit vegetable, kernel, frozen, boiled, drained, no salt added~1.06
+X1162~Leek, bulb vegetable, bulb & stalk, fresh, stir-fried with oil, no salt added~0.92
+X1164~Kale, leafy vegetable, fresh, sautéed with oil, no salt added, combined varieties~0.60
+X1166~Beetroot, root vegetable, peeled, fresh, roasted, no salt added, composite~0.84
+X1168~Swede, root vegetable, peeled, fresh, boiled, drained, no salt added~0.93
+X1170~Potato, root vegetable, stem tuber, flesh & skin, baked without oil, no added salt, floury potatoes for baking, frying and mashing, old (October)~0.60
+X1172~Potato, root vegetable, stem tuber, flesh, boiled, drained, mashed, no salt added, floury potatoes for baking, frying and mashing, old (October)~0.99
+X1173~Potato, root vegetable, stem tuber, flesh, fried in canola oil, no salt added, floury potatoes for baking, frying and mashing, old (October)~0.77
+X1175~Potato, root vegetable, stem tuber, flesh & skin, boiled, drained, no salt added, waxy potato, no salt added, (October)~0.98
+X1176~Potato, root vegetable, stem tuber, flesh & skin, raw, floury potatoes for baking, frying and mashing~1.00
+X1177~Potato, root vegetable, stem tuber, flesh & skin, baked without oil, no added salt, floury potatoes for baking, frying and mashing~1.00
+X1178~Potato, root vegetable, stem tuber, flesh, raw, floury potatoes for baking, frying and mashing~1.00
+X1179~Potato, root vegetable, stem tuber, flesh, boiled, drained, mashed, no salt added, floury potatoes for baking, frying and mashing~1.00
+X1181~Potato, root vegetable, stem tuber, flesh, fried in canola oil, no salt added, floury potatoes for baking, frying and mashing~1.00
+X1183~Potato, root vegetable, stem tuber, flesh & skin, raw, waxy potatoes for boiling~1.00
+X1184~Potato, root vegetable, stem tuber, flesh & skin, boiled, drained, waxy potato, no salt added~1.00
+X1189~Mushroom, fungus, button, white or brown, fresh, boiled, drained, no salt added~0.78
+X1190~Mushroom, fungus, button, white or brown, fresh, baked, no added fat~0.64
+X1192~Banana, fruit vegetable, green, cooking, peeled, boiled, drained~1.1
+X1193~Banana, fruit vegetable, green, cooking, deep-fried in oil~0.57
+X1198~Mixed vegetables, beans, carrots, corn & peas, frozen, boiled, drained, no salt added, composite~0.99
+X1200~Mixed vegetables, carrots, corn & peas, frozen, boiled and drained, no salt added, composite~0.96
+X1202~Mixed vegetables, corn & peas, frozen, boiled and drained, no salt added, composite~1.00
+X1217~Cauliflower, inflorescent vegetable, floret, frozen, boiled, drained, no salt added~0.97
+X1218~Cauliflower, inflorescent vegetable, floret, frozen, steamed or microwaved, no salt added~0.95
+X1220~Broccoli, inflorescent vegetable, floret, frozen, boiled, drained, no salt added~0.84
+X1221~Broccoli, inflorescent vegetable, floret, frozen, steamed or microwaved, no salt added~0.76
+X1223~Bean, green, fruit vegetable, seeds with pod, frozen, boiled, drained, no salt added~1.01
+X1225~Bean, butter bean, fruit vegetable, seeds with pod, frozen, boiled, drained, no salt added~0.98
+X1226~Bean, butter bean, fruit vegetable, frozen, seeds with pod, steamed or microwaved, no salt added~0.88
+X1228~Carrot, root vegetable, tap root, cubed or sliced, frozen, boiled, drained, no salt added~1.06
+X1234~Pea, sugar snap, fruit vegetable, seeds with pod, frozen, boiled, drained, no salt added~0.97
+X1235~Pea, sugar snap, fruit vegetable, seeds with pod, frozen, steamed or microwaved, no salt added~0.88
+X1239~Spinach, leafy vegetable, chopped, frozen, boiled, undrained, no salt added~0.91
+X1241~Kale, leafy vegetable, chopped, frozen, steamed, no salt added~0.97
+X1243~Mixed vegetables, broccoli (50%) & cauliflower (50%), frozen, steam or microwaved, no salt added~1.00
+X1246~Mixed vegetables, broccoli, carrots & cauliflower, frozen, boiled, drained, no salt added~1.00
+X1247~Bean, green, fruit vegetable, seeds with pod, frozen, steamed or microwaved, no salt added~0.93
+X1250~Bean, soy, (edamame), seed vegetable, green, immature, shelled, frozen, boiled, drained, no salt added~1.02
+X1251~Bean, soy, (edamame), seed vegetable, green, immature, shelled, frozen, steamed or microwaved, no salt added~0.94
+X1253~Pea, yellow, split, seed coat removed, dry, boiled, drained, no salt added~2.09
+X1255~Pea, green, split, seed coat removed, dry, boiled, drained, no salt added~2.04
+X1258~Cabbage, red, leafy vegetable, steamed~1.03
+X1259~Cabbage, red, leafy vegetable, stir-fried with olive oil~0.73
+X1261~Cabbage, savoy, leafy vegetable, inner leaves, steamed~1.07
+X1262~Cabbage, savoy, leafy vegetable, inner leaves, stir-fried with olive oil~0.77
+X1270~Onion, red, bulb vegetable, flesh, fresh, sautéed with oil, combined cultivars~0.78
+X1272~Squash, buttercup, fruit vegetable, flesh, steamed, no salt added~1.02
+X1281~Watercress, leafy vegetable, fresh, sautéed with olive oil~0.81
+X1283~Cassava, root vegetable, root tuber, frozen, peeled, boiled, drained, no salt added~1.1
