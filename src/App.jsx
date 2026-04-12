@@ -12,7 +12,7 @@ function App() {
             body: JSON.stringify({ text: input })
         })
             .then(response => response.json())
-            .then(json => setOutput(json.data))
+            .then(json => setOutput(JSON.stringify(json.data)))
             .catch(error => console.error('Error fetching data:', error));
     }
 
@@ -26,7 +26,7 @@ function App() {
             <button onClick={handleExtract}>Extract</button>
 
             <h2 style={{marginTop: 20}}>Output:</h2>
-            <textarea rows={4} readOnly value={output}/>
+            <textarea rows={20} readOnly value={output}/>
         </>
     )
 }
