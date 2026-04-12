@@ -3,6 +3,8 @@ import {useState} from "react";
 
 function App() {
     const [input, setInput] = useState('')
+    const [output, setOutput] = useState('')
+
     const handleExtract = async () => {
         fetch('http://localhost:8000/extract', {
             method: 'POST',
@@ -10,7 +12,7 @@ function App() {
             body: JSON.stringify({ text: input })
         })
             .then(response => response.json())
-            .then(json => console.info(json))
+            .then(json => setOutput(json.data))
             .catch(error => console.error('Error fetching data:', error));
     }
 
@@ -22,6 +24,9 @@ function App() {
                       value={input}
                       onChange={e => setInput(e.target.value)} />
             <button onClick={handleExtract}>Extract</button>
+
+            <h2 style={{marginTop: 20}}>Output:</h2>
+            <textarea rows={4} readOnly value={output}/>
         </>
     )
 }

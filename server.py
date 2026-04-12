@@ -11,4 +11,4 @@ class ExtractRequest(BaseModel):
 
 @app.post("/extract")
 def extract(req: ExtractRequest):
-    return {"received": req.text}
+    return {"data": req.text}
