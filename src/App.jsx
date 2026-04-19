@@ -12,7 +12,7 @@ function App() {
             body: JSON.stringify({ text: input })
         })
             .then(response => response.json())
-            .then(json => setOutput(JSON.stringify(json.index)))
+            .then(json => setOutput(JSON.stringify(json.data)))
             .catch(error => console.error('Error fetching data:', error));
     }
 
