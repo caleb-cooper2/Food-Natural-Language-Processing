@@ -10,23 +10,32 @@ import re
 
 def build_food_matcher(nlp, food_index):
     matcher = PhraseMatcher(nlp.vocab, attr="LOWER")
+    term_candidates = {} # dict of str: list(strs)
 
     for food_id, entry in food_index.items():
-        terms = [entry["key_term"]] + entry["keywords"]
-        patterns = [nlp.make_doc(term) for term in terms]
-        matcher.add(food_id, patterns)
+        terms = list(dict.fromkeys([entry["key_term"]] + entry["keywords"]))
+        for term in terms:
+            if len(term) > 3:
+                term_candidates.setdefault(term, []).append(food_id)
 
-    return matcher
+    for term, food_ids in term_candidates.items():
+        # assume that the most generic food item is the one with the least amount of keywords
+        ranked = sorted(food_ids, key=lambda fid: len(food_index[fid]["keywords"]))
+        term_candidates[term] = ranked
+        matcher.add(ranked[0], [nlp.make_doc(term)])
+
+    return matcher, term_candidates
 
 @Language.factory("food_ner")
 def create_food_ner(nlp, name, food_index): # spaCy passes this automatically, have to leave name unused as a result
-    matcher = build_food_matcher(nlp, food_index)
-    return FoodNERComponent(nlp, food_index, matcher)
+    matcher, term_candidates = build_food_matcher(nlp, food_index)
+    return FoodNERComponent(nlp, food_index, matcher, term_candidates)
 
 class FoodNERComponent:
-    def __init__(self, nlp, food_index, matcher):
+    def __init__(self, nlp, food_index, matcher, term_candidates):
         self.food_index = food_index
         self.matcher = matcher
+        self.term_candidates = term_candidates
 
     def __call__(self, doc):
         matches = self.matcher(doc)
@@ -35,6 +44,8 @@ class FoodNERComponent:
             food_id = doc.vocab.strings[match_id]
             span = Span(doc, start, end, label="FOOD")
             span._.food_id = food_id
+            term = doc[start:end].text.lower()
+            span._.candidates = self.term_candidates.get(term, [food_id])
             spans.append(span)
 
         doc.ents = spacy.util.filter_spans(list(doc.ents) + spans)
@@ -91,6 +102,8 @@ matcher = build_food_matcher(nlp, food_index)
 nlp.add_pipe("food_ner", last=True, config={"food_index": food_index})
 if not Span.has_extension("food_id"):
     Span.set_extension("food_id", default=None)
+if not Span.has_extension("candidates"):
+    Span.set_extension("candidates", default=[])
 
 app = FastAPI(title="Food NLP API")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
