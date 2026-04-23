@@ -64,26 +64,30 @@ def extract_keywords(food_name_string):
     return keywords
 
 def build_index():
-    index = {} # simple index in form food_id: {name, servings, nutrients}
+    index = {}
     for _, row in food_df.iterrows():
         food_id = row["FoodID"]
         name = row["Food Name"]
         keywords = extract_keywords(name)
 
-        measure = csm_df[csm_df["FoodID"] == food_id][["Measure"]].to_dict("records") if "FoodID" in csm_df.columns else []
+        food_serving_measure = csm_df[csm_df["FoodID"] == food_id][["CSM", "Measure"]].to_dict("records") if "FoodID" in csm_df.columns else []
+
+        def clean(value):
+            converted_float = float(value)
+            return None if math.isnan(converted_float) else converted_float
 
         index[food_id] = {
             "name": name,
             "keywords": keywords,
-            "key_term": keywords[0],
-            "measure": measure, # in grams
+            "key_term": keywords[0] if keywords else name.split(",")[0].lower(),
+            "serving_measure": food_serving_measure,
             "nutrients": { # for now, just a summary of a few key nutrients
-                "energy_kj": str(row.get("Energy, total metabolisable (kJ)")),
-                "protein_g": str(row.get("Protein, total; calculated from total nitrogen")),
-                "fat_g": str(row.get("Fat, total")),
-                "carbs_g": str(row.get("Available carbohydrate, FSANZ")),
-                "fibre_g": str(row.get("Fibre, total dietary")),
-                "sodium_mg": str(row.get("Sodium")),
+                "energy_kj": clean(row.get("Energy, total metabolisable (kJ)")),
+                "protein_g": clean(row.get("Protein, total; calculated from total nitrogen")),
+                "fat_g": clean(row.get("Fat, total")),
+                "carbs_g": clean(row.get("Available carbohydrate, FSANZ")),
+                "fibre_g": clean(row.get("Fibre, total dietary")),
+                "sodium_mg": clean(row.get("Sodium")),
             }
         }
     return index
