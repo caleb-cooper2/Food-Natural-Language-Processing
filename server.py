@@ -1,3 +1,5 @@
+import json
+import httpx
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -32,6 +34,37 @@ CSM_UNITS = {
 
 ALL_UNITS = set(UNIT_GRAMS.keys()) | CSM_UNITS
 
+OLLAMA_BASE_URL = "http://localhost:11434"
+OLLAMA_MODEL = "llama3.2:3b"
+OLLAMA_TIMEOUT = 20.0 # how many secs before giving up and going to spacy if needed
+LLM_SYSTEM_PROMPT = """\
+You are a food diary parser. Extract every food item from the diary entry below.
+
+Return ONLY a valid JSON array. No markdown, no explanation, no extra keys.
+
+If you detect a brand name that represents the food item (e.g coca-cola), replace and return that item as the generic form (cola)
+
+Each element must have exactly these three keys:
+  "food"     — string: the food name, singular, lowercase
+               Keep compound names intact: "butter chicken", "garlic bread",
+               "spaghetti bolognaise". Do NOT decompose recipe names into ingredients.
+  "quantity" — number: the numeric amount (use 1 if not stated)
+  "unit"     — string or null: one of
+               "serving" | "cup" | "gram" | "kg" | "ml" | "piece" | "slice" |
+               "tablespoon" | "teaspoon" | "handful" | "can" | "bottle" | "bar"
+               Use null when no unit is mentioned.
+
+Examples:
+  "two apples"          → [{"food":"apple","quantity":2,"unit":null}]
+  "a banana"            → [{"food":"banana","quantity":1,"unit":null}]
+  "200g chicken breast" → [{"food":"chicken breast","quantity":200,"unit":"gram"}]
+  "one cup of rice"     → [{"food":"rice","quantity":1,"unit":"cup"}]
+  "spaghetti bolognaise and garlic bread" →
+    [{"food":"spaghetti bolognaise","quantity":1,"unit":"serving"},
+     {"food":"garlic bread","quantity":1,"unit":"serving"}]\
+     
+Each food item MUST be extracted independently. Data returned as an array of elements
+"""
 
 def simple_plural(word):
     if word.endswith('y') and len(word) > 2 and word[-2] not in 'aeiou':
@@ -204,6 +237,23 @@ def fuzzy_search(span_text, food_index, threshold=60, limit=5):
     )
     return [food_id for _, _, food_id in results]
 
+def link_to_database(food_description, limit = 5):
+    doc = nlp(food_description)
+    food_entities = [e for e in doc.ents if e.label_ == "FOOD"]
+
+    if food_entities:
+        # Collect all candidates from all matched entities, deduplicated
+        seen = set()
+        all_candidates = []
+        for entity in food_entities:
+            for candidate_id in entity._.candidates:
+                if candidate_id not in seen:
+                    seen.add(candidate_id)
+                    all_candidates.append(candidate_id)
+        return rank_candidates(food_description, all_candidates, food_index, limit)
+
+    # PhraseMatcher missed so try global fuzzy search instead
+    return fuzzy_search(food_description, food_index, threshold=55, limit=limit)
 
 def resolve_grams(food_id, quantity, unit, food_index):
     if unit in UNIT_GRAMS:
@@ -381,6 +431,120 @@ if not Span.has_extension("candidates"):
 nlp = spacy.load("en_core_web_md", disable=["ner"])
 nlp.add_pipe("food_ner", last=True, config={"food_index": food_index})
 
+async def llm_extract(text):
+    payload = {
+        "model": OLLAMA_MODEL,
+        "messages": [
+            {"role": "system", "content": LLM_SYSTEM_PROMPT},
+            {"role": "user",   "content": text},
+        ],
+        "stream": False,
+        "format": "json", # Ollama JSON mode: guarantees valid JSON output
+        "options": {
+            "temperature": 0, # must be deterministic for a parser
+            "num_predict": 512,
+        },
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=OLLAMA_TIMEOUT) as client:
+            resp = await client.post(f"{OLLAMA_BASE_URL}/api/chat", json=payload)
+            resp.raise_for_status()
+
+        print(resp.json())
+
+        raw = resp.json()["message"]["content"]
+        parsed = json.loads(raw)
+
+        print("Raw LLM output: ", raw)
+
+        if isinstance(parsed, list):
+            pass
+
+        elif isinstance(parsed, dict) and all(k in parsed for k in ("food", "quantity", "unit")):
+            foods = parsed.get("food")
+            quantities = parsed.get("quantity")
+            units = parsed.get("unit")
+
+            # If single values → wrap into lists
+            if not isinstance(foods, list):
+                foods = [foods]
+            if not isinstance(quantities, list):
+                quantities = [quantities]
+            if not isinstance(units, list):
+                units = [units]
+
+            max_len = max(len(foods), len(quantities), len(units))
+
+            def expand(lst):
+                if len(lst) == max_len:
+                    return lst
+                if len(lst) == 1:
+                    return lst * max_len
+                return lst[:max_len]  # fallback (rare edge case)
+
+            foods = expand(foods)
+            quantities = expand(quantities)
+            units = expand(units)
+
+            parsed = [
+                {
+                    "food": str(foods[i]).strip().lower(),
+                    "quantity": float(quantities[i]) if quantities[i] is not None else 1.0,
+                    "unit": None if units[i] in (None, "null") else str(units[i]).lower()
+                }
+                for i in range(max_len)
+            ]
+
+        else:
+            return None
+
+        validated: list[dict] = []
+        for item in parsed:
+            if not isinstance(item, dict):
+                continue
+            food = str(item.get("food", "")).strip().lower()
+            if not food:
+                continue
+            validated.append({
+                "food": food,
+                "quantity": float(item.get("quantity") or 1.0),
+                "unit": str(item["unit"]).lower() if item.get("unit") else None,
+            })
+
+        return validated if validated else None
+
+    except (httpx.ConnectError, httpx.TimeoutException):
+        print("Ollama unavailable - falling back to spaCy pipeline")
+        return None
+    except (json.JSONDecodeError, KeyError, ValueError, TypeError) as exc:
+        print(f"LLM Parse error ({exc}) - falling back to spaCy pipeline")
+        return None
+
+def _build_candidate_list(candidate_ids, grams):
+    candidates = []
+    for food_id in candidate_ids[:5]:
+        entry = food_index.get(food_id)
+        if not entry:
+            continue
+        candidates.append({
+            "food_id": food_id,
+            "name": entry["name"],
+            "is_recipe": entry.get("is_recipe", False),
+            "recipe_ingredients": [
+                {
+                    "food_id": c["ingredient_id"],
+                    "name": c["ingredient_name"],
+                    "weight_fraction": c["weight_fraction"],
+                }
+                for c in recipe_index.get(food_id, [])
+            ],
+            "nutrients": resolve_recipe_nutrients(
+                food_id, grams, food_index, recipe_index
+            ),
+        })
+    return candidates
+
 app = FastAPI(title="Food NLP API")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
@@ -390,7 +554,35 @@ class ExtractRequest(BaseModel):
 
 
 @app.post("/extract")
-def extract(req: ExtractRequest):
+async def extract(req: ExtractRequest):
+    llm_items = await llm_extract(req.text)
+    if llm_items is not None:
+        results = []
+        for item in llm_items:
+            food_description = item["food"]
+            quantity = item["quantity"]
+            unit = item["unit"]
+
+            candidate_ids = link_to_database(food_description)
+            if not candidate_ids:
+                continue
+
+            best_id = candidate_ids[0]
+            grams = resolve_grams(best_id, quantity, unit, food_index)
+            candidates = _build_candidate_list(candidate_ids, grams)
+
+            results.append({
+                "text": food_description,
+                "quantity": quantity,
+                "unit": unit,
+                "grams": grams,
+                "match": candidates[0] if candidates else None,
+                "candidates": candidates,
+                "source": "llm",
+            })
+
+        return {"entities": results, "text": req.text, "source": "llm"}
+
     doc = nlp(req.text)
     results = []
     prev_end = 0
@@ -400,7 +592,6 @@ def extract(req: ExtractRequest):
             continue
 
         ranked_ids = rank_candidates(entity.text, entity._.candidates, food_index)
-
         if not ranked_ids:
             ranked_ids = fuzzy_search(entity.text, food_index)
 
@@ -410,25 +601,7 @@ def extract(req: ExtractRequest):
         best_id = ranked_ids[0] if ranked_ids else entity._.food_id
         grams = resolve_grams(best_id, quantity, unit, food_index)
 
-        candidates = []
-        for food_id in ranked_ids[:5]:
-            entry = food_index.get(food_id)
-            if not entry:
-                continue
-            candidates.append({
-                "food_id": food_id,
-                "name": entry["name"],
-                "is_recipe": entry.get("is_recipe", False),
-                "recipe_ingredients": [
-                    {
-                        "food_id": c["ingredient_id"],
-                        "name": c["ingredient_name"],
-                        "weight_fraction": c["weight_fraction"],
-                    }
-                    for c in recipe_index.get(food_id, [])
-                ],
-                "nutrients": resolve_recipe_nutrients(food_id, grams, food_index, recipe_index),
-            })
+        candidates = _build_candidate_list(ranked_ids, grams)
 
         results.append({
             "text": entity.text,
@@ -442,6 +615,7 @@ def extract(req: ExtractRequest):
             "grams": grams,
             "match": candidates[0] if candidates else None,
             "candidates": candidates,
+            "source": "spacy",
         })
 
-    return {"entities": results, "text": req.text}
+    return {"entities": results, "text": req.text, "source": "spacy"}
