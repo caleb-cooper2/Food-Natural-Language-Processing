@@ -11,7 +11,7 @@ import pandas as pd
 import re
 import math
 from text_to_num import alpha2digit
-from rapidfuzz import fuzz, process as fuzz_process
+from rapidfuzz import fuzz
 
 UNIT_GRAMS = {
     "g": 1.0,        "gram": 1.0,        "grams": 1.0,
@@ -220,22 +220,62 @@ def rank_candidates(span_text, candidate_ids, food_index, limit=5):
         entry = food_index.get(food_id)
         if not entry:
             continue
-        all_names = [entry["name"], entry["key_term"]] + entry["keywords"]
-        best = max((fuzz.token_sort_ratio(span_lower, n) for n in all_names if n), default=0)
-        scored.append((food_id, best))
+
+        key_term = entry["key_term"]
+        name = entry["name"]
+
+        score = candidate_scorer(span_lower, key_term, name)
+
+        token_count = len(key_term.split())
+        query_tokens = len(span_lower.split())
+
+        if query_tokens == 1:
+            score -= (token_count - 1) * 5
+
+        part = entry.get("part")
+        if query_tokens == 1 and part:
+            score += 5
+
+        scored.append((food_id, score))
+
     scored.sort(key=lambda x: -x[1])
     return [food_id for food_id, _ in scored[:limit]]
 
+def candidate_scorer(query, candidate_key_term, candidate_name):
+    query_lower = query.lower().strip()
+    candidate_lower = candidate_key_term.lower().strip()
+
+    if query_lower == candidate_lower:
+        return 100.0
+
+    query_tokens = set(query_lower.split())
+    candidate_tokens = set(candidate_lower.split())
+
+    base_score = fuzz.token_sort_ratio(query_lower, candidate_lower)
+
+    extra_tokens = candidate_tokens - query_tokens
+    specificity_penalty = (len(extra_tokens) / max(len(candidate_tokens), 1)) * 40
+
+    length_ratio = min(len(query_lower), len(candidate_lower)) / max(len(query_lower), len(candidate_lower))
+    length_bonus = length_ratio * 10
+
+    return max(0.0, base_score - specificity_penalty + length_bonus)
 
 def fuzzy_search(span_text, food_index, threshold=60, limit=5):
-    choices = {food_id: entry["key_term"] for food_id, entry in food_index.items()}
-    results = fuzz_process.extract(
-        span_text.lower(), choices,
-        scorer=fuzz.token_sort_ratio,
-        limit=limit,
-        score_cutoff=threshold,
-    )
-    return [food_id for _, _, food_id in results]
+    span_lower = span_text.lower().strip()
+    scored = []
+
+    for food_id, entry in food_index.items():
+        key_term = entry["key_term"]
+        name = entry["name"]
+
+        score = candidate_scorer(span_lower, key_term, name)
+
+        if score >= threshold:
+            scored.append((food_id, score))
+
+    scored.sort(key=lambda x: -x[1])
+    return [food_id for food_id, _ in scored[:limit]]
 
 def link_to_database(food_description, limit = 5):
     doc = nlp(food_description)
@@ -343,6 +383,7 @@ def build_index(food_df, csm_df, name_df):
                 keywords.append(f"{kind} {generic}".strip().lower())
             elif generic and generic.lower() != "nan":
                 keywords.append(generic.strip().lower())
+            part = str(name_row.get("Part") or "").strip()
 
         seen = set()
         deduped = []
@@ -364,6 +405,7 @@ def build_index(food_df, csm_df, name_df):
             "name": name,
             "keywords": keywords,
             "key_term": keywords[0] if keywords else name.split(",")[0].lower(),
+            "part": part if part and part.lower() != "nan" else None,
             "serving_measure": csm_lookup.get(food_id, []),
             "is_recipe": food_id.startswith("R"),
             "nutrients": {
