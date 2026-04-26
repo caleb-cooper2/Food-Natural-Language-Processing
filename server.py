@@ -142,6 +142,44 @@ def extract_keywords(food_name_string):
     keywords += [t.strip().lower() for t in paren_terms if t.strip()]
     return keywords
 
+def extract_brand_keywords(food_name, sampling_details = "", nlp = None):
+    # Try to find brand names through a number of checks
+    brands = []
+    segments = [s.strip() for s in food_name.split(',')]
+
+    trademark_matches = re.findall(r'\b([A-Za-z][\w\-]*)[™®©]', food_name)
+    brands.extend([brand.lower() for brand in trademark_matches])
+
+    if nlp is not None:
+        doc = nlp(food_name)
+        for entity in doc.ents:
+            if entity.label_ in ("ORG", "PRODUCT"):
+                candidate = entity.text.strip().lower()
+                if len(candidate) > 2 and candidate not in ALL_UNITS:
+                    brands.append(candidate)
+
+    for segment in segments[2:]:
+        cleaned_segment = re.sub(r'[™®©]', '', segment).strip()
+        tokens = cleaned_segment.split()
+
+        is_proper = all(token[0].isupper() for token in tokens if token and token[0].isalpha())
+        if is_proper and 1 <= len(tokens) <= 3:
+            brands.append(cleaned_segment.lower())
+
+    if sampling_details:
+        pattern = re.search(
+            r'brands?[:\s]+([A-Za-z0-9\-\s(),]+?)(?:\.|mixed|total|sampled|respectively)',
+            sampling_details, re.IGNORECASE
+        )
+        if pattern:
+            brand_text = pattern.group(1)
+            for chunk in re.split(r'\band\b|,', brand_text):
+                chunk = re.sub(r'\(.*?\)', '', chunk).strip().lower()
+                if chunk and len(chunk) > 1:
+                    brands.append(chunk)
+
+    return list(dict.fromkeys(brand for brand in brands if brand))
+
 
 def build_food_matcher(nlp, food_index):
     matcher = PhraseMatcher(nlp.vocab, attr="LOWER")
@@ -213,6 +251,10 @@ def rank_candidates(span_text, candidate_ids, food_index, limit=5):
 
         token_count = len(key_term.split())
         query_tokens = len(span_lower.split())
+
+        brands = entry.get("brands", [])
+        if any(brand in span_lower for brand in brands):
+            score += 25
 
         if query_tokens == 1:
             score -= (token_count - 1) * 5
@@ -328,7 +370,7 @@ def resolve_recipe_nutrients(food_id, grams, food_index, recipe_index):
     return total or calculate_nutrients(food_id, grams, food_index)
 
 
-def build_index(food_df, csm_df, name_df):
+def build_index(food_df, csm_df, name_df, nlp):
     csm_lookup = {}
     if "FoodID" in csm_df.columns:
         csm_df = csm_df.copy()
@@ -369,6 +411,7 @@ def build_index(food_df, csm_df, name_df):
             elif generic and generic.lower() != "nan":
                 keywords.append(generic.strip().lower())
             part = str(name_row.get("Part") or "").strip()
+            sampling_details = str(name_row.get("Sampling Details") or "").strip()
 
         seen = set()
         deduped = []
@@ -377,7 +420,8 @@ def build_index(food_df, csm_df, name_df):
             if keyword and keyword not in seen:
                 seen.add(keyword)
                 deduped.append(keyword)
-        keywords = deduped
+        brand_keywords = extract_brand_keywords(name, sampling_details, nlp)
+        keywords = brand_keywords + deduped
 
         def clean(value):
             try:
@@ -391,6 +435,7 @@ def build_index(food_df, csm_df, name_df):
             "keywords": keywords,
             "key_term": keywords[0] if keywords else name.split(",")[0].lower(),
             "part": part if part and part.lower() != "nan" else None,
+            "brands": brand_keywords,
             "serving_measure": csm_lookup.get(food_id, []),
             "is_recipe": food_id.startswith("R"),
             "nutrients": {
@@ -445,7 +490,8 @@ name_df.columns = name_df.columns.str.strip()
 ingredient_df = pd.read_excel(f"{BASE}/Principal files/Excel files/INGREDIENT.FT.XLSX", skiprows=1)
 ingredient_df.columns = ingredient_df.columns.str.strip()
 
-food_index = build_index(food_df, csm_df, name_df)
+nlp_ner = spacy.load("en_core_web_md")
+food_index = build_index(food_df, csm_df, name_df, nlp_ner)
 recipe_index = build_recipe_index(ingredient_df, food_index)
 
 print(f"Food index: {len(food_index)} entries | Recipes: {len(recipe_index)}")
