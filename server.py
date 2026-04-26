@@ -245,9 +245,8 @@ def rank_candidates(span_text, candidate_ids, food_index, limit=5):
             continue
 
         key_term = entry["key_term"]
-        name = entry["name"]
 
-        score = candidate_scorer(span_lower, key_term, name)
+        score = candidate_scorer(span_lower, key_term)
 
         token_count = len(key_term.split())
         query_tokens = len(span_lower.split())
@@ -266,9 +265,9 @@ def rank_candidates(span_text, candidate_ids, food_index, limit=5):
         scored.append((food_id, score))
 
     scored.sort(key=lambda x: -x[1])
-    return [food_id for food_id, _ in scored[:limit]]
+    return scored[:limit]
 
-def candidate_scorer(query, candidate_key_term, candidate_name):
+def candidate_scorer(query, candidate_key_term):
     query_lower = query.lower().strip()
     candidate_lower = candidate_key_term.lower().strip()
 
@@ -294,33 +293,46 @@ def fuzzy_search(span_text, food_index, threshold=60, limit=5):
 
     for food_id, entry in food_index.items():
         key_term = entry["key_term"]
-        name = entry["name"]
-
-        score = candidate_scorer(span_lower, key_term, name)
+        score = candidate_scorer(span_lower, key_term)
 
         if score >= threshold:
             scored.append((food_id, score))
 
     scored.sort(key=lambda x: -x[1])
-    return [food_id for food_id, _ in scored[:limit]]
+    return scored[:limit]
 
-def link_to_database(food_description, limit = 5):
+def retrieve_candidates(food_description, food_index, limit=20):
     doc = nlp(food_description)
-    food_entities = [e for e in doc.ents if e.label_ == "FOOD"]
+    food_entities = [entity for entity in doc.ents if entity.label_ == "FOOD"]
 
-    if food_entities:
-        # Collect all candidates from all matched entities, deduplicated
-        seen = set()
-        all_candidates = []
-        for entity in food_entities:
-            for candidate_id in entity._.candidates:
-                if candidate_id not in seen:
-                    seen.add(candidate_id)
-                    all_candidates.append(candidate_id)
-        return rank_candidates(food_description, all_candidates, food_index, limit)
+    candidates = []
+    seen = set()
 
-    # PhraseMatcher missed so try global fuzzy search instead
-    return fuzzy_search(food_description, food_index, threshold=55, limit=limit)
+    for entity in food_entities:
+        for candidate_id in entity._.candidates:
+            if candidate_id not in seen:
+                seen.add(candidate_id)
+                candidates.append(candidate_id)
+
+    if len(candidates) < limit:
+        for food_id, entry in food_index.items():
+            if food_id in seen:
+                continue
+            score = fuzz.token_sort_ratio(food_description.lower(), entry["key_term"])
+            if score > 50:
+                seen.add(food_id)
+                candidates.append(food_id)
+
+    return candidates[:limit]
+
+def compute_confidence(ranked_scores):
+    if not ranked_scores:
+        return 0.0
+    if len(ranked_scores) == 1:
+        return ranked_scores[0] / 100.0
+
+    gap = ranked_scores[0] - ranked_scores[1]
+    return min(1.0, (ranked_scores[0] / 100.0) * (1 + gap / 100.0))
 
 def resolve_grams(food_id, quantity, unit, food_index):
     if unit in UNIT_GRAMS:
@@ -605,15 +617,16 @@ async def llm_extract(text):
         print(f"LLM Parse error ({exc}) - falling back to spaCy pipeline")
         return None
 
-def _build_candidate_list(candidate_ids, grams):
+def _build_candidate_list(ranked, grams):
     candidates = []
-    for food_id in candidate_ids[:5]:
+    for food_id, score in ranked[:5]:
         entry = food_index.get(food_id)
         if not entry:
             continue
         candidates.append({
             "food_id": food_id,
             "name": entry["name"],
+            "score": round(score, 2),
             "is_recipe": entry.get("is_recipe", False),
             "recipe_ingredients": [
                 {
@@ -647,19 +660,27 @@ async def extract(req: ExtractRequest):
             quantity = item["quantity"]
             unit = item["unit"]
 
-            candidate_ids = link_to_database(food_description)
-            if not candidate_ids:
+            candidate_ids = retrieve_candidates(food_description, food_index)
+            ranked = rank_candidates(food_description, candidate_ids, food_index)
+
+            if not ranked:
                 continue
 
-            best_id = candidate_ids[0]
+            ranked_ids = [cid for cid, _ in ranked]
+            ranked_scores = [score for _, score in ranked]
+
+            confidence = compute_confidence(ranked_scores)
+            best_id = ranked_ids[0]
+
             grams = resolve_grams(best_id, quantity, unit, food_index)
-            candidates = _build_candidate_list(candidate_ids, grams)
+            candidates = _build_candidate_list(ranked, grams)
 
             results.append({
                 "text": food_description,
                 "quantity": quantity,
                 "unit": unit,
                 "grams": grams,
+                "confidence": confidence,
                 "match": candidates[0] if candidates else None,
                 "candidates": candidates,
                 "source": "llm",
@@ -675,17 +696,27 @@ async def extract(req: ExtractRequest):
         if entity.label_ != "FOOD":
             continue
 
-        ranked_ids = rank_candidates(entity.text, entity._.candidates, food_index)
-        if not ranked_ids:
-            ranked_ids = fuzzy_search(entity.text, food_index)
+        candidate_ids = retrieve_candidates(entity.text, food_index)
+        ranked = rank_candidates(entity.text, candidate_ids, food_index)
+
+        if not ranked:
+            ranked = fuzzy_search(entity.text, food_index)
+
+        if not ranked:
+            continue
+
+        ranked_ids = [candidate_id for candidate_id, _ in ranked]
+        ranked_scores = [score for _, score in ranked]
+
+        confidence = compute_confidence(ranked_scores)
 
         quantity, quantity_char_start, quantity_char_end, unit, unit_char_start = extract_quantity(doc, entity.start, prev_end)
         prev_end = entity.end
 
-        best_id = ranked_ids[0] if ranked_ids else entity._.food_id
+        best_id = ranked_ids[0]
         grams = resolve_grams(best_id, quantity, unit, food_index)
 
-        candidates = _build_candidate_list(ranked_ids, grams)
+        candidates = _build_candidate_list(ranked, grams)
 
         results.append({
             "text": entity.text,
@@ -697,6 +728,7 @@ async def extract(req: ExtractRequest):
             "unit": unit,
             "unit_char_start": unit_char_start,
             "grams": grams,
+            "confidence": confidence,
             "match": candidates[0] if candidates else None,
             "candidates": candidates,
             "source": "spacy",
