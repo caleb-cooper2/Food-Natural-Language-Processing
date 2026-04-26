@@ -35,7 +35,7 @@ CSM_UNITS = {
 ALL_UNITS = set(UNIT_GRAMS.keys()) | CSM_UNITS
 
 OLLAMA_BASE_URL = "http://localhost:11434"
-OLLAMA_MODEL = "qwen2.5:7b"
+OLLAMA_MODEL = "qwen2.5:7b-instruct-q4_K_M"
 OLLAMA_TIMEOUT = 20.0 # how many secs before giving up and going to spacy if needed
 LLM_SYSTEM_PROMPT = """\
 Extract all food items. Return JSON only. No explanation.
