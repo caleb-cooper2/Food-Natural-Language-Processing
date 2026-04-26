@@ -35,35 +35,20 @@ CSM_UNITS = {
 ALL_UNITS = set(UNIT_GRAMS.keys()) | CSM_UNITS
 
 OLLAMA_BASE_URL = "http://localhost:11434"
-OLLAMA_MODEL = "llama3.2:3b"
+OLLAMA_MODEL = "qwen2.5:7b"
 OLLAMA_TIMEOUT = 20.0 # how many secs before giving up and going to spacy if needed
 LLM_SYSTEM_PROMPT = """\
-You are a food diary parser. Extract every food item from the diary entry below.
+Extract all food items. Return JSON only. No explanation.
 
-Return ONLY a valid JSON array. No markdown, no explanation, no extra keys.
+Return format: {"items": [...]}
+Each item: {"food": string, "quantity": number, "unit": string|null}
+If no quantity stated, use 1. If no unit, use null. Keep brand names as-is.
 
-If you detect a brand name that represents the food item (e.g coca-cola), replace and return that item as the generic form (cola)
+Input: "spaghetti with a slice of bread topped with butter"
+Output: [{"food":"spaghetti","quantity":1,"unit":"serving"},{"food":"bread","quantity":1,"unit":"slice"},{"food":"butter","quantity":1,"unit":"serving"}]
 
-Each element must have exactly these three keys:
-  "food"     — string: the food name, singular, lowercase
-               Keep compound names intact: "butter chicken", "garlic bread",
-               "spaghetti bolognaise". Do NOT decompose recipe names into ingredients.
-  "quantity" — number: the numeric amount (use 1 if not stated)
-  "unit"     — string or null: one of
-               "serving" | "cup" | "gram" | "kg" | "ml" | "piece" | "slice" |
-               "tablespoon" | "teaspoon" | "handful" | "can" | "bottle" | "bar"
-               Use null when no unit is mentioned.
-
-Examples:
-  "two apples"          → [{"food":"apple","quantity":2,"unit":null}]
-  "a banana"            → [{"food":"banana","quantity":1,"unit":null}]
-  "200g chicken breast" → [{"food":"chicken breast","quantity":200,"unit":"gram"}]
-  "one cup of rice"     → [{"food":"rice","quantity":1,"unit":"cup"}]
-  "spaghetti bolognaise and garlic bread" →
-    [{"food":"spaghetti bolognaise","quantity":1,"unit":"serving"},
-     {"food":"garlic bread","quantity":1,"unit":"serving"}]\
-     
-Each food item MUST be extracted independently. Data returned as an array of elements
+Input: "200g chicken breast and rice"
+Output: [{"food":"chicken breast","quantity":200,"unit":"gram"},{"food":"rice","quantity":1,"unit":"serving"}]
 """
 
 def simple_plural(word):
@@ -478,10 +463,18 @@ async def llm_extract(text):
         "model": OLLAMA_MODEL,
         "messages": [
             {"role": "system", "content": LLM_SYSTEM_PROMPT},
-            {"role": "user",   "content": text},
+            # Few-shot examples as conversation turns
+            {"role": "user", "content": "two apples and a banana"},
+            {"role": "assistant", "content": '{"items":[{"food":"apple","quantity":2,"unit":null},{"food":"banana","quantity":1,"unit":null}]}'},
+            {"role": "user", "content": "spaghetti bolognaise with garlic bread"},
+            {"role": "assistant", "content": '{"items":[{"food":"spaghetti bolognaise","quantity":1,"unit":"serving"},{"food":"garlic bread","quantity":1,"unit":"serving"}]}'},
+            {"role": "user", "content": "porridge topped with honey and a cup of coffee"},
+            {"role": "assistant", "content": '{"items":[{"food":"porridge","quantity":1,"unit":"serving"},{"food":"honey","quantity":1,"unit":"serving"},{"food":"coffee","quantity":1,"unit":"cup"}]}'},
+            # Actual request
+            {"role": "user", "content": text},
         ],
         "stream": False,
-        "format": "json", # Ollama JSON mode: guarantees valid JSON output
+        "format": "json",
         "options": {
             "temperature": 0, # must be deterministic for a parser
             "num_predict": 512,
@@ -502,6 +495,9 @@ async def llm_extract(text):
 
         if isinstance(parsed, list):
             pass
+
+        if isinstance(parsed, dict) and "items" in parsed:
+            parsed = parsed["items"]
 
         elif isinstance(parsed, dict) and all(k in parsed for k in ("food", "quantity", "unit")):
             foods = parsed.get("food")
