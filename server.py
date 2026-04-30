@@ -278,6 +278,10 @@ class FoodNERComponent:
 def rank_candidates(span_text, candidate_ids, food_index, limit=5):
     span_lower = span_text.lower()
     scored = []
+
+    semantic_hits = semantic_search(span_text, faiss_index, faiss_ids, embedding_model, k=10)
+    semantic_map = {fid: s for fid, s in semantic_hits}
+
     for food_id in candidate_ids:
         entry = food_index.get(food_id)
         if not entry:
@@ -285,29 +289,33 @@ def rank_candidates(span_text, candidate_ids, food_index, limit=5):
 
         key_term = entry["key_term"]
 
-        score = candidate_scorer(span_lower, key_term)
+        lexical = candidate_scorer(span_lower, key_term) / 100.0
+        semantic = semantic_map.get(food_id, 0.0)
 
-        semantic_hits = semantic_search(span_text, faiss_index, faiss_ids, embedding_model, k=5)
-        semantic_map = {fid: s for fid, s in semantic_hits}
-
-        if food_id in semantic_map:
-            score += semantic_map[food_id] * 100
+        if semantic > 0.55:
+            score = (0.6 * lexical) + (0.4 * semantic)
+        else:
+            score = lexical
 
         token_count = len(key_term.split())
         query_tokens = len(span_lower.split())
 
         brands = entry.get("brands", [])
         if any(brand in span_lower for brand in brands):
-            score += 25
+            score += 0.25
 
         if query_tokens == 1:
-            score -= (token_count - 1) * 5
+            score -= (token_count - 1) * 0.05
 
         part = entry.get("part")
         if query_tokens == 1 and part:
-            score += 5
+            score += 0.05
 
-        scored.append((food_id, score))
+        if query_tokens >= 2 and food_id in semantic_map:
+            score += 0.05
+
+        score = max(0.0, min(1.5, score))
+        scored.append((food_id, score * 100))
 
     scored.sort(key=lambda x: -x[1])
     return scored[:limit]
