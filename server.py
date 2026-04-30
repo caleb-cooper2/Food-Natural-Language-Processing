@@ -12,6 +12,9 @@ import re
 import math
 from text_to_num import alpha2digit
 from rapidfuzz import fuzz
+from sentence_transformers import SentenceTransformer
+import numpy as np
+import faiss
 
 UNIT_GRAMS = {
     "g": 1.0,        "gram": 1.0,        "grams": 1.0,
@@ -284,6 +287,12 @@ def rank_candidates(span_text, candidate_ids, food_index, limit=5):
 
         score = candidate_scorer(span_lower, key_term)
 
+        semantic_hits = semantic_search(span_text, faiss_index, faiss_ids, embedding_model, k=5)
+        semantic_map = {fid: s for fid, s in semantic_hits}
+
+        if food_id in semantic_map:
+            score += semantic_map[food_id] * 100
+
         token_count = len(key_term.split())
         query_tokens = len(span_lower.split())
 
@@ -337,6 +346,14 @@ def fuzzy_search(span_text, food_index, threshold=60, limit=5):
     scored.sort(key=lambda x: -x[1])
     return scored[:limit]
 
+def semantic_search(query, faiss_index, faiss_ids, model, k=10):
+    vec = model.encode([query])
+    vec = vec / np.linalg.norm(vec)
+
+    scores, indices = faiss_index.search(vec.astype(np.float32), k)
+
+    return [(faiss_ids[i], float(scores[0][j])) for j, i in enumerate(indices[0])]
+
 def retrieve_candidates(food_description, food_index, limit=20):
     doc = nlp(food_description)
     food_entities = [entity for entity in doc.ents if entity.label_ == "FOOD"]
@@ -358,6 +375,13 @@ def retrieve_candidates(food_description, food_index, limit=20):
             if score > 50:
                 seen.add(food_id)
                 candidates.append(food_id)
+
+    semantic_hits = semantic_search(food_description, faiss_index, faiss_ids, embedding_model)
+
+    for food_id, score in semantic_hits:
+        if food_id not in seen:
+            seen.add(food_id)
+            candidates.append(food_id)
 
     return candidates[:limit]
 
@@ -522,6 +546,22 @@ def build_recipe_index(ingredient_df, food_index):
 
     return recipe_index
 
+def build_embedding_index(food_index, model):
+    ids = list(food_index.keys())
+
+    texts = [
+        f"{entry['key_term']} {' '.join(entry['keywords'][:3])}"
+        for entry in food_index.values()
+    ]
+
+    embeddings = model.encode(texts, batch_size=128, show_progress_bar=True)
+    embeddings = embeddings / np.linalg.norm(embeddings, axis=1, keepdims=True)
+
+    index = faiss.IndexFlatIP(embeddings.shape[1])
+    index.add(embeddings.astype(np.float32))
+
+    return index, ids
+
 
 BASE = "data/New Zealand FOODfiles 2024"
 
@@ -542,7 +582,11 @@ nlp_ner = spacy.load("en_core_web_md")
 food_index = build_index(food_df, csm_df, name_df, nlp_ner)
 recipe_index = build_recipe_index(ingredient_df, food_index)
 
+embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+faiss_index, faiss_ids = build_embedding_index(food_index, embedding_model)
+
 print(f"Food index: {len(food_index)} entries | Recipes: {len(recipe_index)}")
+print(f"FAISS index build: {len(faiss_ids)} vectors")
 
 if not Span.has_extension("food_id"):
     Span.set_extension("food_id", default=None)
@@ -796,7 +840,7 @@ async def extract(req: ExtractRequest):
                     "candidates": candidates,
                     "source": "llm",
                 })
-
+            print("LLM used")
             return {"entities": results, "text": req.text, "source": "llm"}
 
     doc = nlp(req.text)
@@ -844,5 +888,5 @@ async def extract(req: ExtractRequest):
             "candidates": candidates,
             "source": "spacy",
         })
-
+    print("spaCy used")
     return {"entities": results, "text": req.text, "source": "spacy"}
