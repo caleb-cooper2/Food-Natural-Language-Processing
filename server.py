@@ -40,6 +40,12 @@ OLLAMA_TIMEOUT = 20.0 # how many secs before giving up and going to spacy if nee
 LLM_SYSTEM_PROMPT = """\
 Extract all food items. Return JSON only. No explanation.
 
+Critical rules:
+- The "food" field MUST be an exact substring of the input text.
+- Do NOT replace brand names with generic terms.
+- Do NOT simplify or generalise food names.
+- Preserve original wording exactly as written.
+
 Return format: {"items": [...]}
 Each item: {"food": string, "quantity": number, "unit": string|null}
 If no quantity stated, use 1. If no unit, use null. Keep brand names as-is.
@@ -180,6 +186,36 @@ def extract_brand_keywords(food_name, sampling_details = "", nlp = None):
 
     return list(dict.fromkeys(brand for brand in brands if brand))
 
+def find_item_char_positions(item, original_text):
+    # Used for llm extraction of char positions
+    food = item["food"]
+    text_lower = original_text.lower()
+    char_start = text_lower.find(food.lower())
+    if char_start == -1:
+        return None, None, None, None, None
+    char_end = char_start + len(food)
+
+    prefix_lower = original_text[:char_start].lower()
+    quantity = item.get("quantity", 1.0)
+    unit = item.get("unit")
+
+    unit_char_start = None
+    quantity_char_start = None
+    quantity_char_end = None
+
+    if unit:
+        pos = prefix_lower.rfind(unit.lower())
+        if pos != -1:
+            unit_char_start = pos
+
+    if quantity != 1.0:
+        qty_str = str(int(quantity)) if quantity == int(quantity) else str(quantity)
+        pos = prefix_lower.rfind(qty_str)
+        if pos != -1:
+            quantity_char_start = pos
+            quantity_char_end = pos + len(qty_str)
+
+    return char_start, char_end, quantity_char_start, quantity_char_end, unit_char_start
 
 def build_food_matcher(nlp, food_index):
     matcher = PhraseMatcher(nlp.vocab, attr="LOWER")
@@ -516,6 +552,59 @@ if not Span.has_extension("candidates"):
 nlp = spacy.load("en_core_web_md", disable=["ner"])
 nlp.add_pipe("food_ner", last=True, config={"food_index": food_index})
 
+def validate_llm_items(llm_items, food_index, nlp):
+    enriched = []
+
+    for item in llm_items:
+        food_name = item["food"]
+
+        # First, normal linking
+        candidate_ids = retrieve_candidates(food_name, food_index)
+        ranked = rank_candidates(food_name, candidate_ids, food_index)
+
+        if ranked:
+            ranked_scores = [score for _, score in ranked]
+            item["link_confidence"] = compute_confidence(ranked_scores)
+        else:
+            item["link_confidence"] = 0.0
+
+        # Next, fall back to brand
+        if item["link_confidence"] < 0.4:
+            brands = extract_brand_keywords(food_name, nlp=nlp)
+
+            for brand in brands:
+                generic_attempt = food_name.replace(brand, "").strip()
+
+                if not generic_attempt:
+                    continue
+
+                candidate_ids = retrieve_candidates(generic_attempt, food_index)
+                ranked = rank_candidates(generic_attempt, candidate_ids, food_index)
+
+                if ranked:
+                    score = ranked[0][1] / 100.0
+                    if score > item["link_confidence"]:
+                        item["food_generic"] = generic_attempt
+                        item["link_confidence"] = score
+
+        enriched.append(item)
+
+    return enriched
+
+def validate_llm_grounding(items, original_text):
+    text_lower = original_text.lower()
+    validated = []
+
+    for item in items:
+        food = item["food"].lower()
+
+        if food not in text_lower:
+            continue
+
+        validated.append(item)
+
+    return validated if validated else None
+
 async def llm_extract(text):
     payload = {
         "model": OLLAMA_MODEL,
@@ -608,7 +697,12 @@ async def llm_extract(text):
                 "unit": str(item["unit"]).lower() if item.get("unit") else None,
             })
 
-        return validated if validated else None
+        validated = validated if validated else None
+
+        if validated:
+            validated = validate_llm_grounding(validated, text)
+
+        return validated
 
     except (httpx.ConnectError, httpx.TimeoutException):
         print("Ollama unavailable - falling back to spaCy pipeline")
@@ -654,39 +748,56 @@ class ExtractRequest(BaseModel):
 async def extract(req: ExtractRequest):
     llm_items = await llm_extract(req.text)
     if llm_items is not None:
+        llm_items = validate_llm_items(llm_items, food_index, nlp)
+        avg_conf = (
+            sum(item["link_confidence"] for item in llm_items) / len(llm_items)
+            if llm_items else 0
+        )
+        if avg_conf < 0.5:
+            llm_items = None
+
         results = []
-        for item in llm_items:
-            food_description = item["food"]
-            quantity = item["quantity"]
-            unit = item["unit"]
+        if llm_items is not None:
+            for item in llm_items:
+                food_description = item.get("food_generic") or item["food"]
+                quantity = item["quantity"]
+                unit = item["unit"]
 
-            candidate_ids = retrieve_candidates(food_description, food_index)
-            ranked = rank_candidates(food_description, candidate_ids, food_index)
+                candidate_ids = retrieve_candidates(food_description, food_index)
+                ranked = rank_candidates(food_description, candidate_ids, food_index)
 
-            if not ranked:
-                continue
+                if not ranked:
+                    continue
 
-            ranked_ids = [cid for cid, _ in ranked]
-            ranked_scores = [score for _, score in ranked]
+                ranked_ids = [cid for cid, _ in ranked]
+                ranked_scores = [score for _, score in ranked]
 
-            confidence = compute_confidence(ranked_scores)
-            best_id = ranked_ids[0]
+                confidence = compute_confidence(ranked_scores)
+                best_id = ranked_ids[0]
 
-            grams = resolve_grams(best_id, quantity, unit, food_index)
-            candidates = _build_candidate_list(ranked, grams)
+                grams = resolve_grams(best_id, quantity, unit, food_index)
+                candidates = _build_candidate_list(ranked, grams)
 
-            results.append({
-                "text": food_description,
-                "quantity": quantity,
-                "unit": unit,
-                "grams": grams,
-                "confidence": confidence,
-                "match": candidates[0] if candidates else None,
-                "candidates": candidates,
-                "source": "llm",
-            })
+                char_start, char_end, quantity_char_start, quantity_char_end, unit_char_start = find_item_char_positions(item, req.text)
 
-        return {"entities": results, "text": req.text, "source": "llm"}
+                results.append({
+                    "text": item["food"],
+                    "resolved_text": food_description,
+                    "char_start": char_start,
+                    "char_end": char_end,
+                    "quantity": quantity,
+                    "quantity_char_start": quantity_char_start,
+                    "quantity_char_end": quantity_char_end,
+                    "unit": unit,
+                    "unit_char_start": unit_char_start,
+                    "grams": grams,
+                    "confidence": confidence,
+                    "match": candidates[0] if candidates else None,
+                    "candidates": candidates,
+                    "source": "llm",
+                })
+
+            return {"entities": results, "text": req.text, "source": "llm"}
 
     doc = nlp(req.text)
     results = []
