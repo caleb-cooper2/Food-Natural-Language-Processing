@@ -60,6 +60,19 @@ Input: "200g chicken breast and rice"
 Output: [{"food":"chicken breast","quantity":200,"unit":"gram"},{"food":"rice","quantity":1,"unit":"serving"}]
 """
 
+LLM_RERANK_PROMPT = """\
+A user logged the food: "{query}"
+
+Here are candidate database matches:
+{candidates}
+
+Which candidate best matches the user's food? 
+Identify synonyms for similar foods, e.g. toast and bread
+Do not just have a preference to select the first choice each time
+Do not assume that the candidate list is already sorted in likely order
+Reply with ONLY the number (1-{n}).\
+"""
+
 def simple_plural(word):
     if word.endswith('y') and len(word) > 2 and word[-2] not in 'aeiou':
         return word[:-1] + 'ies'
@@ -275,7 +288,7 @@ class FoodNERComponent:
         return doc
 
 
-def rank_candidates(span_text, candidate_ids, food_index, limit=5):
+def rank_candidates(span_text, candidate_ids, food_index, limit=10):
     span_lower = span_text.lower()
     scored = []
 
@@ -340,7 +353,7 @@ def candidate_scorer(query, candidate_key_term):
 
     return max(0.0, base_score - specificity_penalty + length_bonus)
 
-def fuzzy_search(span_text, food_index, threshold=60, limit=5):
+def fuzzy_search(span_text, food_index, threshold=60, limit=10):
     span_lower = span_text.lower().strip()
     scored = []
 
@@ -657,6 +670,47 @@ def validate_llm_grounding(items, original_text):
 
     return validated if validated else None
 
+async def llm_rerank(query, candidates):
+    if len(candidates) <= 1:
+        return 0
+
+    candidate_text = "\n".join(
+        f"{i+1}. {c['name']}" for i, c in enumerate(candidates)
+    )
+
+    prompt = LLM_RERANK_PROMPT.format(
+        query=query,
+        candidates=candidate_text,
+        n=len(candidates)
+    )
+
+    payload = {
+        "model": OLLAMA_MODEL,
+        "messages": [{"role": "user", "content": prompt}],
+        "stream": False,
+        "options": {"temperature": 0, "num_predict": 5},
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            resp = await client.post(f"{OLLAMA_BASE_URL}/api/chat", json=payload)
+            resp.raise_for_status()
+
+        raw = resp.json()["message"]["content"].strip()
+        print("Reranking raw output:", resp.json())
+        print("candidates: ", candidate_text)
+        print("prompt: ", prompt)
+        choice = int(raw) - 1
+
+        if 0 <= choice < len(candidates):
+            return choice
+
+    except Exception as e:
+        print("ERROR: ", e)
+        pass
+
+    return 0
+
 async def llm_extract(text):
     payload = {
         "model": OLLAMA_MODEL,
@@ -765,7 +819,7 @@ async def llm_extract(text):
 
 def _build_candidate_list(ranked, grams):
     candidates = []
-    for food_id, score in ranked[:5]:
+    for food_id, score in ranked[:10]:
         entry = food_index.get(food_id)
         if not entry:
             continue
@@ -821,12 +875,26 @@ async def extract(req: ExtractRequest):
                 if not ranked:
                     continue
 
-                ranked_ids = [cid for cid, _ in ranked]
                 ranked_scores = [score for _, score in ranked]
-
                 confidence = compute_confidence(ranked_scores)
-                best_id = ranked_ids[0]
 
+                # First pick a provisional best match (top ranked)
+                provisional_best_id = ranked[0][0]
+                grams = resolve_grams(provisional_best_id, quantity, unit, food_index)
+
+                # Build candidates with provisional grams
+                candidates = _build_candidate_list(ranked, grams)
+
+                # Only rerank if ambiguous
+                if len(candidates) > 1 and abs(ranked[0][1] - ranked[1][1]) < 10:
+                    print("Reranking")
+                    best_idx = await llm_rerank(food_description, candidates)
+                else:
+                    best_idx = 0
+
+                best_id = candidates[best_idx]["food_id"]
+
+                # Recompute grams using final choice
                 grams = resolve_grams(best_id, quantity, unit, food_index)
                 candidates = _build_candidate_list(ranked, grams)
 
