@@ -7,50 +7,24 @@ import spacy
 from spacy.matcher import PhraseMatcher
 from spacy.language import Language
 from spacy.tokens import Span
-import pandas as pd
-import re
-import math
 from text_to_num import alpha2digit
 from rapidfuzz import fuzz
 from sentence_transformers import SentenceTransformer
 import numpy as np
-import faiss
 
 from config import (
     ALL_UNITS, LLM_FEW_SHOT, LLM_RERANK_PROMPT, LLM_SYSTEM_PROMPT, OLLAMA_BASE_URL,
-    OLLAMA_MODEL, OLLAMA_TIMEOUT, PRINCIPAL_XLSX, SUPPORTING_XLSX, UNIT_GRAMS
+    OLLAMA_MODEL, OLLAMA_TIMEOUT, UNIT_GRAMS
+)
+from index import (
+    extract_brand_keywords, load_indexes, simple_singular, term_variants,
 )
 
+food_index, recipe_index, faiss_index, faiss_ids = load_indexes()
+embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
 
-def simple_plural(word):
-    if word.endswith('y') and len(word) > 2 and word[-2] not in 'aeiou':
-        return word[:-1] + 'ies'
-    if word.endswith(('s', 'x', 'z', 'ch', 'sh')):
-        return word + 'es'
-    if word.endswith('f') and not word.endswith('ff'):
-        return word[:-1] + 'ves'
-    if word.endswith('fe'):
-        return word[:-2] + 'ves'
-    return word + 's'
-
-def simple_singular(word):
-    if word.endswith('ies') and len(word) > 3:
-        return word[:-3] + 'y'
-    if word.endswith('ves') and len(word) > 3:
-        return word[:-3] + 'f'
-    if word.endswith('es') and len(word) > 4 and word[-3] in 'sxz':
-        return word[:-2]
-    if word.endswith('s') and not word.endswith('ss') and len(word) > 3:
-        return word[:-1]
-    return word
-
-def term_variants(term):
-    words = term.split()
-    if not words:
-        return [term]
-    plural = ' '.join(words[:-1] + [simple_plural(words[-1])])
-    return [term] if plural == term else [term, plural]
-
+print(f"Food index: {len(food_index)} entries | Recipes: {len(recipe_index)}")
+print(f"FAISS index: {len(faiss_ids)} vectors")
 
 def extract_quantity(doc, span_start, prev_end=0):
     window = doc[max(prev_end, span_start - 6): span_start]
@@ -98,53 +72,6 @@ def extract_quantity(doc, span_start, prev_end=0):
 
     return quantity, quantity_char_start, quantity_char_end, unit, unit_char_start
 
-
-def extract_keywords(food_name_string):
-    cleaned = re.sub(r'[™®©]', '', food_name_string)
-    paren_terms = re.findall(r'\((.*?)\)', cleaned)
-    cleaned = re.sub(r'\(.*?\)', '', cleaned)
-    keywords = [p.strip().lower() for p in cleaned.split(',') if p.strip()]
-    keywords += [t.strip().lower() for t in paren_terms if t.strip()]
-    return keywords
-
-def extract_brand_keywords(food_name, sampling_details = "", nlp = None):
-    # Try to find brand names through a number of checks
-    brands = []
-    segments = [s.strip() for s in food_name.split(',')]
-
-    trademark_matches = re.findall(r'\b([A-Za-z][\w\-]*)[™®©]', food_name)
-    brands.extend([brand.lower() for brand in trademark_matches])
-
-    if nlp is not None:
-        doc = nlp(food_name)
-        for entity in doc.ents:
-            if entity.label_ in ("ORG", "PRODUCT"):
-                candidate = entity.text.strip().lower()
-                if len(candidate) > 2 and candidate not in ALL_UNITS:
-                    brands.append(candidate)
-
-    for segment in segments[2:]:
-        cleaned_segment = re.sub(r'[™®©]', '', segment).strip()
-        tokens = cleaned_segment.split()
-
-        is_proper = all(token[0].isupper() for token in tokens if token and token[0].isalpha())
-        if is_proper and 1 <= len(tokens) <= 3:
-            brands.append(cleaned_segment.lower())
-
-    if sampling_details:
-        pattern = re.search(
-            r'brands?[:\s]+([A-Za-z0-9\-\s(),]+?)(?:\.|mixed|total|sampled|respectively)',
-            sampling_details, re.IGNORECASE
-        )
-        if pattern:
-            brand_text = pattern.group(1)
-            for chunk in re.split(r'\band\b|,', brand_text):
-                chunk = re.sub(r'\(.*?\)', '', chunk).strip().lower()
-                if chunk and len(chunk) > 1:
-                    brands.append(chunk)
-
-    return list(dict.fromkeys(brand for brand in brands if brand))
-
 def find_item_char_positions(item, original_text):
     # Used for llm extraction of char positions
     food = item["food"]
@@ -175,20 +102,6 @@ def find_item_char_positions(item, original_text):
             quantity_char_end = pos + len(qty_str)
 
     return char_start, char_end, quantity_char_start, quantity_char_end, unit_char_start
-
-def extract_name_metadata(name_row):
-    def safe(col):
-        clean = str(name_row.get(col) or "").strip()
-        return "" if clean.lower() == "nan" else clean
-
-    return {
-        "short_name": safe("Short Food Name"),
-        "alt_names": safe("AlternativeNames"),
-        "generic": safe("Generic Name"),
-        "kind": safe("Kind"),
-        "part": safe("Part"),
-        "sampling_details": safe("Sampling Details"),
-    }
 
 
 def build_food_matcher(nlp, food_index):
@@ -244,104 +157,13 @@ class FoodNERComponent:
         doc.ents = spacy.util.filter_spans(list(doc.ents) + spans)
         return doc
 
+if not Span.has_extension("food_id"):
+    Span.set_extension("food_id", default=None)
+if not Span.has_extension("candidates"):
+    Span.set_extension("candidates", default=[])
 
-def build_index(food_df, csm_df, name_df, nlp):
-    csm_df = csm_df.copy()
-    csm_df["FoodID"] = csm_df["FoodID"].astype(str).str.strip()
-    csm_lookup = {
-        fid: grp[["CSM", "Measure"]].to_dict("records")
-        for fid, grp in csm_df.groupby("FoodID")
-    } if "FoodID" in csm_df.columns else {}
-
-    name_lookup = (
-        {str(r.get("FoodID", "")).strip(): r for _, r in name_df.iterrows()}
-        if name_df is not None else {}
-    )
-
-    def clean_num(value):
-        try:
-            f = float(value)
-            return None if math.isnan(f) else f
-        except (TypeError, ValueError):
-            return None
-
-    index = {}
-    for _, row in food_df.iterrows():
-        food_id = str(row.get("FoodID", "")).strip()
-        name = str(row.get("Food Name", "")).strip()
-        if not food_id or not name:
-            continue
-
-        keywords = extract_keywords(name)
-        meta = extract_name_metadata(name_lookup[food_id]) if food_id in name_lookup else {}
-
-        if meta.get("short_name"):
-            keywords += [t.strip().lower() for t in re.split(r'[;,]', meta["short_name"]) if t.strip()]
-        if meta.get("alt_names"):
-            keywords += [t.strip().lower() for t in re.split(r'[;,]', meta["alt_names"]) if t.strip()]
-        if meta.get("generic"):
-            prefix = f"{meta['kind']} " if meta.get("kind") else ""
-            keywords.append(f"{prefix}{meta['generic']}".strip().lower())
-
-        seen = set()
-        deduped = [k for k in keywords if k and not (k in seen or seen.add(k))]
-        brands   = extract_brand_keywords(name, meta.get("sampling_details", ""), nlp)
-
-        index[food_id] = {
-            "name": name,
-            "keywords": brands + deduped,
-            "key_term": (brands + deduped)[0] if (brands + deduped) else name.split(",")[0].lower(),
-            "part": meta.get("part") or None,
-            "brands": brands,
-            "serving_measure": csm_lookup.get(food_id, []),
-            "is_recipe": food_id.startswith("R"),
-            "nutrients": {
-                "energy_kj": clean_num(row.get("Energy, total metabolisable (kJ)")),
-                "protein_g": clean_num(row.get("Protein, total; calculated from total nitrogen")),
-                "fat_g":     clean_num(row.get("Fat, total")),
-                "carbs_g":   clean_num(row.get("Available carbohydrate, FSANZ")),
-                "fibre_g":   clean_num(row.get("Fibre, total dietary")),
-                "sodium_mg": clean_num(row.get("Sodium")),
-            },
-        }
-    return index
-
-
-def build_recipe_index(ingredient_df, food_index):
-    recipe_index = {}
-    if ingredient_df is None:
-        return recipe_index
-
-    weight_col = "Weight Fraction(%)" if "Weight Fraction(%)" in ingredient_df.columns else "Weight Fraction (%)"
-
-    for _, row in ingredient_df.iterrows():
-        recipe_id = str(row.get("Recipe FoodID", "")).strip()
-        ingredient_id = str(row.get("Ingredient FoodID", "")).strip()
-        try:
-            fraction = float(row.get(weight_col, 0)) / 100.0
-        except (TypeError, ValueError):
-            fraction = 0.0
-
-        if recipe_id and ingredient_id and fraction > 0 and ingredient_id in food_index:
-            recipe_index.setdefault(recipe_id, []).append({
-                "ingredient_id": ingredient_id,
-                "ingredient_name": food_index[ingredient_id]["name"],
-                "weight_fraction": fraction,
-            })
-
-    return recipe_index
-
-def build_embedding_index(food_index: dict, model):
-    ids = list(food_index.keys())
-    texts = [
-        f"{entry['key_term']} {' '.join(entry['keywords'][:3])}"
-        for entry in food_index.values()
-    ]
-    embeddings = model.encode(texts, batch_size=128, show_progress_bar=True)
-    embeddings = embeddings / np.linalg.norm(embeddings, axis=1, keepdims=True)
-    index = faiss.IndexFlatIP(embeddings.shape[1])
-    index.add(embeddings.astype(np.float32))
-    return index, ids
+nlp = spacy.load("en_core_web_md", disable=["ner"])
+nlp.add_pipe("food_ner", last=True, config={"food_index": food_index})
 
 
 def candidate_scorer(query, candidate_key_term):
@@ -364,13 +186,13 @@ def candidate_scorer(query, candidate_key_term):
 
     return max(0.0, base_score - specificity_penalty + length_bonus)
 
-def semantic_search(query, faiss_index, faiss_ids, model, k=10):
-    vec = model.encode([query])
+def semantic_search(query, k=10):
+    vec = embedding_model.encode([query])
     vec = vec / np.linalg.norm(vec)
     scores, indices = faiss_index.search(vec.astype(np.float32), k)
     return [(faiss_ids[i], float(scores[0][j])) for j, i in enumerate(indices[0])]
 
-def fuzzy_search(span_text, food_index, threshold=60, limit=10):
+def fuzzy_search(span_text, threshold=60, limit=10):
     span_lower = span_text.lower().strip()
     scored = []
 
@@ -384,9 +206,9 @@ def fuzzy_search(span_text, food_index, threshold=60, limit=10):
     scored.sort(key=lambda x: -x[1])
     return scored[:limit]
 
-def rank_candidates(span_text, candidate_ids, food_index, limit = 10):
+def rank_candidates(span_text, candidate_ids, limit = 10):
     span_lower   = span_text.lower()
-    semantic_map = dict(semantic_search(span_text, faiss_index, faiss_ids, embedding_model, k=10))
+    semantic_map = dict(semantic_search(span_text, k=10))
     scored = []
 
     for food_id in candidate_ids:
@@ -407,7 +229,7 @@ def rank_candidates(span_text, candidate_ids, food_index, limit = 10):
 
     return sorted(scored, key=lambda x: -x[1])[:limit]
 
-def retrieve_candidates(food_description, food_index, limit=20):
+def retrieve_candidates(food_description, limit=20):
     doc = nlp(food_description)
     food_entities = [entity for entity in doc.ents if entity.label_ == "FOOD"]
 
@@ -429,7 +251,7 @@ def retrieve_candidates(food_description, food_index, limit=20):
                 seen.add(food_id)
                 candidates.append(food_id)
 
-    semantic_hits = semantic_search(food_description, faiss_index, faiss_ids, embedding_model)
+    semantic_hits = semantic_search(food_description)
 
     for food_id, score in semantic_hits:
         if food_id not in seen:
@@ -449,7 +271,7 @@ def compute_confidence(ranked_scores):
     gap = ranked_scores[0] - ranked_scores[1]
     return min(1.0, (ranked_scores[0] / 100.0) * (1 + gap / 100.0))
 
-def resolve_grams(food_id, quantity, unit, food_index):
+def resolve_grams(food_id, quantity, unit):
     if unit in UNIT_GRAMS:
         return quantity * UNIT_GRAMS[unit]
 
@@ -472,7 +294,7 @@ def resolve_grams(food_id, quantity, unit, food_index):
     return quantity * 100.0
 
 
-def calculate_nutrients(food_id, grams, food_index):
+def calculate_nutrients(food_id, grams):
     entry = food_index.get(food_id)
     if not entry:
         return {}
@@ -483,18 +305,18 @@ def calculate_nutrients(food_id, grams, food_index):
     }
 
 
-def resolve_recipe_nutrients(food_id, grams, food_index, recipe_index):
+def resolve_recipe_nutrients(food_id, grams):
     if food_id not in recipe_index:
-        return calculate_nutrients(food_id, grams, food_index)
+        return calculate_nutrients(food_id, grams)
 
     total = {}
     for component in recipe_index[food_id]:
         ingredient_grams = grams * component["weight_fraction"]
-        for nutrient, value in calculate_nutrients(component["ingredient_id"], ingredient_grams, food_index).items():
+        for nutrient, value in calculate_nutrients(component["ingredient_id"], ingredient_grams).items():
             if value is not None:
                 total[nutrient] = round(total.get(nutrient, 0.0) + value, 2)
 
-    return total or calculate_nutrients(food_id, grams, food_index)
+    return total or calculate_nutrients(food_id, grams)
 
 def parse_llm_output(raw):
     parsed = json.loads(raw)
@@ -531,15 +353,15 @@ def validate_llm_grounding(items, original_text):
 
     return validated if validated else None
 
-def validate_llm_items(llm_items, food_index, nlp):
+def validate_llm_items(llm_items):
     enriched = []
 
     for item in llm_items:
         food_name = item["food"]
 
         # First, normal linking
-        candidate_ids = retrieve_candidates(food_name, food_index)
-        ranked = rank_candidates(food_name, candidate_ids, food_index)
+        candidate_ids = retrieve_candidates(food_name)
+        ranked = rank_candidates(food_name, candidate_ids)
 
         if ranked:
             ranked_scores = [score for _, score in ranked]
@@ -557,8 +379,8 @@ def validate_llm_items(llm_items, food_index, nlp):
                 if not generic_attempt:
                     continue
 
-                candidate_ids = retrieve_candidates(generic_attempt, food_index)
-                ranked = rank_candidates(generic_attempt, candidate_ids, food_index)
+                candidate_ids = retrieve_candidates(generic_attempt)
+                ranked = rank_candidates(generic_attempt, candidate_ids)
 
                 if ranked:
                     score = ranked[0][1] / 100.0
@@ -633,7 +455,7 @@ def build_candidate_list(ranked, grams):
                 {"food_id": c["ingredient_id"], "name": c["ingredient_name"], "weight_fraction": c["weight_fraction"]}
                 for c in recipe_index.get(food_id, [])
             ],
-            "nutrients": resolve_recipe_nutrients(food_id, grams, food_index, recipe_index),
+            "nutrients": resolve_recipe_nutrients(food_id, grams),
         })
     return candidates
 
@@ -642,13 +464,13 @@ async def process_llm_item(item, original_text):
     food_description = item.get("food_generic") or item["food"]
     quantity, unit = item["quantity"], item["unit"]
 
-    ranked = rank_candidates(food_description, retrieve_candidates(food_description, food_index), food_index)
+    ranked = rank_candidates(food_description, retrieve_candidates(food_description))
     if not ranked:
         return None
 
     confidence = compute_confidence([s for _, s in ranked])
     provisional = ranked[0][0]
-    grams = resolve_grams(provisional, quantity, unit, food_index)
+    grams = resolve_grams(provisional, quantity, unit)
     candidates = build_candidate_list(ranked, grams)
 
     best_idx = (
@@ -657,7 +479,7 @@ async def process_llm_item(item, original_text):
         else 0
     )
 
-    grams = resolve_grams(candidates[best_idx]["food_id"], quantity, unit, food_index)
+    grams = resolve_grams(candidates[best_idx]["food_id"], quantity, unit)
     candidates = build_candidate_list(ranked, grams)
 
     char_start, char_end, qty_cs, qty_ce, unit_cs = find_item_char_positions(item, original_text)
@@ -680,16 +502,16 @@ async def process_llm_item(item, original_text):
 
 
 def process_spacy_entity(entity, doc, prev_end):
-    ranked = rank_candidates(entity.text, retrieve_candidates(entity.text, food_index), food_index)
+    ranked = rank_candidates(entity.text, retrieve_candidates(entity.text))
     if not ranked:
-        ranked = fuzzy_search(entity.text, food_index)
+        ranked = fuzzy_search(entity.text)
     if not ranked:
         return None
 
     confidence = compute_confidence([s for _, s in ranked])
     quantity, qty_cs, qty_ce, unit, unit_cs = extract_quantity(doc, entity.start, prev_end)
     best_id = ranked[0][0]
-    grams = resolve_grams(best_id, quantity, unit, food_index)
+    grams = resolve_grams(best_id, quantity, unit)
     candidates = build_candidate_list(ranked, grams)
 
     return {
@@ -709,39 +531,6 @@ def process_spacy_entity(entity, doc, prev_end):
     }
 
 
-csm_df = pd.read_excel(f"{PRINCIPAL_XLSX}/CSM.FT.XLSX", skiprows=1)
-csm_df.columns = csm_df.columns.str.strip()
-
-food_df = pd.read_excel(f"{PRINCIPAL_XLSX}/Unabridged/Unabridged DATA.AP.xlsx", skiprows=1)
-food_df = food_df[food_df["FoodID"] != "FoodID"]  # drop units header row
-food_df.columns = food_df.columns.str.strip()
-
-name_df = pd.read_excel(f"{SUPPORTING_XLSX}/NAME.FT.XLSX", skiprows=1)
-name_df.columns = name_df.columns.str.strip()
-
-ingredient_df = pd.read_excel(f"{PRINCIPAL_XLSX}/INGREDIENT.FT.XLSX", skiprows=1)
-ingredient_df.columns = ingredient_df.columns.str.strip()
-
-nlp_ner = spacy.load("en_core_web_md")
-food_index = build_index(food_df, csm_df, name_df, nlp_ner)
-recipe_index = build_recipe_index(ingredient_df, food_index)
-
-embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
-faiss_index, faiss_ids = build_embedding_index(food_index, embedding_model)
-
-print(f"Food index: {len(food_index)} entries | Recipes: {len(recipe_index)}")
-print(f"FAISS index build: {len(faiss_ids)} vectors")
-
-if not Span.has_extension("food_id"):
-    Span.set_extension("food_id", default=None)
-if not Span.has_extension("candidates"):
-    Span.set_extension("candidates", default=[])
-
-nlp = spacy.load("en_core_web_md", disable=["ner"])
-nlp.add_pipe("food_ner", last=True, config={"food_index": food_index})
-
-
-
 app = FastAPI(title="Food NLP API")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
@@ -754,7 +543,7 @@ async def extract(req: ExtractRequest):
     llm_items = await llm_extract(req.text)
 
     if llm_items is not None:
-        llm_items = validate_llm_items(llm_items, food_index, nlp)
+        llm_items = validate_llm_items(llm_items)
         avg_conf  = sum(i["link_confidence"] for i in llm_items) / len(llm_items) if llm_items else 0
         if avg_conf >= 0.5:
             results = [r for item in llm_items if (r := await process_llm_item(item, req.text))]
