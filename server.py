@@ -16,62 +16,11 @@ from sentence_transformers import SentenceTransformer
 import numpy as np
 import faiss
 
-UNIT_GRAMS = {
-    "g": 1.0,        "gram": 1.0,        "grams": 1.0,
-    "kg": 1000.0,    "kilogram": 1000.0, "kilograms": 1000.0,
-    "ml": 1.0,       "millilitre": 1.0,  "millilitres": 1.0,
-    "milliliter": 1.0, "milliliters": 1.0,
-    "l": 1000.0,     "litre": 1000.0,    "litres": 1000.0,
-    "liter": 1000.0, "liters": 1000.0,
-    "cup": 250.0,    "cups": 250.0,
-    "tbsp": 15.0,    "tablespoon": 15.0, "tablespoons": 15.0,
-    "tsp": 5.0,      "teaspoon": 5.0,    "teaspoons": 5.0,
-}
+from config import (
+    ALL_UNITS, LLM_FEW_SHOT, LLM_RERANK_PROMPT, LLM_SYSTEM_PROMPT, OLLAMA_BASE_URL,
+    OLLAMA_MODEL, OLLAMA_TIMEOUT, PRINCIPAL_XLSX, SUPPORTING_XLSX, UNIT_GRAMS
+)
 
-CSM_UNITS = {
-    "slice", "slices", "piece", "pieces", "serving", "servings",
-    "handful", "handfuls", "can", "cans", "bottle", "bottles",
-    "bar", "bars", "sachet", "sachets", "packet", "packets",
-    "container", "containers", "tub", "tubs",
-}
-
-ALL_UNITS = set(UNIT_GRAMS.keys()) | CSM_UNITS
-
-OLLAMA_BASE_URL = "http://localhost:11434"
-OLLAMA_MODEL = "qwen2.5:7b-instruct-q4_K_M"
-OLLAMA_TIMEOUT = 20.0 # how many secs before giving up and going to spacy if needed
-LLM_SYSTEM_PROMPT = """\
-Extract all food items. Return JSON only. No explanation.
-
-Critical rules:
-- The "food" field MUST be an exact substring of the input text.
-- Do NOT replace brand names with generic terms.
-- Do NOT simplify or generalise food names.
-- Preserve original wording exactly as written.
-
-Return format: {"items": [...]}
-Each item: {"food": string, "quantity": number, "unit": string|null}
-If no quantity stated, use 1. If no unit, use null. Keep brand names as-is.
-
-Input: "spaghetti with a slice of bread topped with butter"
-Output: [{"food":"spaghetti","quantity":1,"unit":"serving"},{"food":"bread","quantity":1,"unit":"slice"},{"food":"butter","quantity":1,"unit":"serving"}]
-
-Input: "200g chicken breast and rice"
-Output: [{"food":"chicken breast","quantity":200,"unit":"gram"},{"food":"rice","quantity":1,"unit":"serving"}]
-"""
-
-LLM_RERANK_PROMPT = """\
-A user logged the food: "{query}"
-
-Here are candidate database matches:
-{candidates}
-
-Which candidate best matches the user's food? 
-Identify synonyms for similar foods, e.g. toast and bread
-Do not just have a preference to select the first choice each time
-Do not assume that the candidate list is already sorted in likely order
-Reply with ONLY the number (1-{n}).\
-"""
 
 def simple_plural(word):
     if word.endswith('y') and len(word) > 2 and word[-2] not in 'aeiou':
@@ -84,7 +33,6 @@ def simple_plural(word):
         return word[:-2] + 'ves'
     return word + 's'
 
-
 def simple_singular(word):
     if word.endswith('ies') and len(word) > 3:
         return word[:-3] + 'y'
@@ -95,7 +43,6 @@ def simple_singular(word):
     if word.endswith('s') and not word.endswith('ss') and len(word) > 3:
         return word[:-1]
     return word
-
 
 def term_variants(term):
     words = term.split()
@@ -111,8 +58,8 @@ def extract_quantity(doc, span_start, prev_end=0):
         return 1.0, None, None, None, None
 
     original_tokens = list(window)
-    window_text = window.text
-    converted = alpha2digit(window_text, "en")
+    converted_words = alpha2digit(window.text, "en").split()
+    original_words  = window.text.split()
 
     for token in reversed(original_tokens):
         if token.text.lower() in ("a", "an"):
@@ -121,35 +68,31 @@ def extract_quantity(doc, span_start, prev_end=0):
     quantity = 1.0
     quantity_char_start = quantity_char_end = None
     unit = None
-    unit_char_start = None
-
-    original_words = window_text.split()
-    converted_words = converted.split()
     original_index = 0
-    num_words_consumed = 1
 
-    for converted_word in converted_words:
+    for ci, converted_word in enumerate(converted_words):
         try:
             quantity = float(converted_word)
-            num_words_consumed = len(original_words) - len(converted_words) + 1
-            start_token = original_tokens[original_index]
-            end_token = original_tokens[min(original_index + num_words_consumed - 1, len(original_tokens) - 1)]
-            quantity_char_start = start_token.idx
-            quantity_char_end = end_token.idx + len(end_token.text)
+            consumed = len(original_words) - len(converted_words) + 1
+            start_tok = original_tokens[original_index]
+            end_tok   = original_tokens[min(original_index + consumed - 1, len(original_tokens) - 1)]
+            quantity_char_start = start_tok.idx
+            quantity_char_end   = end_tok.idx + len(end_tok.text)
+            original_index     += consumed
             break
         except ValueError:
             original_index += 1
 
-    next_index = original_index + num_words_consumed
-    while next_index < len(original_tokens):
-        token = original_tokens[next_index]
-        token_lower = token.text.lower()
-        if token_lower in ALL_UNITS:
-            unit = token_lower
-            unit_char_start = token.idx
+    unit_char_start = None
+    i = original_index
+    while i < len(original_tokens):
+        tok_lower = original_tokens[i].text.lower()
+        if tok_lower in ALL_UNITS:
+            unit = tok_lower
+            unit_char_start = original_tokens[i].idx
             break
-        if token_lower in ("of", "the"):
-            next_index += 1
+        if tok_lower in ("of", "the"):
+            i += 1
             continue
         break
 
@@ -233,6 +176,21 @@ def find_item_char_positions(item, original_text):
 
     return char_start, char_end, quantity_char_start, quantity_char_end, unit_char_start
 
+def extract_name_metadata(name_row):
+    def safe(col):
+        clean = str(name_row.get(col) or "").strip()
+        return "" if clean.lower() == "nan" else clean
+
+    return {
+        "short_name": safe("Short Food Name"),
+        "alt_names": safe("AlternativeNames"),
+        "generic": safe("Generic Name"),
+        "kind": safe("Kind"),
+        "part": safe("Part"),
+        "sampling_details": safe("Sampling Details"),
+    }
+
+
 def build_food_matcher(nlp, food_index):
     matcher = PhraseMatcher(nlp.vocab, attr="LOWER")
     term_candidates = {}
@@ -269,9 +227,8 @@ class FoodNERComponent:
         self.term_candidates = term_candidates
 
     def __call__(self, doc):
-        matches = self.matcher(doc)
         spans = []
-        for match_id, start, end in matches:
+        for match_id, start, end in self.matcher(doc):
             food_id = doc.vocab.strings[match_id]
             span = Span(doc, start, end, label="FOOD")
             span._.food_id = food_id
@@ -288,50 +245,104 @@ class FoodNERComponent:
         return doc
 
 
-def rank_candidates(span_text, candidate_ids, food_index, limit=10):
-    span_lower = span_text.lower()
-    scored = []
+def build_index(food_df, csm_df, name_df, nlp):
+    csm_df = csm_df.copy()
+    csm_df["FoodID"] = csm_df["FoodID"].astype(str).str.strip()
+    csm_lookup = {
+        fid: grp[["CSM", "Measure"]].to_dict("records")
+        for fid, grp in csm_df.groupby("FoodID")
+    } if "FoodID" in csm_df.columns else {}
 
-    semantic_hits = semantic_search(span_text, faiss_index, faiss_ids, embedding_model, k=10)
-    semantic_map = {fid: s for fid, s in semantic_hits}
+    name_lookup = (
+        {str(r.get("FoodID", "")).strip(): r for _, r in name_df.iterrows()}
+        if name_df is not None else {}
+    )
 
-    for food_id in candidate_ids:
-        entry = food_index.get(food_id)
-        if not entry:
+    def clean_num(value):
+        try:
+            f = float(value)
+            return None if math.isnan(f) else f
+        except (TypeError, ValueError):
+            return None
+
+    index = {}
+    for _, row in food_df.iterrows():
+        food_id = str(row.get("FoodID", "")).strip()
+        name = str(row.get("Food Name", "")).strip()
+        if not food_id or not name:
             continue
 
-        key_term = entry["key_term"]
+        keywords = extract_keywords(name)
+        meta = extract_name_metadata(name_lookup[food_id]) if food_id in name_lookup else {}
 
-        lexical = candidate_scorer(span_lower, key_term) / 100.0
-        semantic = semantic_map.get(food_id, 0.0)
+        if meta.get("short_name"):
+            keywords += [t.strip().lower() for t in re.split(r'[;,]', meta["short_name"]) if t.strip()]
+        if meta.get("alt_names"):
+            keywords += [t.strip().lower() for t in re.split(r'[;,]', meta["alt_names"]) if t.strip()]
+        if meta.get("generic"):
+            prefix = f"{meta['kind']} " if meta.get("kind") else ""
+            keywords.append(f"{prefix}{meta['generic']}".strip().lower())
 
-        if semantic > 0.55:
-            score = (0.6 * lexical) + (0.4 * semantic)
-        else:
-            score = lexical
+        seen = set()
+        deduped = [k for k in keywords if k and not (k in seen or seen.add(k))]
+        brands   = extract_brand_keywords(name, meta.get("sampling_details", ""), nlp)
 
-        token_count = len(key_term.split())
-        query_tokens = len(span_lower.split())
+        index[food_id] = {
+            "name": name,
+            "keywords": brands + deduped,
+            "key_term": (brands + deduped)[0] if (brands + deduped) else name.split(",")[0].lower(),
+            "part": meta.get("part") or None,
+            "brands": brands,
+            "serving_measure": csm_lookup.get(food_id, []),
+            "is_recipe": food_id.startswith("R"),
+            "nutrients": {
+                "energy_kj": clean_num(row.get("Energy, total metabolisable (kJ)")),
+                "protein_g": clean_num(row.get("Protein, total; calculated from total nitrogen")),
+                "fat_g":     clean_num(row.get("Fat, total")),
+                "carbs_g":   clean_num(row.get("Available carbohydrate, FSANZ")),
+                "fibre_g":   clean_num(row.get("Fibre, total dietary")),
+                "sodium_mg": clean_num(row.get("Sodium")),
+            },
+        }
+    return index
 
-        brands = entry.get("brands", [])
-        if any(brand in span_lower for brand in brands):
-            score += 0.25
 
-        if query_tokens == 1:
-            score -= (token_count - 1) * 0.05
+def build_recipe_index(ingredient_df, food_index):
+    recipe_index = {}
+    if ingredient_df is None:
+        return recipe_index
 
-        part = entry.get("part")
-        if query_tokens == 1 and part:
-            score += 0.05
+    weight_col = "Weight Fraction(%)" if "Weight Fraction(%)" in ingredient_df.columns else "Weight Fraction (%)"
 
-        if query_tokens >= 2 and food_id in semantic_map:
-            score += 0.05
+    for _, row in ingredient_df.iterrows():
+        recipe_id = str(row.get("Recipe FoodID", "")).strip()
+        ingredient_id = str(row.get("Ingredient FoodID", "")).strip()
+        try:
+            fraction = float(row.get(weight_col, 0)) / 100.0
+        except (TypeError, ValueError):
+            fraction = 0.0
 
-        score = max(0.0, min(1.5, score))
-        scored.append((food_id, score * 100))
+        if recipe_id and ingredient_id and fraction > 0 and ingredient_id in food_index:
+            recipe_index.setdefault(recipe_id, []).append({
+                "ingredient_id": ingredient_id,
+                "ingredient_name": food_index[ingredient_id]["name"],
+                "weight_fraction": fraction,
+            })
 
-    scored.sort(key=lambda x: -x[1])
-    return scored[:limit]
+    return recipe_index
+
+def build_embedding_index(food_index: dict, model):
+    ids = list(food_index.keys())
+    texts = [
+        f"{entry['key_term']} {' '.join(entry['keywords'][:3])}"
+        for entry in food_index.values()
+    ]
+    embeddings = model.encode(texts, batch_size=128, show_progress_bar=True)
+    embeddings = embeddings / np.linalg.norm(embeddings, axis=1, keepdims=True)
+    index = faiss.IndexFlatIP(embeddings.shape[1])
+    index.add(embeddings.astype(np.float32))
+    return index, ids
+
 
 def candidate_scorer(query, candidate_key_term):
     query_lower = query.lower().strip()
@@ -353,6 +364,12 @@ def candidate_scorer(query, candidate_key_term):
 
     return max(0.0, base_score - specificity_penalty + length_bonus)
 
+def semantic_search(query, faiss_index, faiss_ids, model, k=10):
+    vec = model.encode([query])
+    vec = vec / np.linalg.norm(vec)
+    scores, indices = faiss_index.search(vec.astype(np.float32), k)
+    return [(faiss_ids[i], float(scores[0][j])) for j, i in enumerate(indices[0])]
+
 def fuzzy_search(span_text, food_index, threshold=60, limit=10):
     span_lower = span_text.lower().strip()
     scored = []
@@ -367,13 +384,28 @@ def fuzzy_search(span_text, food_index, threshold=60, limit=10):
     scored.sort(key=lambda x: -x[1])
     return scored[:limit]
 
-def semantic_search(query, faiss_index, faiss_ids, model, k=10):
-    vec = model.encode([query])
-    vec = vec / np.linalg.norm(vec)
+def rank_candidates(span_text, candidate_ids, food_index, limit = 10):
+    span_lower   = span_text.lower()
+    semantic_map = dict(semantic_search(span_text, faiss_index, faiss_ids, embedding_model, k=10))
+    scored = []
 
-    scores, indices = faiss_index.search(vec.astype(np.float32), k)
+    for food_id in candidate_ids:
+        entry = food_index.get(food_id)
+        if not entry:
+            continue
+        key_term = entry["key_term"]
+        lexical  = candidate_scorer(span_lower, key_term) / 100.0
+        semantic = semantic_map.get(food_id, 0.0)
+        score    = (0.6 * lexical + 0.4 * semantic) if semantic > 0.55 else lexical
 
-    return [(faiss_ids[i], float(scores[0][j])) for j, i in enumerate(indices[0])]
+        q_toks = len(span_lower.split())
+        score += 0.25 * any(b in span_lower for b in entry.get("brands", []))
+        score -= (len(key_term.split()) - 1) * 0.05 * (q_toks == 1)
+        score += 0.05 * (q_toks == 1 and bool(entry.get("part")))
+        score += 0.05 * (q_toks >= 2 and food_id in semantic_map)
+        scored.append((food_id, max(0.0, min(1.5, score)) * 100))
+
+    return sorted(scored, key=lambda x: -x[1])[:limit]
 
 def retrieve_candidates(food_description, food_index, limit=20):
     doc = nlp(food_description)
@@ -405,6 +437,8 @@ def retrieve_candidates(food_description, food_index, limit=20):
             candidates.append(food_id)
 
     return candidates[:limit]
+
+
 
 def compute_confidence(ranked_scores):
     if not ranked_scores:
@@ -462,160 +496,50 @@ def resolve_recipe_nutrients(food_id, grams, food_index, recipe_index):
 
     return total or calculate_nutrients(food_id, grams, food_index)
 
+def parse_llm_output(raw):
+    parsed = json.loads(raw)
 
-def build_index(food_df, csm_df, name_df, nlp):
-    csm_lookup = {}
-    if "FoodID" in csm_df.columns:
-        csm_df = csm_df.copy()
-        csm_df["FoodID"] = csm_df["FoodID"].astype(str).str.strip()
-        for food_id, group in csm_df.groupby("FoodID"):
-            csm_lookup[str(food_id)] = group[["CSM", "Measure"]].to_dict("records")
+    if isinstance(parsed, list):
+        items = parsed
+    elif isinstance(parsed, dict) and "items" in parsed:
+        items = parsed["items"]
+    # elif isinstance(parsed, dict) and all(k in parsed for k in ("food", "quantity", "unit")):
+    #     # Rare: parallel-list format
+    #     def to_list(v): return v if isinstance(v, list) else [v]
+    #     foods, quantities, units = to_list(parsed["food"]), to_list(parsed["quantity"]), to_list(parsed["unit"])
+    #     n = max(len(foods), len(quantities), len(units))
+    #     def pad(lst): return (lst * n)[:n] if len(lst) == 1 else lst[:n]
+    #     items = [
+    #         {"food": str(f).strip().lower(), "quantity": float(q or 1.0), "unit": None if u in (None, "null") else str(u).lower()}
+    #         for f, q, u in zip(pad(foods), pad(quantities), pad(units))
+    #     ]
+    else:
+        return None
 
-    name_lookup = {}
-    if name_df is not None:
-        for _, row in name_df.iterrows():
-            food_id = str(row.get("FoodID", "")).strip()
-            if food_id:
-                name_lookup[food_id] = row
+    validated = [
+        {
+            "food": str(item.get("food", "")).strip().lower(),
+            "quantity": float(item.get("quantity") or 1.0),
+            "unit": str(item["unit"]).lower() if item.get("unit") else None,
+        }
+        for item in items
+        if isinstance(item, dict) and str(item.get("food", "")).strip()
+    ]
+    return validated or None
 
-    index = {}
+def validate_llm_grounding(items, original_text):
+    text_lower = original_text.lower()
+    validated = []
 
-    for _, row in food_df.iterrows():
-        food_id = str(row.get("FoodID", "")).strip()
-        name = str(row.get("Food Name", "")).strip()
-        if not food_id or not name:
+    for item in items:
+        food = item["food"].lower()
+
+        if food not in text_lower:
             continue
 
-        keywords = extract_keywords(name)
+        validated.append(item)
 
-        name_row = name_lookup.get(food_id)
-        if name_row is not None:
-            short_name = str(name_row.get("Short Food Name") or "").strip()
-            if short_name and short_name.lower() != "nan":
-                keywords += [t.strip().lower() for t in re.split(r'[;,]', short_name) if t.strip()]
-
-            alt_names = str(name_row.get("AlternativeNames") or "").strip()
-            if alt_names and alt_names.lower() != "nan":
-                keywords += [t.strip().lower() for t in re.split(r'[;,]', alt_names) if t.strip()]
-            generic = str(name_row.get("Generic Name") or "").strip()
-            kind = str(name_row.get("Kind") or "").strip()
-            if kind and kind.lower() != "nan" and generic and generic.lower() != "nan":
-                keywords.append(f"{kind} {generic}".strip().lower())
-            elif generic and generic.lower() != "nan":
-                keywords.append(generic.strip().lower())
-            part = str(name_row.get("Part") or "").strip()
-            sampling_details = str(name_row.get("Sampling Details") or "").strip()
-
-        seen = set()
-        deduped = []
-        for keyword in keywords:
-            keyword = keyword.strip()
-            if keyword and keyword not in seen:
-                seen.add(keyword)
-                deduped.append(keyword)
-        brand_keywords = extract_brand_keywords(name, sampling_details, nlp)
-        keywords = brand_keywords + deduped
-
-        def clean(value):
-            try:
-                as_float = float(value)
-                return None if math.isnan(as_float) else as_float
-            except (TypeError, ValueError):
-                return None
-
-        index[food_id] = {
-            "name": name,
-            "keywords": keywords,
-            "key_term": keywords[0] if keywords else name.split(",")[0].lower(),
-            "part": part if part and part.lower() != "nan" else None,
-            "brands": brand_keywords,
-            "serving_measure": csm_lookup.get(food_id, []),
-            "is_recipe": food_id.startswith("R"),
-            "nutrients": {
-                "energy_kj": clean(row.get("Energy, total metabolisable (kJ)")),
-                "protein_g": clean(row.get("Protein, total; calculated from total nitrogen")),
-                "fat_g": clean(row.get("Fat, total")),
-                "carbs_g": clean(row.get("Available carbohydrate, FSANZ")),
-                "fibre_g": clean(row.get("Fibre, total dietary")),
-                "sodium_mg": clean(row.get("Sodium")),
-            }
-        }
-    return index
-
-
-def build_recipe_index(ingredient_df, food_index):
-    recipe_index = {}
-    if ingredient_df is None:
-        return recipe_index
-
-    weight_col = "Weight Fraction(%)" if "Weight Fraction(%)" in ingredient_df.columns else "Weight Fraction (%)"
-
-    for _, row in ingredient_df.iterrows():
-        recipe_id = str(row.get("Recipe FoodID", "")).strip()
-        ingredient_id = str(row.get("Ingredient FoodID", "")).strip()
-        try:
-            fraction = float(row.get(weight_col, 0)) / 100.0
-        except (TypeError, ValueError):
-            fraction = 0.0
-
-        if recipe_id and ingredient_id and fraction > 0 and ingredient_id in food_index:
-            recipe_index.setdefault(recipe_id, []).append({
-                "ingredient_id": ingredient_id,
-                "ingredient_name": food_index[ingredient_id]["name"],
-                "weight_fraction": fraction,
-            })
-
-    return recipe_index
-
-def build_embedding_index(food_index, model):
-    ids = list(food_index.keys())
-
-    texts = [
-        f"{entry['key_term']} {' '.join(entry['keywords'][:3])}"
-        for entry in food_index.values()
-    ]
-
-    embeddings = model.encode(texts, batch_size=128, show_progress_bar=True)
-    embeddings = embeddings / np.linalg.norm(embeddings, axis=1, keepdims=True)
-
-    index = faiss.IndexFlatIP(embeddings.shape[1])
-    index.add(embeddings.astype(np.float32))
-
-    return index, ids
-
-
-BASE = "data/New Zealand FOODfiles 2024"
-
-csm_df = pd.read_excel(f"{BASE}/Principal files/Excel files/CSM.FT.XLSX", skiprows=1)
-csm_df.columns = csm_df.columns.str.strip()
-
-food_df = pd.read_excel(f"{BASE}/Principal files/Excel files/Unabridged/Unabridged DATA.AP.xlsx", skiprows=1)
-food_df = food_df[food_df["FoodID"] != "FoodID"]  # drop units header row
-food_df.columns = food_df.columns.str.strip()
-
-name_df = pd.read_excel(f"{BASE}/Supporting files/Excel files/NAME.FT.XLSX", skiprows=1)
-name_df.columns = name_df.columns.str.strip()
-
-ingredient_df = pd.read_excel(f"{BASE}/Principal files/Excel files/INGREDIENT.FT.XLSX", skiprows=1)
-ingredient_df.columns = ingredient_df.columns.str.strip()
-
-nlp_ner = spacy.load("en_core_web_md")
-food_index = build_index(food_df, csm_df, name_df, nlp_ner)
-recipe_index = build_recipe_index(ingredient_df, food_index)
-
-embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
-faiss_index, faiss_ids = build_embedding_index(food_index, embedding_model)
-
-print(f"Food index: {len(food_index)} entries | Recipes: {len(recipe_index)}")
-print(f"FAISS index build: {len(faiss_ids)} vectors")
-
-if not Span.has_extension("food_id"):
-    Span.set_extension("food_id", default=None)
-if not Span.has_extension("candidates"):
-    Span.set_extension("candidates", default=[])
-
-nlp = spacy.load("en_core_web_md", disable=["ner"])
-nlp.add_pipe("food_ner", last=True, config={"food_index": food_index})
+    return validated if validated else None
 
 def validate_llm_items(llm_items, food_index, nlp):
     enriched = []
@@ -656,168 +580,55 @@ def validate_llm_items(llm_items, food_index, nlp):
 
     return enriched
 
-def validate_llm_grounding(items, original_text):
-    text_lower = original_text.lower()
-    validated = []
+async def llm_extract(text):
+    payload = {
+        "model": OLLAMA_MODEL,
+        "messages": [{"role": "system", "content": LLM_SYSTEM_PROMPT}, *LLM_FEW_SHOT, {"role": "user", "content": text}],
+        "stream": False,
+        "format": "json",
+        "options": {"temperature": 0, "num_predict": 512},
+    }
+    try:
+        async with httpx.AsyncClient(timeout=OLLAMA_TIMEOUT) as client:
+            resp = await client.post(f"{OLLAMA_BASE_URL}/api/chat", json=payload)
+            resp.raise_for_status()
+        raw = resp.json()["message"]["content"]
+        print("Raw LLM output:", raw)
+        items = parse_llm_output(raw)
+        if items:
+            items = validate_llm_grounding(items, text)
+        return items
+    except (httpx.ConnectError, httpx.TimeoutException):
+        print("Ollama unavailable — falling back to spaCy")
+        return None
+    except (json.JSONDecodeError, KeyError, ValueError, TypeError) as exc:
+        print(f"LLM parse error ({exc}) — falling back to spaCy")
+        return None
 
-    for item in items:
-        food = item["food"].lower()
-
-        if food not in text_lower:
-            continue
-
-        validated.append(item)
-
-    return validated if validated else None
 
 async def llm_rerank(query, candidates):
     if len(candidates) <= 1:
         return 0
-
-    candidate_text = "\n".join(
-        f"{i+1}. {c['name']}" for i, c in enumerate(candidates)
-    )
-
-    prompt = LLM_RERANK_PROMPT.format(
-        query=query,
-        candidates=candidate_text,
-        n=len(candidates)
-    )
-
+    candidate_text = "\n".join(f"{i+1}. {c['name']}" for i, c in enumerate(candidates))
+    prompt = LLM_RERANK_PROMPT.format(query=query, candidates=candidate_text, n=len(candidates))
     payload = {
         "model": OLLAMA_MODEL,
         "messages": [{"role": "user", "content": prompt}],
         "stream": False,
         "options": {"temperature": 0, "num_predict": 5},
     }
-
-    try:
-        async with httpx.AsyncClient(timeout=5.0) as client:
-            resp = await client.post(f"{OLLAMA_BASE_URL}/api/chat", json=payload)
-            resp.raise_for_status()
-
-        raw = resp.json()["message"]["content"].strip()
-        print("Reranking raw output:", resp.json())
-        print("candidates: ", candidate_text)
-        print("prompt: ", prompt)
-        choice = int(raw) - 1
-
-        if 0 <= choice < len(candidates):
-            return choice
-
-    except Exception as e:
-        print("ERROR: ", e)
-        pass
-
-    return 0
-
-async def llm_extract(text):
-    payload = {
-        "model": OLLAMA_MODEL,
-        "messages": [
-            {"role": "system", "content": LLM_SYSTEM_PROMPT},
-            # Few-shot examples as conversation turns
-            {"role": "user", "content": "two apples and a banana"},
-            {"role": "assistant", "content": '{"items":[{"food":"apple","quantity":2,"unit":null},{"food":"banana","quantity":1,"unit":null}]}'},
-            {"role": "user", "content": "spaghetti bolognaise with garlic bread"},
-            {"role": "assistant", "content": '{"items":[{"food":"spaghetti bolognaise","quantity":1,"unit":"serving"},{"food":"garlic bread","quantity":1,"unit":"serving"}]}'},
-            {"role": "user", "content": "porridge topped with honey and a cup of coffee"},
-            {"role": "assistant", "content": '{"items":[{"food":"porridge","quantity":1,"unit":"serving"},{"food":"honey","quantity":1,"unit":"serving"},{"food":"coffee","quantity":1,"unit":"cup"}]}'},
-            # Actual request
-            {"role": "user", "content": text},
-        ],
-        "stream": False,
-        "format": "json",
-        "options": {
-            "temperature": 0, # must be deterministic for a parser
-            "num_predict": 512,
-        },
-    }
-
     try:
         async with httpx.AsyncClient(timeout=OLLAMA_TIMEOUT) as client:
             resp = await client.post(f"{OLLAMA_BASE_URL}/api/chat", json=payload)
             resp.raise_for_status()
+        choice = int(resp.json()["message"]["content"].strip()) - 1
+        return choice if 0 <= choice < len(candidates) else 0
+    except Exception as e:
+        print(f"Rerank error: {e}")
+        return 0
 
-        print(resp.json())
 
-        raw = resp.json()["message"]["content"]
-        parsed = json.loads(raw)
-
-        print("Raw LLM output: ", raw)
-
-        if isinstance(parsed, list):
-            pass
-
-        if isinstance(parsed, dict) and "items" in parsed:
-            parsed = parsed["items"]
-
-        elif isinstance(parsed, dict) and all(k in parsed for k in ("food", "quantity", "unit")):
-            foods = parsed.get("food")
-            quantities = parsed.get("quantity")
-            units = parsed.get("unit")
-
-            # If single values → wrap into lists
-            if not isinstance(foods, list):
-                foods = [foods]
-            if not isinstance(quantities, list):
-                quantities = [quantities]
-            if not isinstance(units, list):
-                units = [units]
-
-            max_len = max(len(foods), len(quantities), len(units))
-
-            def expand(lst):
-                if len(lst) == max_len:
-                    return lst
-                if len(lst) == 1:
-                    return lst * max_len
-                return lst[:max_len]  # fallback (rare edge case)
-
-            foods = expand(foods)
-            quantities = expand(quantities)
-            units = expand(units)
-
-            parsed = [
-                {
-                    "food": str(foods[i]).strip().lower(),
-                    "quantity": float(quantities[i]) if quantities[i] is not None else 1.0,
-                    "unit": None if units[i] in (None, "null") else str(units[i]).lower()
-                }
-                for i in range(max_len)
-            ]
-
-        else:
-            return None
-
-        validated: list[dict] = []
-        for item in parsed:
-            if not isinstance(item, dict):
-                continue
-            food = str(item.get("food", "")).strip().lower()
-            if not food:
-                continue
-            validated.append({
-                "food": food,
-                "quantity": float(item.get("quantity") or 1.0),
-                "unit": str(item["unit"]).lower() if item.get("unit") else None,
-            })
-
-        validated = validated if validated else None
-
-        if validated:
-            validated = validate_llm_grounding(validated, text)
-
-        return validated
-
-    except (httpx.ConnectError, httpx.TimeoutException):
-        print("Ollama unavailable - falling back to spaCy pipeline")
-        return None
-    except (json.JSONDecodeError, KeyError, ValueError, TypeError) as exc:
-        print(f"LLM Parse error ({exc}) - falling back to spaCy pipeline")
-        return None
-
-def _build_candidate_list(ranked, grams):
+def build_candidate_list(ranked, grams):
     candidates = []
     for food_id, score in ranked[:10]:
         entry = food_index.get(food_id)
@@ -829,18 +640,117 @@ def _build_candidate_list(ranked, grams):
             "score": round(score, 2),
             "is_recipe": entry.get("is_recipe", False),
             "recipe_ingredients": [
-                {
-                    "food_id": c["ingredient_id"],
-                    "name": c["ingredient_name"],
-                    "weight_fraction": c["weight_fraction"],
-                }
+                {"food_id": c["ingredient_id"], "name": c["ingredient_name"], "weight_fraction": c["weight_fraction"]}
                 for c in recipe_index.get(food_id, [])
             ],
-            "nutrients": resolve_recipe_nutrients(
-                food_id, grams, food_index, recipe_index
-            ),
+            "nutrients": resolve_recipe_nutrients(food_id, grams, food_index, recipe_index),
         })
     return candidates
+
+
+async def process_llm_item(item, original_text):
+    food_description = item.get("food_generic") or item["food"]
+    quantity, unit = item["quantity"], item["unit"]
+
+    ranked = rank_candidates(food_description, retrieve_candidates(food_description, food_index), food_index)
+    if not ranked:
+        return None
+
+    confidence = compute_confidence([s for _, s in ranked])
+    provisional = ranked[0][0]
+    grams = resolve_grams(provisional, quantity, unit, food_index)
+    candidates = build_candidate_list(ranked, grams)
+
+    best_idx = (
+        await llm_rerank(food_description, candidates)
+        if len(candidates) > 1 and abs(ranked[0][1] - ranked[1][1]) < 10
+        else 0
+    )
+
+    grams = resolve_grams(candidates[best_idx]["food_id"], quantity, unit, food_index)
+    candidates = build_candidate_list(ranked, grams)
+
+    char_start, char_end, qty_cs, qty_ce, unit_cs = find_item_char_positions(item, original_text)
+    return {
+        "text": item["food"],
+        "resolved_text": food_description,
+        "char_start": char_start,
+        "char_end": char_end,
+        "quantity": quantity,
+        "quantity_char_start": qty_cs,
+        "quantity_char_end": qty_ce,
+        "unit": unit,
+        "unit_char_start": unit_cs,
+        "grams": grams,
+        "confidence": confidence,
+        "match": candidates[0] if candidates else None,
+        "candidates": candidates,
+        "source": "llm",
+    }
+
+
+def process_spacy_entity(entity, doc, prev_end):
+    ranked = rank_candidates(entity.text, retrieve_candidates(entity.text, food_index), food_index)
+    if not ranked:
+        ranked = fuzzy_search(entity.text, food_index)
+    if not ranked:
+        return None
+
+    confidence = compute_confidence([s for _, s in ranked])
+    quantity, qty_cs, qty_ce, unit, unit_cs = extract_quantity(doc, entity.start, prev_end)
+    best_id = ranked[0][0]
+    grams = resolve_grams(best_id, quantity, unit, food_index)
+    candidates = build_candidate_list(ranked, grams)
+
+    return {
+        "text": entity.text,
+        "char_start": entity.start_char,
+        "char_end": entity.end_char,
+        "quantity": quantity,
+        "quantity_char_start": qty_cs,
+        "quantity_char_end": qty_ce,
+        "unit": unit,
+        "unit_char_start": unit_cs,
+        "grams": grams,
+        "confidence": confidence,
+        "match": candidates[0] if candidates else None,
+        "candidates": candidates,
+        "source": "spacy",
+    }
+
+
+csm_df = pd.read_excel(f"{PRINCIPAL_XLSX}/CSM.FT.XLSX", skiprows=1)
+csm_df.columns = csm_df.columns.str.strip()
+
+food_df = pd.read_excel(f"{PRINCIPAL_XLSX}/Unabridged/Unabridged DATA.AP.xlsx", skiprows=1)
+food_df = food_df[food_df["FoodID"] != "FoodID"]  # drop units header row
+food_df.columns = food_df.columns.str.strip()
+
+name_df = pd.read_excel(f"{SUPPORTING_XLSX}/NAME.FT.XLSX", skiprows=1)
+name_df.columns = name_df.columns.str.strip()
+
+ingredient_df = pd.read_excel(f"{PRINCIPAL_XLSX}/INGREDIENT.FT.XLSX", skiprows=1)
+ingredient_df.columns = ingredient_df.columns.str.strip()
+
+nlp_ner = spacy.load("en_core_web_md")
+food_index = build_index(food_df, csm_df, name_df, nlp_ner)
+recipe_index = build_recipe_index(ingredient_df, food_index)
+
+embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+faiss_index, faiss_ids = build_embedding_index(food_index, embedding_model)
+
+print(f"Food index: {len(food_index)} entries | Recipes: {len(recipe_index)}")
+print(f"FAISS index build: {len(faiss_ids)} vectors")
+
+if not Span.has_extension("food_id"):
+    Span.set_extension("food_id", default=None)
+if not Span.has_extension("candidates"):
+    Span.set_extension("candidates", default=[])
+
+nlp = spacy.load("en_core_web_md", disable=["ner"])
+nlp.add_pipe("food_ner", last=True, config={"food_index": food_index})
+
+
 
 app = FastAPI(title="Food NLP API")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
@@ -849,120 +759,24 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 class ExtractRequest(BaseModel):
     text: str
 
-
 @app.post("/extract")
 async def extract(req: ExtractRequest):
     llm_items = await llm_extract(req.text)
+
     if llm_items is not None:
         llm_items = validate_llm_items(llm_items, food_index, nlp)
-        avg_conf = (
-            sum(item["link_confidence"] for item in llm_items) / len(llm_items)
-            if llm_items else 0
-        )
-        if avg_conf < 0.5:
-            llm_items = None
-
-        results = []
-        if llm_items is not None:
-            for item in llm_items:
-                food_description = item.get("food_generic") or item["food"]
-                quantity = item["quantity"]
-                unit = item["unit"]
-
-                candidate_ids = retrieve_candidates(food_description, food_index)
-                ranked = rank_candidates(food_description, candidate_ids, food_index)
-
-                if not ranked:
-                    continue
-
-                ranked_scores = [score for _, score in ranked]
-                confidence = compute_confidence(ranked_scores)
-
-                # First pick a provisional best match (top ranked)
-                provisional_best_id = ranked[0][0]
-                grams = resolve_grams(provisional_best_id, quantity, unit, food_index)
-
-                # Build candidates with provisional grams
-                candidates = _build_candidate_list(ranked, grams)
-
-                # Only rerank if ambiguous
-                if len(candidates) > 1 and abs(ranked[0][1] - ranked[1][1]) < 10:
-                    print("Reranking")
-                    best_idx = await llm_rerank(food_description, candidates)
-                else:
-                    best_idx = 0
-
-                best_id = candidates[best_idx]["food_id"]
-
-                # Recompute grams using final choice
-                grams = resolve_grams(best_id, quantity, unit, food_index)
-                candidates = _build_candidate_list(ranked, grams)
-
-                char_start, char_end, quantity_char_start, quantity_char_end, unit_char_start = find_item_char_positions(item, req.text)
-
-                results.append({
-                    "text": item["food"],
-                    "resolved_text": food_description,
-                    "char_start": char_start,
-                    "char_end": char_end,
-                    "quantity": quantity,
-                    "quantity_char_start": quantity_char_start,
-                    "quantity_char_end": quantity_char_end,
-                    "unit": unit,
-                    "unit_char_start": unit_char_start,
-                    "grams": grams,
-                    "confidence": confidence,
-                    "match": candidates[0] if candidates else None,
-                    "candidates": candidates,
-                    "source": "llm",
-                })
+        avg_conf  = sum(i["link_confidence"] for i in llm_items) / len(llm_items) if llm_items else 0
+        if avg_conf >= 0.5:
+            results = [r for item in llm_items if (r := await process_llm_item(item, req.text))]
             print("LLM used")
             return {"entities": results, "text": req.text, "source": "llm"}
 
-    doc = nlp(req.text)
-    results = []
-    prev_end = 0
+    # spaCy fallback
+    doc, results, prev_end = nlp(req.text), [], 0
+    for ent in (e for e in doc.ents if e.label_ == "FOOD"):
+        if result := process_spacy_entity(ent, doc, prev_end):
+            results.append(result)
+        prev_end = ent.end
 
-    for entity in doc.ents:
-        if entity.label_ != "FOOD":
-            continue
-
-        candidate_ids = retrieve_candidates(entity.text, food_index)
-        ranked = rank_candidates(entity.text, candidate_ids, food_index)
-
-        if not ranked:
-            ranked = fuzzy_search(entity.text, food_index)
-
-        if not ranked:
-            continue
-
-        ranked_ids = [candidate_id for candidate_id, _ in ranked]
-        ranked_scores = [score for _, score in ranked]
-
-        confidence = compute_confidence(ranked_scores)
-
-        quantity, quantity_char_start, quantity_char_end, unit, unit_char_start = extract_quantity(doc, entity.start, prev_end)
-        prev_end = entity.end
-
-        best_id = ranked_ids[0]
-        grams = resolve_grams(best_id, quantity, unit, food_index)
-
-        candidates = _build_candidate_list(ranked, grams)
-
-        results.append({
-            "text": entity.text,
-            "char_start": entity.start_char,
-            "char_end": entity.end_char,
-            "quantity": quantity,
-            "quantity_char_start": quantity_char_start,
-            "quantity_char_end": quantity_char_end,
-            "unit": unit,
-            "unit_char_start": unit_char_start,
-            "grams": grams,
-            "confidence": confidence,
-            "match": candidates[0] if candidates else None,
-            "candidates": candidates,
-            "source": "spacy",
-        })
     print("spaCy used")
     return {"entities": results, "text": req.text, "source": "spacy"}
