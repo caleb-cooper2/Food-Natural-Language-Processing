@@ -176,13 +176,16 @@ def candidate_scorer(query, candidate_key_term):
     query_tokens = set(query_lower.split())
     candidate_tokens = set(candidate_lower.split())
 
-    base_score = fuzz.token_sort_ratio(query_lower, candidate_lower)
+    precision_score = fuzz.token_sort_ratio(query_lower, candidate_lower)
+    partial_score = fuzz.token_sort_ratio(query_lower, candidate_lower)
+
+    base_score = 0.65 * precision_score + 0.35 * partial_score
 
     extra_tokens = candidate_tokens - query_tokens
-    specificity_penalty = (len(extra_tokens) / max(len(candidate_tokens), 1)) * 40
+    specificity_penalty = (len(extra_tokens) / max(len(candidate_tokens), 1)) * 15
 
     length_ratio = min(len(query_lower), len(candidate_lower)) / max(len(query_lower), len(candidate_lower))
-    length_bonus = length_ratio * 10
+    length_bonus = length_ratio * 8
 
     return max(0.0, base_score - specificity_penalty + length_bonus)
 
@@ -218,7 +221,9 @@ def rank_candidates(span_text, candidate_ids, limit = 10):
         key_term = entry["key_term"]
         lexical  = candidate_scorer(span_lower, key_term) / 100.0
         semantic = semantic_map.get(food_id, 0.0)
-        score    = (0.6 * lexical + 0.4 * semantic) if semantic > 0.55 else lexical
+
+        semantic_weight = 0.4 * min(1.0, max(0.0, (semantic - 0.3) / 0.4))
+        score = (1.0 - semantic_weight) * lexical + semantic_weight * semantic
 
         q_toks = len(span_lower.split())
         score += 0.25 * any(b in span_lower for b in entry.get("brands", []))
