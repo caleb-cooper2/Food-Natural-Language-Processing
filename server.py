@@ -503,16 +503,6 @@ def parse_llm_output(raw):
         items = parsed
     elif isinstance(parsed, dict) and "items" in parsed:
         items = parsed["items"]
-    # elif isinstance(parsed, dict) and all(k in parsed for k in ("food", "quantity", "unit")):
-    #     # Rare: parallel-list format
-    #     def to_list(v): return v if isinstance(v, list) else [v]
-    #     foods, quantities, units = to_list(parsed["food"]), to_list(parsed["quantity"]), to_list(parsed["unit"])
-    #     n = max(len(foods), len(quantities), len(units))
-    #     def pad(lst): return (lst * n)[:n] if len(lst) == 1 else lst[:n]
-    #     items = [
-    #         {"food": str(f).strip().lower(), "quantity": float(q or 1.0), "unit": None if u in (None, "null") else str(u).lower()}
-    #         for f, q, u in zip(pad(foods), pad(quantities), pad(units))
-    #     ]
     else:
         return None
 
