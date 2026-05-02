@@ -1,8 +1,10 @@
 import json
 import math
+import pickle
 import re
 from pathlib import Path
 
+from rank_bm25 import BM25Okapi
 import faiss
 import numpy as np
 import pandas as pd
@@ -190,22 +192,38 @@ def build_recipe_index(ingredient_df, food_index):
 
 def build_embedding_index(food_index, model):
     ids = list(food_index.keys())
-    texts = [
-        f"{entry['key_term']} {' '.join(entry['keywords'][:3])}"
-        for entry in food_index.values()
-    ]
+    texts = []
+
+    for entry in food_index.values():
+        all_tems = list(dict.fromkeys(
+            [entry["name"]] + [entry["key_term"]] + entry["keywords"]
+        ))
+        text = " | ".join(all_tems[:10])
+        texts.append(text.lower())
+
     embeddings = model.encode(texts, batch_size=128, show_progress_bar=True)
     embeddings = embeddings / np.linalg.norm(embeddings, axis=1, keepdims=True)
     index = faiss.IndexFlatIP(embeddings.shape[1])
     index.add(embeddings.astype(np.float32))
     return index, ids
 
-def save_indexes(food_index, recipe_index, fi, faiss_ids):
+def build_bm25_index(food_index):
+    ids = list(food_index.keys())
+    corpus = []
+    for entry in food_index.values():
+        text = entry["name"] + " " + " ".join(entry["keywords"])
+        corpus.append(text.lower().split())
+    bm25 = BM25Okapi(corpus)
+    return bm25, ids
+
+def save_indexes(food_index, recipe_index, fi, faiss_ids, bm25, bm25_ids):
     INDEX_DIR.mkdir(parents=True, exist_ok=True)
     (INDEX_DIR / "food_index.json").write_text(json.dumps(food_index))
     (INDEX_DIR / "recipe_index.json").write_text(json.dumps(recipe_index))
     (INDEX_DIR / "faiss_ids.json").write_text(json.dumps(faiss_ids))
     faiss.write_index(fi, str(INDEX_DIR / "faiss.index"))
+    with open(INDEX_DIR / "bm25.pkl", "wb") as f:
+        pickle.dump((bm25, bm25_ids), f)
     print(f"Indexes saved to {INDEX_DIR}/")
 
 
@@ -222,7 +240,9 @@ def load_indexes():
     recipe_index = json.loads((INDEX_DIR / "recipe_index.json").read_text())
     fi = faiss.read_index(str(INDEX_DIR / "faiss.index"))
     faiss_ids = json.loads((INDEX_DIR / "faiss_ids.json").read_text())
-    return food_index, recipe_index, fi, faiss_ids
+    with open(INDEX_DIR / "bm25.pkl", "rb") as f:
+        bm25, bm25_ids = pickle.load(f)
+    return food_index, recipe_index, fi, faiss_ids, bm25, bm25_ids
 
 if __name__ == "__main__":
     print("Loading source data...")
@@ -250,4 +270,8 @@ if __name__ == "__main__":
     faiss_index, faiss_ids = build_embedding_index(food_index, embedding_model)
     print(f"{len(faiss_ids)} vectors")
 
-    save_indexes(food_index, recipe_index, faiss_index, faiss_ids)
+    print("Building BM25 index")
+    bm25, bm25_ids = build_bm25_index(food_index)
+    print(f"{len(bm25_ids)} BM25 entries")
+
+    save_indexes(food_index, recipe_index, faiss_index, faiss_ids, bm25, bm25_ids)

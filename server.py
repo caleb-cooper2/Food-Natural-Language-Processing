@@ -20,7 +20,7 @@ from index import (
     extract_brand_keywords, load_indexes, simple_singular, term_variants,
 )
 
-food_index, recipe_index, faiss_index, faiss_ids = load_indexes()
+food_index, recipe_index, faiss_index, faiss_ids, bm25, bm25_ids = load_indexes()
 embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
 
 print(f"Food index: {len(food_index)} entries | Recipes: {len(recipe_index)}")
@@ -209,6 +209,20 @@ def fuzzy_search(span_text, threshold=60, limit=10):
     scored.sort(key=lambda x: -x[1])
     return scored[:limit]
 
+def bm25_search(query, bm25, bm25_ids, k=20):
+    tokens = query.lower().split()
+    scores = bm25.get_scores(tokens)
+    top_indices = np.argsort(scores)[::-1][:k]
+    return [(bm25_ids[i], float(scores[i])) for i in top_indices if scores[i] > 0]
+
+def reciprocal_rank_fusion(*ranked_lists, k=60):
+    scores = {}
+    for ranked in ranked_lists:
+        for rank, (food_id, _) in enumerate(ranked):
+            scores[food_id] = scores.get(food_id, 0.0) + 1.0 / (k + rank+1)
+    return sorted(scores.items(), key=lambda x: -x[1])
+
+
 def rank_candidates(span_text, candidate_ids, limit = 10):
     span_lower   = span_text.lower()
     semantic_map = dict(semantic_search(span_text, k=10))
@@ -218,8 +232,14 @@ def rank_candidates(span_text, candidate_ids, limit = 10):
         entry = food_index.get(food_id)
         if not entry:
             continue
-        key_term = entry["key_term"]
-        lexical  = candidate_scorer(span_lower, key_term) / 100.0
+
+        candidate_terms = list(dict.fromkeys(
+            [entry["key_term"]] + entry.get("keywords", [])[:5]
+        ))
+        lexical = max(
+            candidate_scorer(span_lower, term) for term in candidate_terms
+        ) / 100.0
+
         semantic = semantic_map.get(food_id, 0.0)
 
         semantic_weight = 0.4 * min(1.0, max(0.0, (semantic - 0.3) / 0.4))
@@ -227,44 +247,41 @@ def rank_candidates(span_text, candidate_ids, limit = 10):
 
         q_toks = len(span_lower.split())
         score += 0.25 * any(b in span_lower for b in entry.get("brands", []))
-        score -= (len(key_term.split()) - 1) * 0.05 * (q_toks == 1)
+        score -= (len(entry["key_term"].split()) - 1) * 0.05 * (q_toks == 1)
         score += 0.05 * (q_toks == 1 and bool(entry.get("part")))
         score += 0.05 * (q_toks >= 2 and food_id in semantic_map)
         scored.append((food_id, max(0.0, min(1.5, score)) * 100))
 
     return sorted(scored, key=lambda x: -x[1])[:limit]
 
-def retrieve_candidates(food_description, limit=20):
+def retrieve_candidates(food_description, limit=50):
     doc = nlp(food_description)
-    food_entities = [entity for entity in doc.ents if entity.label_ == "FOOD"]
-
-    candidates = []
+    phrase_ids = []
     seen = set()
 
-    for entity in food_entities:
-        for candidate_id in entity._.candidates:
-            if candidate_id not in seen:
-                seen.add(candidate_id)
-                candidates.append(candidate_id)
+    for entity in doc.ents:
+        if entity.label_ == "FOOD":
+            for cid in entity._.candidates:
+                if cid not in seen:
+                    seen.add(cid)
+                    phrase_ids.append(cid)
+    phrase_ranked = [(fid, 1.0) for fid in phrase_ids]
 
-    if len(candidates) < limit:
-        for food_id, entry in food_index.items():
-            if food_id in seen:
-                continue
-            score = fuzz.token_sort_ratio(food_description.lower(), entry["key_term"])
-            if score > 50:
-                seen.add(food_id)
-                candidates.append(food_id)
+    semantic_ranked = semantic_search(food_description, k=20)
 
-    semantic_hits = semantic_search(food_description)
+    bm25_ranked = bm25_search(food_description, bm25, bm25_ids, k=20)
 
-    for food_id, score in semantic_hits:
-        if food_id not in seen:
-            seen.add(food_id)
-            candidates.append(food_id)
+    fused = reciprocal_rank_fusion(phrase_ranked, semantic_ranked, bm25_ranked)
 
-    return candidates[:limit]
+    fused_ids = {fid for fid, _ in fused}
+    if len(fused) < limit:
+        fuzzy_hits = fuzzy_search(food_description, threshold=55, limit=20)
+        for fid, _ in fuzzy_hits:
+            if fid not in fused_ids:
+                fused.append((fid, 0.0))
+                fused_ids.add(fid)
 
+    return [fid for fid, _ in fused[:limit]]
 
 
 def compute_confidence(ranked_scores):
@@ -351,10 +368,17 @@ def validate_llm_grounding(items, original_text):
     for item in items:
         food = item["food"].lower()
 
-        if food not in text_lower:
+        if food in text_lower:
+            validated.append(item)
             continue
 
-        validated.append(item)
+        score = fuzz.partial_ratio(food, text_lower)
+        if score >= 80:
+            print(f"[grounding] fuzzy accepted '{food}' (score={score}) against input text")
+            validated.append(item)
+            continue
+
+        print(f"[grounding] REJECTED '{food}' (score={score}) - not found in input text")
 
     return validated if validated else None
 
