@@ -142,14 +142,22 @@ def build_index(food_df, csm_df, name_df, nlp):
             prefix = f"{meta['kind']} " if meta.get("kind") else ""
             keywords.append(f"{prefix}{meta['generic']}".strip().lower())
 
+        short = meta.get("short_name", "")
+        short_terms = [t.strip().lower() for t in re.split(r'[;,]', short) if t.strip() and len(t.strip()) > 2]
+
         seen = set()
         deduped = [k for k in keywords if k and not (k in seen or seen.add(k))]
-        brands   = extract_brand_keywords(name, meta.get("sampling_details", ""), nlp)
+        brands = extract_brand_keywords(name, meta.get("sampling_details", ""), nlp)
+
+        if short_terms:
+            key_term = short_terms[0]
+        else:
+            key_term = (deduped[0] if deduped else name.split(",")[0].lower())
 
         index[food_id] = {
             "name": name,
+            "key_term": key_term,
             "keywords": brands + deduped,
-            "key_term": (brands + deduped)[0] if (brands + deduped) else name.split(",")[0].lower(),
             "part": meta.get("part") or None,
             "brands": brands,
             "serving_measure": csm_lookup.get(food_id, []),
