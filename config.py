@@ -43,19 +43,6 @@ Input: "200g chicken breast and rice"
 Output: [{"food":"chicken breast","quantity":200,"unit":"gram"},{"food":"rice","quantity":1,"unit":"serving"}]
 """
 
-LLM_RERANK_PROMPT = """\
-A user logged the food: "{query}"
-
-Here are candidate database matches:
-{candidates}
-
-Which candidate best matches the user's food? 
-Identify synonyms for similar foods, e.g. toast and bread
-Do not just have a preference to select the first choice each time
-Do not assume that the candidate list is already sorted in likely order
-Reply with ONLY the number (1-{n}).\
-"""
-
 LLM_FEW_SHOT = [
     {"role": "user", "content": "two apples and a banana"},
     {"role": "assistant", "content": '{"items":[{"food":"apple","quantity":2,"unit":null},{"food":"banana","quantity":1,"unit":null}]}'},

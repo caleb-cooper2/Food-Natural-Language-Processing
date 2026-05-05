@@ -9,11 +9,11 @@ from spacy.language import Language
 from spacy.tokens import Span
 from text_to_num import alpha2digit
 from rapidfuzz import fuzz
-from sentence_transformers import SentenceTransformer
+from sentence_transformers import SentenceTransformer, CrossEncoder
 import numpy as np
 
 from config import (
-    ALL_UNITS, LLM_FEW_SHOT, LLM_RERANK_PROMPT, LLM_SYSTEM_PROMPT, OLLAMA_BASE_URL,
+    ALL_UNITS, LLM_FEW_SHOT, LLM_SYSTEM_PROMPT, OLLAMA_BASE_URL,
     OLLAMA_MODEL, OLLAMA_TIMEOUT, UNIT_GRAMS
 )
 from index import (
@@ -22,6 +22,7 @@ from index import (
 
 food_index, recipe_index, faiss_index, faiss_ids, bm25, bm25_ids = load_indexes()
 embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+cross_encoder = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
 
 print(f"Food index: {len(food_index)} entries | Recipes: {len(recipe_index)}")
 print(f"FAISS index: {len(faiss_ids)} vectors")
@@ -446,28 +447,15 @@ async def llm_extract(text):
         print(f"LLM parse error ({exc}) — falling back to spaCy")
         return None
 
+def cross_encoder_rerank(query, candidates):
+    print("reranking")
 
-async def llm_rerank(query, candidates):
     if len(candidates) <= 1:
         return 0
-    candidate_text = "\n".join(f"{i+1}. {c['name']}" for i, c in enumerate(candidates))
-    prompt = LLM_RERANK_PROMPT.format(query=query, candidates=candidate_text, n=len(candidates))
-    payload = {
-        "model": OLLAMA_MODEL,
-        "messages": [{"role": "user", "content": prompt}],
-        "stream": False,
-        "options": {"temperature": 0, "num_predict": 5},
-    }
-    try:
-        async with httpx.AsyncClient(timeout=OLLAMA_TIMEOUT) as client:
-            resp = await client.post(f"{OLLAMA_BASE_URL}/api/chat", json=payload)
-            resp.raise_for_status()
-        choice = int(resp.json()["message"]["content"].strip()) - 1
-        return choice if 0 <= choice < len(candidates) else 0
-    except Exception as e:
-        print(f"Rerank error: {e}")
-        return 0
 
+    pairs = [(query, candidate["name"]) for candidate in candidates]
+    scores = cross_encoder.predict(pairs)
+    return int(np.argmax(scores))
 
 def build_candidate_list(ranked, grams):
     candidates = []
@@ -498,18 +486,28 @@ async def process_llm_item(item, original_text):
         return None
 
     confidence = compute_confidence([s for _, s in ranked])
-    provisional = ranked[0][0]
-    grams = resolve_grams(provisional, quantity, unit)
-    candidates = build_candidate_list(ranked, grams)
+
+    RERANK_THRESHOLD_GAP = 20
+    score_gap = ranked[0][1] - ranked[1][1] if len(ranked) > 1 else 999
+
+    provisional_grams = resolve_grams(ranked[0][0], quantity, unit)
+    candidates = build_candidate_list(ranked, provisional_grams)
 
     best_idx = (
-        await llm_rerank(food_description, candidates)
-        if len(candidates) > 1 and abs(ranked[0][1] - ranked[1][1]) < 10
+        cross_encoder_rerank(food_description, candidates)
+        if score_gap < RERANK_THRESHOLD_GAP
         else 0
     )
 
-    grams = resolve_grams(candidates[best_idx]["food_id"], quantity, unit)
-    candidates = build_candidate_list(ranked, grams)
+    print("Before re-ranking, best choice is: ", candidates[0]["name"])
+    print("After re-ranking, best choice is: ", candidates[best_idx]["name"])
+
+    # Reorder so best candidate is always at index 0
+    if best_idx != 0:
+        candidates.insert(0, candidates.pop(best_idx))
+
+    grams = resolve_grams(candidates[0]["food_id"], quantity, unit)
+    candidates[0]["nutrients"] = resolve_recipe_nutrients(candidates[0]["food_id"], grams)
 
     char_start, char_end, qty_cs, qty_ce, unit_cs = find_item_char_positions(item, original_text)
     return {
