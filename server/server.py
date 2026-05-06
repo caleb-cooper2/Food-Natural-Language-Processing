@@ -28,11 +28,11 @@ from rapidfuzz import fuzz
 from sentence_transformers import SentenceTransformer, CrossEncoder
 import numpy as np
 
-from config import (
+from .config import (
     ALL_UNITS, LLM_FEW_SHOT, LLM_SYSTEM_PROMPT, OLLAMA_BASE_URL,
     OLLAMA_MODEL, OLLAMA_TIMEOUT, UNIT_GRAMS
 )
-from index import (
+from .index import (
     extract_brand_keywords, load_indexes, simple_singular, term_variants,
 )
 

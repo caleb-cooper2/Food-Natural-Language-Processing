@@ -22,8 +22,11 @@ cd unstructured-food-input
 ### Build the Search Indexes
 Required once before running the backend, and after any changes to the source data.
 ```bash
+cd server
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-python index.py
+python -m index
 ```
 
 ### Run the Frontend
@@ -34,7 +37,7 @@ npm run dev
 
 ### Run the Backend Server
 ```bash
-uvicorn server:app --reload
+uvicorn server.server:app --reload
 ```
 
 > **Note:** The frontend, backend, and Ollama must all be running concurrently for the application to function properly.

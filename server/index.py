@@ -21,7 +21,7 @@ import pandas as pd
 import spacy
 from sentence_transformers import SentenceTransformer
 
-from config import ALL_UNITS, PRINCIPAL_XLSX, SUPPORTING_XLSX
+from .config import ALL_UNITS, PRINCIPAL_XLSX, SUPPORTING_XLSX
 
 INDEX_DIR = Path("data/indexes")
 
