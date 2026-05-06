@@ -1,3 +1,19 @@
+"""
+FastAPI food NLP extraction server
+
+Exposes a single POST /extract endpoint that accepts free-text food descriptions and returns structured
+entities with matched FOODfiles entries and nutrient data
+
+Pipeline:
+
+1. LLM extraction (Ollama/Qwen) -> identifies food items, quantities, and units
+2. Grounding check -> verifies extracted foods appear in the original text
+3. NEL (Named Entity Linking) -> retrieves and ranks candidates via RRF fusion of PhraseMatcher, FAISS semantic search,
+   and BM25 lexical search
+4. Cross-encoder reranking -> finds close matches using a bi-directional scorer
+5. spaCy fallback -> used if LLM is unavailable or average link confidence < 0.5
+"""
+
 import json
 import httpx
 from fastapi import FastAPI
@@ -28,6 +44,13 @@ print(f"Food index: {len(food_index)} entries | Recipes: {len(recipe_index)}")
 print(f"FAISS index: {len(faiss_ids)} vectors")
 
 def extract_quantity(doc, span_start, prev_end=0):
+    """
+    Extracts quantity, unit and their char position from the tokens prior to a identified food in text
+    :param doc: spaCy Doc object for the full input text
+    :param span_start: Token index of the start of the food entity
+    :param prev_end: Token index of the end of the previous entity, used to bound the search window
+    :return: Tuple of (quantity, qty_char_start, qty_char_end, unit, unit_char_start)
+    """
     window = doc[max(prev_end, span_start - 6): span_start]
     if not window:
         return 1.0, None, None, None, None
@@ -74,7 +97,13 @@ def extract_quantity(doc, span_start, prev_end=0):
     return quantity, quantity_char_start, quantity_char_end, unit, unit_char_start
 
 def find_item_char_positions(item, original_text):
-    # Used for llm extraction of char positions
+    """
+    Locates the character positions of a food item's name, quantity, and unit within the original text.
+    Used by LLM path where spaCy token indices are unavailable
+    :param item: LLM-extracted item dict with keys: food, quantity, unit
+    :param original_text: The original input string passed to /extract
+    :return: Tuple of (char_start, char_end, qty_char_start, qty_char_end, unit_char_start)
+    """
     food = item["food"]
     text_lower = original_text.lower()
     char_start = text_lower.find(food.lower())
@@ -106,6 +135,12 @@ def find_item_char_positions(item, original_text):
 
 
 def build_food_matcher(nlp, food_index):
+    """
+    Builds a PhaseMatcher and term-to-candidate mapping from the food index
+    :param nlp: spaCy language model used to create phrase docs
+    :param food_index: Primary food index dict
+    :return: Tuple of (matcher, term_candidates) where term_candidates maps term -> list of FoodIDs
+    """
     matcher = PhraseMatcher(nlp.vocab, attr="LOWER")
     term_candidates = {}
 
@@ -130,17 +165,31 @@ def build_food_matcher(nlp, food_index):
 
 @Language.factory("food_ner")
 def create_food_ner(nlp, name, food_index): # spaCy passes this automatically, have to leave name unused as a result
+    """
+    spaCy factory that instantiates FoodNERComponent for the pipeline
+    :param nlp: spaCy language model (injected by spaCy)
+    :param name: Component name string (injected by spaCy)
+    :param food_index: Primary food index dict passed via pipe config
+    :return: FoodNERComponent instance
+    """
     matcher, term_candidates = build_food_matcher(nlp, food_index)
     return FoodNERComponent(nlp, food_index, matcher, term_candidates)
 
 
 class FoodNERComponent:
+    """Custom spaCy pipeline component that tags FOOD entities using a PhraseMatcher"""
+
     def __init__(self, nlp, food_index, matcher, term_candidates):
         self.food_index = food_index
         self.matcher = matcher
         self.term_candidates = term_candidates
 
     def __call__(self, doc):
+        """
+        Tags FOOD spans and attach candidate FoodID lists as span extensions
+        :param doc: spaCy Doc to annotate
+        :return: Annotated Doc with FOOD entities and _.candidates extension set
+        """
         spans = []
         for match_id, start, end in self.matcher(doc):
             food_id = doc.vocab.strings[match_id]
@@ -168,6 +217,12 @@ nlp.add_pipe("food_ner", last=True, config={"food_index": food_index})
 
 
 def candidate_scorer(query, candidate_key_term):
+    """
+    Scores a query string against a single candidate term using fuzzy matching with a specificity penalty
+    :param query: User's food description string
+    :param candidate_key_term: Key term from a food index entry
+    :return: Float score in range [0, 108] (exact match returning 100.0)
+    """
     query_lower = query.lower().strip()
     candidate_lower = candidate_key_term.lower().strip()
 
@@ -191,12 +246,25 @@ def candidate_scorer(query, candidate_key_term):
     return max(0.0, base_score - specificity_penalty + length_bonus)
 
 def semantic_search(query, k=10):
+    """
+    Search the FAISS index for the k most semantically similar food entries
+    :param query: Food description string to encode and search
+    :param k: Number of nearest neighbours to return
+    :return: List of (food_id, cosine_similarity_score) tuples
+    """
     vec = embedding_model.encode([query])
     vec = vec / np.linalg.norm(vec)
     scores, indices = faiss_index.search(vec.astype(np.float32), k)
     return [(faiss_ids[i], float(scores[0][j])) for j, i in enumerate(indices[0])]
 
 def fuzzy_search(span_text, threshold=60, limit=10):
+    """
+    Search the food index by fuzzy key_term matching, used as a retrieval fallback
+    :param span_text: Food description string to match against
+    :param threshold: Minimum candidate_scorer score to include a result
+    :param limit: Maximum number of results to return
+    :return: List of (food_id, score) tuples sorted by decending score
+    """
     span_lower = span_text.lower().strip()
     scored = []
 
@@ -211,12 +279,27 @@ def fuzzy_search(span_text, threshold=60, limit=10):
     return scored[:limit]
 
 def bm25_search(query, bm25, bm25_ids, k=20):
+    """
+    Searches the BM25 index for the k highest-scoring food entries
+    :param query: Food description string to tokenise and score
+    :param bm25: BM25 index object
+    :param bm25_ids: List of FoodIDs corresponding to BM25 document positions
+    :param k: Number of top results to return
+    :return: List of (food_id, bm25_score) tuples for entries with score > 0
+    """
     tokens = query.lower().split()
     scores = bm25.get_scores(tokens)
     top_indices = np.argsort(scores)[::-1][:k]
     return [(bm25_ids[i], float(scores[i])) for i in top_indices if scores[i] > 0]
 
 def reciprocal_rank_fusion(*ranked_lists, k=60):
+    """
+    Join multiple ranked candidate lists into a single ranking using Reciprocal Rank Fusion.
+    Score for each candidate is sum(1/(k+rank)) across all lists
+    :param ranked_lists: Variable number of lists of (food_id, score) tuples
+    :param k: RRF smoothing constant
+    :return: List of (food_id, rrf_score) tuples sorted by descending score
+    """
     scores = {}
     for ranked in ranked_lists:
         for rank, (food_id, _) in enumerate(ranked):
@@ -225,6 +308,13 @@ def reciprocal_rank_fusion(*ranked_lists, k=60):
 
 
 def rank_candidates(span_text, candidate_ids, limit = 10):
+    """
+    Score and rank a list of candidate FoodIDs against a query using lexical and semantic signals
+    :param span_text: Food description string to score against
+    :param candidate_ids: List of FoodIDs to rank
+    :param limit: Maximum number of ranked results to return
+    :return: List of (food_id, score) tuples sorted by descending score, scaled to [0, 150]
+    """
     span_lower   = span_text.lower()
     semantic_map = dict(semantic_search(span_text, k=10))
     scored = []
@@ -256,6 +346,14 @@ def rank_candidates(span_text, candidate_ids, limit = 10):
     return sorted(scored, key=lambda x: -x[1])[:limit]
 
 def retrieve_candidates(food_description, limit=50):
+    """
+    Retrieve a ranked list of candidate FoodIDs for a food description using RRF over three signals.
+    Joining PhraseMatcher (spaCy NER), FAISS semantic search and BM25 lexical search.
+    Fuzzy search fills the remaining slots if the fused list is shorter than the limit.
+    :param food_description: Food description string to retrieve candidates for
+    :param limit: Maximum number of candidate FoodIDs to return
+    :return: List of FoodID strings
+    """
     doc = nlp(food_description)
     phrase_ids = []
     seen = set()
@@ -286,6 +384,11 @@ def retrieve_candidates(food_description, limit=50):
 
 
 def compute_confidence(ranked_scores):
+    """
+    Compute a confidence score for the top-ranked match based on its score and gap to second place
+    :param ranked_scores: List of float scores in descending order
+    :return: Float confidence in range [0.0, 1.0]
+    """
     if not ranked_scores:
         return 0.0
     if len(ranked_scores) == 1:
@@ -295,6 +398,13 @@ def compute_confidence(ranked_scores):
     return min(1.0, (ranked_scores[0] / 100.0) * (1 + gap / 100.0))
 
 def resolve_grams(food_id, quantity, unit):
+    """
+    Converts a quantity and unit to grams for a given food entry
+    :param food_id: FoodID to look up serving measures for
+    :param quantity: Numeric quantity value
+    :param unit: Unit string (e.g. "cup", "slice") or None
+    :return: Float gram weight
+    """
     if unit in UNIT_GRAMS:
         return quantity * UNIT_GRAMS[unit]
 
@@ -318,6 +428,12 @@ def resolve_grams(food_id, quantity, unit):
 
 
 def calculate_nutrients(food_id, grams):
+    """
+    Calculate absolute nutrient values for a food entry scaled to a given gram weight
+    :param food_id: FoodID to look up
+    :param grams: Gram weight to scale per-100g nutrients by
+    :return: Dict of nutrient_name -> rounded float value (or None if source value is None)
+    """
     entry = food_index.get(food_id)
     if not entry:
         return {}
@@ -329,6 +445,12 @@ def calculate_nutrients(food_id, grams):
 
 
 def resolve_recipe_nutrients(food_id, grams):
+    """
+    Calculates nutrients for a food, blending ingredient contributions if it is a recipe
+    :param food_id: FoodID to resolve (could be a recipe or direct food entry)
+    :param grams: Total gram weight to calculate nutrients for
+    :return: Dict of nutrient_name -> rounded float value
+    """
     if food_id not in recipe_index:
         return calculate_nutrients(food_id, grams)
 
@@ -342,6 +464,11 @@ def resolve_recipe_nutrients(food_id, grams):
     return total or calculate_nutrients(food_id, grams)
 
 def parse_llm_output(raw):
+    """
+    Parse and validate raw LLM JSON output into a list of food item dicts
+    :param raw: Raw JSON string from the LLM response
+    :return: List of {food, quantity, unit} dicts, or None if parsing fails or yields no items
+    """
     parsed = json.loads(raw)
 
     if isinstance(parsed, list):
@@ -363,6 +490,13 @@ def parse_llm_output(raw):
     return validated or None
 
 def validate_llm_grounding(items, original_text):
+    """
+    Filters LLM-extracted items to thsoe that can be grounded in the original input text. Handles exact substring matches
+    in addition to fuzzy matches (where partial_ratio >= 80) to allow for LLM spelling corrections
+    :param items: List of LLM-extracted item dicts
+    :param original_text: The original input string passed to /extract
+    :return: Filtered list of grounded items, or None if all items are rejected
+    """
     text_lower = original_text.lower()
     validated = []
 
@@ -384,12 +518,16 @@ def validate_llm_grounding(items, original_text):
     return validated if validated else None
 
 def validate_llm_items(llm_items):
+    """
+    Enrich LLM-extracted items with link confidence scores, falling back to brand stripping if needed
+    :param llm_items: list of grounded LLM item dicts
+    :return: List of item dicts with link_confidence and optional food_generic fields added
+    """
     enriched = []
 
     for item in llm_items:
         food_name = item["food"]
 
-        # First, normal linking
         candidate_ids = retrieve_candidates(food_name)
         ranked = rank_candidates(food_name, candidate_ids)
 
@@ -399,7 +537,7 @@ def validate_llm_items(llm_items):
         else:
             item["link_confidence"] = 0.0
 
-        # Next, fall back to brand
+        # If confidence is low, try stripping brand names and re-linking
         if item["link_confidence"] < 0.4:
             brands = extract_brand_keywords(food_name, nlp=nlp)
 
@@ -423,6 +561,11 @@ def validate_llm_items(llm_items):
     return enriched
 
 async def llm_extract(text):
+    """
+    Send text to the Ollama LLM for food entity extraction and return parsed items
+    :param text: Raw input text to extract food items from
+    :return: List of grounded {food, quantity, unit} dicts, or None if LLM is unavailable or fails
+    """
     payload = {
         "model": OLLAMA_MODEL,
         "messages": [{"role": "system", "content": LLM_SYSTEM_PROMPT}, *LLM_FEW_SHOT, {"role": "user", "content": text}],
@@ -448,6 +591,13 @@ async def llm_extract(text):
         return None
 
 def cross_encoder_rerank(query, candidates):
+    """
+    Rerank a candidate list using a cross-encoder relevance model. More reliable than generative LLM reranking
+    as the cross-encoder looks at both query and candidate together, eliminating potential bias.
+    :param query: Food description string used as the query
+    :param candidates: List of candidate dicts with a 'name' key
+    :return: Index of the highest-scoring candidate
+    """
     print("reranking")
 
     if len(candidates) <= 1:
@@ -458,6 +608,12 @@ def cross_encoder_rerank(query, candidates):
     return int(np.argmax(scores))
 
 def build_candidate_list(ranked, grams):
+    """
+    Builds the full candidate response list from ranked (food_id, score) pairs
+    :param ranked: List of (food_id, score) tuples in descending score order
+    :param grams: Gram weight used to calculate nutrient values
+    :return: List of candidate dicts with food_id, name, score, is_recipe, recipe_ingredients, nutrients
+    """
     candidates = []
     for food_id, score in ranked[:10]:
         entry = food_index.get(food_id)
@@ -478,6 +634,12 @@ def build_candidate_list(ranked, grams):
 
 
 async def process_llm_item(item, original_text):
+    """
+    Resolves a single LLM-extracted food item to a matched database entry with nutrients
+    :param item: LLM item dict with keys: food, quantity, unit, and optionally food_generic
+    :param original_text: Original input string, used for character position resolution
+    :return: Structured entity result dict, or None if no candidates are found
+    """
     food_description = item.get("food_generic") or item["food"]
     quantity, unit = item["quantity"], item["unit"]
 
@@ -487,7 +649,7 @@ async def process_llm_item(item, original_text):
 
     confidence = compute_confidence([s for _, s in ranked])
 
-    RERANK_THRESHOLD_GAP = 20
+    RERANK_THRESHOLD_GAP = 20 # skip reranking if first candidate leads by this margin
     score_gap = ranked[0][1] - ranked[1][1] if len(ranked) > 1 else 999
 
     provisional_grams = resolve_grams(ranked[0][0], quantity, unit)
@@ -529,6 +691,13 @@ async def process_llm_item(item, original_text):
 
 
 def process_spacy_entity(entity, doc, prev_end):
+    """
+    Resolves a single spaCy FOOD entity to a matched database entry with nutrients
+    :param entity: spaCy Span with label FOOD
+    :param doc: Full spaCy doc, required for quantity extraction context
+    :param prev_end: Token index of the end of the previous entity to bound the quantity search window
+    :return: Structured entity result dict or None if no candidates are found
+    """
     ranked = rank_candidates(entity.text, retrieve_candidates(entity.text))
     if not ranked:
         ranked = fuzzy_search(entity.text)
@@ -567,6 +736,14 @@ class ExtractRequest(BaseModel):
 
 @app.post("/extract")
 async def extract(req: ExtractRequest):
+    """
+    Extracts food entities from free text entries and returns matched FOODfiles entries with nutrients
+
+    Attmepts LLM extraction first, falling back to spaCy if the LLM is unavailable or avg confidence scores is below 0.5
+
+    :param req: Request body containing input text string
+    :return: JSON with keys: entities (list), text (str), source ("llm" | "spacy")
+    """
     llm_items = await llm_extract(req.text)
 
     if llm_items is not None:
