@@ -1,3 +1,13 @@
+"""
+Builds and perists the food matching indexes
+
+We read the NZ FOODfiles 2024 excel db sources and produces four indexes:
+- food_index.json -> per-food metadata, keywords, nutrients, serving sizes
+- recipe_index.json -> recipe to ingredient composition mapping
+- faiss.index -> dense vector index for semantic search
+- bm25.pkl -> sparse BM25 index for lexical search
+"""
+
 import json
 import math
 import pickle
@@ -16,6 +26,11 @@ from config import ALL_UNITS, PRINCIPAL_XLSX, SUPPORTING_XLSX
 INDEX_DIR = Path("data/indexes")
 
 def simple_plural(word):
+    """
+    Return a naive English plural for a single word
+    :param word: Singular word to turn plural
+    :return: Plural word string
+    """
     if word.endswith('y') and len(word) > 2 and word[-2] not in 'aeiou':
         return word[:-1] + 'ies'
     if word.endswith(('s', 'x', 'z', 'ch', 'sh')):
@@ -27,6 +42,11 @@ def simple_plural(word):
     return word + 's'
 
 def simple_singular(word):
+    """
+    Return a naive English singular for a single word
+    :param word: Plural word to turn singular
+    :return: Singular word string
+    """
     if word.endswith('ies') and len(word) > 3:
         return word[:-3] + 'y'
     if word.endswith('ves') and len(word) > 3:
@@ -38,6 +58,11 @@ def simple_singular(word):
     return word
 
 def term_variants(term):
+    """
+    Return singular and plural forms of a term or just [term] if identical
+    :param term: Space-separated term to expand
+    :return: List of one or two variant strings
+    """
     words = term.split()
     if not words:
         return [term]
@@ -45,6 +70,11 @@ def term_variants(term):
     return [term] if plural == term else [term, plural]
 
 def extract_keywords(food_name_string):
+    """
+    Derives a ranked keyword list from a raw FOODfiles food name string
+    :param food_name_string: Raw food name e.g. "Strawberry, raw, New Zealand"
+    :return: List of lowercase keyword strings, comma segments first then parentheticals
+    """
     cleaned = re.sub(r'[™®©]', '', food_name_string)
     paren_terms = re.findall(r'\((.*?)\)', cleaned)
     cleaned = re.sub(r'\(.*?\)', '', cleaned)
@@ -53,13 +83,22 @@ def extract_keywords(food_name_string):
     return keywords
 
 def extract_brand_keywords(food_name, sampling_details = "", nlp = None):
-    # Try to find brand names through a number of checks
+    """
+    Identify brand names within a food name string using trademark symbols, NER, capitalisation and sampling details
+    :param food_name: Raw FOODfiles food name string
+    :param sampling_details: Optional sampling details field from NAME.FT, used to parse explicit strings
+    :param nlp: Optional spaCy model for ORG/PRODUCT NER, skipped if None
+    :return: Deduplicated list of lowercase brand strings
+    """
+
     brands = []
     segments = [s.strip() for s in food_name.split(',')]
 
+    # 1. trademark symbols
     trademark_matches = re.findall(r'\b([A-Za-z][\w\-]*)[™®©]', food_name)
     brands.extend([brand.lower() for brand in trademark_matches])
 
+    # 2. spaCy NER for ORG/PRODUCT entities
     if nlp is not None:
         doc = nlp(food_name)
         for entity in doc.ents:
@@ -68,6 +107,7 @@ def extract_brand_keywords(food_name, sampling_details = "", nlp = None):
                 if len(candidate) > 2 and candidate not in ALL_UNITS:
                     brands.append(candidate)
 
+    # 3. proper-cased segments after the second comma
     for segment in segments[2:]:
         cleaned_segment = re.sub(r'[™®©]', '', segment).strip()
         tokens = cleaned_segment.split()
@@ -76,6 +116,7 @@ def extract_brand_keywords(food_name, sampling_details = "", nlp = None):
         if is_proper and 1 <= len(tokens) <= 3:
             brands.append(cleaned_segment.lower())
 
+    # 4. explicit brand mentions in the sampling details field
     if sampling_details:
         pattern = re.search(
             r'brands?[:\s]+([A-Za-z0-9\-\s(),]+?)(?:\.|mixed|total|sampled|respectively)',
@@ -91,6 +132,11 @@ def extract_brand_keywords(food_name, sampling_details = "", nlp = None):
     return list(dict.fromkeys(brand for brand in brands if brand))
 
 def extract_name_metadata(name_row):
+    """
+    Extracts structured metadata fields from a NAME.FT row
+    :param name_row: Dict like row from the NAME.FT dataframe
+    :return: Dict with keys: short_name, alt_names, generic, kind, part, sampling_details
+    """
     def safe(col):
         clean = str(name_row.get(col) or "").strip()
         return "" if clean.lower() == "nan" else clean
@@ -105,6 +151,14 @@ def extract_name_metadata(name_row):
     }
 
 def build_index(food_df, csm_df, name_df, nlp):
+    """
+    Builds the primary food index dict keyed by FoodID's
+    :param food_df: DataFrame from Unbridged Data.AP.xlsx
+    :param csm_df: DataFrame from CSM.FT.XLSX (common serving measures)
+    :param name_df: DataFrame from NAME.FT.XLSX (curated name metadata)
+    :param nlp: spaCy model used for brand NER during keyword extraction
+    :return: Dict mapping FoodID -> {name, key_term, keywords, brands, part, serving_measure, is_recipe, nutrients}
+    """
     csm_df = csm_df.copy()
     csm_df["FoodID"] = csm_df["FoodID"].astype(str).str.strip()
     csm_lookup = {
@@ -134,6 +188,7 @@ def build_index(food_df, csm_df, name_df, nlp):
         keywords = extract_keywords(name)
         meta = extract_name_metadata(name_lookup[food_id]) if food_id in name_lookup else {}
 
+        # Append curated name varients from NAME.FT in decreasing specificity
         if meta.get("short_name"):
             keywords += [t.strip().lower() for t in re.split(r'[;,]', meta["short_name"]) if t.strip()]
         if meta.get("alt_names"):
@@ -149,6 +204,7 @@ def build_index(food_df, csm_df, name_df, nlp):
         deduped = [k for k in keywords if k and not (k in seen or seen.add(k))]
         brands = extract_brand_keywords(name, meta.get("sampling_details", ""), nlp)
 
+        # Prefer the curated short_name as key_term
         if short_terms:
             key_term = short_terms[0]
         else:
@@ -175,6 +231,12 @@ def build_index(food_df, csm_df, name_df, nlp):
 
 
 def build_recipe_index(ingredient_df, food_index):
+    """
+    Building a recipe composition index mapping recipe FoodID to a list of weighted ingredients
+    :param ingredient_df: DataFrame from INGREDIENT.FT.XLSX
+    :param food_index: Primary food index, used to validate ingredient IDs and resolve names
+    :return: Dict mapping recipe FoodID -> list of {ingredient_id, ingredient_name, weight_fraction}
+    """
     recipe_index = {}
     if ingredient_df is None:
         return recipe_index
@@ -199,6 +261,15 @@ def build_recipe_index(ingredient_df, food_index):
     return recipe_index
 
 def build_embedding_index(food_index, model):
+    """
+    Builds a FAISS inner product index of L2 normalised sentence embeddings.
+
+    Each food encoded from name, key_term and up to 10 keywords seperated with ' | ' to ensure encoder treats them as seperate
+
+    :param food_index: Primary food index dict
+    :param model: SentanceTransformer model used to encode food text
+    :return: Tuple of (faiss_index, ids) where ids[i] is the FoodID for vector i
+    """
     ids = list(food_index.keys())
     texts = []
 
@@ -216,6 +287,11 @@ def build_embedding_index(food_index, model):
     return index, ids
 
 def build_bm25_index(food_index):
+    """
+    Builds a BM25 index over full food names and all keywords
+    :param food_index: Primary food index dict
+    :return: Tuple of (bm25, ids) where ids[i] is the FoodID for document i
+    """
     ids = list(food_index.keys())
     corpus = []
     for entry in food_index.values():
@@ -225,6 +301,15 @@ def build_bm25_index(food_index):
     return bm25, ids
 
 def save_indexes(food_index, recipe_index, fi, faiss_ids, bm25, bm25_ids):
+    """
+    Persist all indexes to INDEX_DIR.
+    :param food_index: Primary food index dict
+    :param recipe_index: Recipe composition index dict
+    :param fi: Built FAISS index object
+    :param faiss_ids: List of FoodIDs corresponding to FAISS vectors
+    :param bm25: Built BM25Okapi object
+    :param bm25_ids: List of FoodIDs corresponding to BM25 documents
+    """
     INDEX_DIR.mkdir(parents=True, exist_ok=True)
     (INDEX_DIR / "food_index.json").write_text(json.dumps(food_index))
     (INDEX_DIR / "recipe_index.json").write_text(json.dumps(recipe_index))
@@ -236,6 +321,12 @@ def save_indexes(food_index, recipe_index, fi, faiss_ids, bm25, bm25_ids):
 
 
 def load_indexes():
+    """
+    Load all pre-built indexes from INDEX_DIR.
+
+    :raises FileNotFoundError: If any index is missing (i.e. index.py has not been run).
+    :return: Tuple of (food_index, recipe_index, faiss_index, faiss_ids, bm25, bm25_ids).
+    """
     missing = [
         p for p in ("food_index.json", "recipe_index.json", "faiss.index", "faiss_ids.json")
         if not (INDEX_DIR / p).exists()

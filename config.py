@@ -1,3 +1,9 @@
+"""
+Shared constants for the food NLP pipeline
+
+Covers unit mappings, Ollama connection settings, and LLM prompt templates
+"""
+
 UNIT_GRAMS = {
     "g": 1.0,        "gram": 1.0,        "grams": 1.0,
     "kg": 1000.0,    "kilogram": 1000.0, "kilograms": 1000.0,
