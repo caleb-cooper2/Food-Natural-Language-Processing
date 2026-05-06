@@ -27,6 +27,7 @@ from text_to_num import alpha2digit
 from rapidfuzz import fuzz
 from sentence_transformers import SentenceTransformer, CrossEncoder
 import numpy as np
+from .logging import get_logger
 
 from .config import (
     ALL_UNITS, LLM_FEW_SHOT, LLM_SYSTEM_PROMPT, OLLAMA_BASE_URL,
@@ -40,8 +41,10 @@ food_index, recipe_index, faiss_index, faiss_ids, bm25, bm25_ids = load_indexes(
 embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
 cross_encoder = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
 
-print(f"Food index: {len(food_index)} entries | Recipes: {len(recipe_index)}")
-print(f"FAISS index: {len(faiss_ids)} vectors")
+logger = get_logger("food-nlp")
+
+logger.info(f"Food index: {len(food_index)} entries | Recipes: {len(recipe_index)}")
+logger.info(f"FAISS index: {len(faiss_ids)} vectors")
 
 def extract_quantity(doc, span_start, prev_end=0):
     """
@@ -509,11 +512,11 @@ def validate_llm_grounding(items, original_text):
 
         score = fuzz.partial_ratio(food, text_lower)
         if score >= 80:
-            print(f"[grounding] fuzzy accepted '{food}' (score={score}) against input text")
+            logger.debug(f"[grounding] fuzzy accepted '{food}' (score={score}) against input text")
             validated.append(item)
             continue
 
-        print(f"[grounding] REJECTED '{food}' (score={score}) - not found in input text")
+        logger.debug(f"[grounding] REJECTED '{food}' (score={score}) - not found in input text")
 
     return validated if validated else None
 
@@ -566,6 +569,7 @@ async def llm_extract(text):
     :param text: Raw input text to extract food items from
     :return: List of grounded {food, quantity, unit} dicts, or None if LLM is unavailable or fails
     """
+    logger.info(f"Running LLM extraction on {text}")
     payload = {
         "model": OLLAMA_MODEL,
         "messages": [{"role": "system", "content": LLM_SYSTEM_PROMPT}, *LLM_FEW_SHOT, {"role": "user", "content": text}],
@@ -577,17 +581,19 @@ async def llm_extract(text):
         async with httpx.AsyncClient(timeout=OLLAMA_TIMEOUT) as client:
             resp = await client.post(f"{OLLAMA_BASE_URL}/api/chat", json=payload)
             resp.raise_for_status()
+
         raw = resp.json()["message"]["content"]
-        print("Raw LLM output:", raw)
+        logger.debug(f"[LLM] raw_output={raw}")
+
         items = parse_llm_output(raw)
         if items:
             items = validate_llm_grounding(items, text)
         return items
     except (httpx.ConnectError, httpx.TimeoutException):
-        print("Ollama unavailable — falling back to spaCy")
+        logger.warning("LLM unavailable — falling back to spaCy")
         return None
     except (json.JSONDecodeError, KeyError, ValueError, TypeError) as exc:
-        print(f"LLM parse error ({exc}) — falling back to spaCy")
+        logger.warning(f"LLM parse error ({exc}) — falling back to spaCy")
         return None
 
 def cross_encoder_rerank(query, candidates):
@@ -598,7 +604,7 @@ def cross_encoder_rerank(query, candidates):
     :param candidates: List of candidate dicts with a 'name' key
     :return: Index of the highest-scoring candidate
     """
-    print("reranking")
+    logger.debug("Cross-encoder reranking triggered")
 
     if len(candidates) <= 1:
         return 0
@@ -643,9 +649,13 @@ async def process_llm_item(item, original_text):
     food_description = item.get("food_generic") or item["food"]
     quantity, unit = item["quantity"], item["unit"]
 
+    logger.debug(f"[NEL] Retrieving candidates for: '{food_description}'")
+
     ranked = rank_candidates(food_description, retrieve_candidates(food_description))
     if not ranked:
         return None
+
+    logger.debug(f"[NEL] Top candidates: {[fid for fid, _ in ranked[:5]]}")
 
     confidence = compute_confidence([s for _, s in ranked])
 
@@ -661,8 +671,10 @@ async def process_llm_item(item, original_text):
         else 0
     )
 
-    print("Before re-ranking, best choice is: ", candidates[0]["name"])
-    print("After re-ranking, best choice is: ", candidates[best_idx]["name"])
+    logger.debug(
+        f"[rerank] before='{candidates[0]['name']}' "
+        f"after='{candidates[best_idx]['name']}'"
+    )
 
     # Reorder so best candidate is always at index 0
     if best_idx != 0:
@@ -744,15 +756,28 @@ async def extract(req: ExtractRequest):
     :param req: Request body containing input text string
     :return: JSON with keys: entities (list), text (str), source ("llm" | "spacy")
     """
+    logger.info("---- PIPELINE START ----")
+    logger.info(f"Input: {req.text}")
+
+    logger.info("[Step 1] LLM Extraction")
     llm_items = await llm_extract(req.text)
 
     if llm_items is not None:
+        logger.info(f"[Step 2] Grounding + Validation")
+
         llm_items = validate_llm_items(llm_items)
         avg_conf  = sum(i["link_confidence"] for i in llm_items) / len(llm_items) if llm_items else 0
+        logger.info(f"LLM avg confidence: {avg_conf:.2f}")
+
         if avg_conf >= 0.5:
+            logger.info(f"[Step 3/4] NEL + Reranking")
+
             results = [r for item in llm_items if (r := await process_llm_item(item, req.text))]
-            print("LLM used")
+            logger.info("LLM used")
+            logger.info("---- PIPELINE END ----")
             return {"entities": results, "text": req.text, "source": "llm"}
+        else:
+            logger.warning("Low confidence -> spaCy fallback")
 
     # spaCy fallback
     doc, results, prev_end = nlp(req.text), [], 0
@@ -761,5 +786,6 @@ async def extract(req: ExtractRequest):
             results.append(result)
         prev_end = ent.end
 
-    print("spaCy used")
+    logger.info("spaCy used")
+    logger.info("---- PIPELINE END ----")
     return {"entities": results, "text": req.text, "source": "spacy"}
