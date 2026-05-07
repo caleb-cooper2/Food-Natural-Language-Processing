@@ -58,6 +58,16 @@ LLM_FEW_SHOT = [
     {"role": "assistant", "content": '{"items":[{"food":"porridge","quantity":1,"unit":"serving"},{"food":"honey","quantity":1,"unit":"serving"},{"food":"coffee","quantity":1,"unit":"cup"}]}'},
 ]
 
+RAG_RERANK_ENABLED = True # Change to false if cross-encoding reranking intended
+RAG_TOP_N = 6 # candidates passed to LLM
+RAG_SCORE_GAP_THRESH = 25 # skip RAG if top candidate leads by this much
+RAG_SYSTEM_PROMPT = """\
+You are a food database expert for NZ FOODfiles 2024.
+Given a user's food description and a numbered list of database candidates, \
+respond with ONLY the integer index (1-based) of the best matching candidate.
+If none are a reasonable match, respond with 0.
+Do not explain your choice."""
+
 DATA_BASE = "data/New Zealand FOODfiles 2024"
 PRINCIPAL_XLSX = f"{DATA_BASE}/Principal files/Excel files"
 SUPPORTING_XLSX = f"{DATA_BASE}/Supporting files/Excel files"
