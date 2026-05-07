@@ -31,7 +31,7 @@ from .logging import get_logger
 
 from .config import (
     ALL_UNITS, LLM_FEW_SHOT, LLM_SYSTEM_PROMPT, OLLAMA_BASE_URL,
-    OLLAMA_MODEL, OLLAMA_TIMEOUT, UNIT_GRAMS
+    OLLAMA_MODEL, OLLAMA_TIMEOUT, UNIT_GRAMS, CLARIFY_LOW_CONFIDENCE, CLARIFY_AMBIGUOUS_GAP, CLARIFY_VAGUE_QUERY_LEN
 )
 from .index import (
     extract_brand_keywords, load_indexes, simple_singular, term_variants,
@@ -400,6 +400,43 @@ def compute_confidence(ranked_scores):
     gap = ranked_scores[0] - ranked_scores[1]
     return min(1.0, (ranked_scores[0] / 100.0) * (1 + gap / 100.0))
 
+def evaluate_clarification_needed(food_description, ranked, confidence):
+    """
+    Determines whether clarification is needed on a food description before committing to a match
+    :param food_description: Food description string
+    :param ranked: Ranked (food_id, score) list from rank_candidates
+    :param confidence: Precomputed confidence score
+    :return: dict with keys: reason, message... or None
+    """
+    if not ranked:
+        return {"reason": "no_match", "message": f"No database entry found for '{food_description}'."}
+
+    top_score = ranked[0][1]
+    gap = top_score - ranked[1][1] if len(ranked) > 1 else 999
+
+    if confidence < CLARIFY_LOW_CONFIDENCE:
+        return {
+            "reason": "low_confidence",
+            "message": f"Low confidence match for '{food_description}' (score {top_score:.0f}/100). Please confirm or choose from the candidates.",
+        }
+
+    if gap < CLARIFY_AMBIGUOUS_GAP:
+        name_a = food_index[ranked[0][0]]["name"]
+        name_b = food_index[ranked[1][0]]["name"]
+        return {
+            "reason": "ambiguous",
+            "message": f"'{food_description}' could be '{name_a}' or '{name_b}'. Which did you mean?",
+        }
+
+    query_tokens = food_description.strip().split()
+    if len(query_tokens) <= CLARIFY_VAGUE_QUERY_LEN and top_score < 70:
+        return {
+            "reason": "vague_query",
+            "message": f"'{food_description}' is quite general. Can you add more detail (e.g. preparation, brand)?",
+        }
+
+    return None
+
 def resolve_grams(food_id, quantity, unit):
     """
     Converts a quantity and unit to grams for a given food entry
@@ -659,6 +696,8 @@ async def process_llm_item(item, original_text):
 
     confidence = compute_confidence([s for _, s in ranked])
 
+    clarification = evaluate_clarification_needed(food_description, ranked, confidence)
+
     RERANK_THRESHOLD_GAP = 20 # skip reranking if first candidate leads by this margin
     score_gap = ranked[0][1] - ranked[1][1] if len(ranked) > 1 else 999
 
@@ -698,6 +737,8 @@ async def process_llm_item(item, original_text):
         "confidence": confidence,
         "match": candidates[0] if candidates else None,
         "candidates": candidates,
+        "needs_clarification": clarification is not None,
+        "clarification": clarification, # None or {reason, message}
         "source": "llm",
     }
 
