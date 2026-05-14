@@ -1,15 +1,13 @@
 """
 Builds and persists the food matching indexes
 
-We read the NZ FOODfiles 2024 excel db sources and produces four indexes:
-- food_index.json -> per-food metadata, keywords, nutrients, serving sizes
-- recipe_index.json -> recipe to ingredient composition mapping
+We read the NZ FOODfiles 2024 and AUSNUT 2023 excel database sources and produce five indexes:
+- food_index.json -> per-food metadata, keywords, nutrients, and serving sizes (NZ + AU entries)
+- recipe_index.json -> recipe to ingredient composition mapping (NZ + AU recipes)
 - faiss.index -> dense vector index for semantic search
 - bm25.pkl -> sparse BM25 index for lexical search
+- faiss_ids.json -> ordered list of FoodIDs corresponding to FAISS vectors
 """
-# TODO
-# Fix comments
-# Cherry pick into llm rerank branch
 
 import json
 import math
@@ -24,7 +22,10 @@ import pandas as pd
 import spacy
 from sentence_transformers import SentenceTransformer
 
-from .config import ALL_UNITS, PRINCIPAL_XLSX, SUPPORTING_XLSX, AUS_DATA_DIR # On rebuilding index, remove the "." before config. It is needed for running server
+try:
+    from .config import ALL_UNITS, PRINCIPAL_XLSX, SUPPORTING_XLSX, AUS_DATA_DIR
+except ImportError:
+    from config import ALL_UNITS, PRINCIPAL_XLSX, SUPPORTING_XLSX, AUS_DATA_DIR
 
 INDEX_DIR = Path("data/indexes")
 
@@ -176,7 +177,7 @@ def build_nz_food_index(food_df, csm_df, name_df, nlp):
     :param csm_df: DataFrame from CSM.FT.XLSX (common serving measures)
     :param name_df: DataFrame from NAME.FT.XLSX (curated name metadata)
     :param nlp: spaCy model used for brand NER during keyword extraction
-    :return: Dict mapping FoodID -> {name, key_term, keywords, brands, part, serving_measure, is_recipe, nutrients}
+    :return: Dict mapping NZ:FoodID -> {source, name, key_term, description, keywords, brands, serving_measure, is_recipe, nutrients}
     """
     index = {}
 
@@ -228,6 +229,14 @@ def build_nz_food_index(food_df, csm_df, name_df, nlp):
     return index
 
 def build_aus_food_index(nutrient_df, detail_df, measure_df, nlp):
+    """
+    Builds the AU food index dict keyed by prefixed FoodIDs
+    :param nutrient_df: DataFrame from AUSNUT 2023 - Food nutrient profiles.xlsx (per-100g nutrients)
+    :param detail_df: DataFrame from AUSNUT 2023 - Food details xlsx (names, descriptions, derivation)
+    :param measure_df: DataFrame from AUSNUT 2023 - Food measures.xlsx (serving sizes with gram weights)
+    :param nlp: spaCy model used for brand NER during keyword extraction
+    :return: Dict mapping AU:FoodID -> {source, name, key_term, description, keywords, brands, serving_measure, is_recipe, nutrients}
+    """
     index = {}
 
     measure_lookup = {}
@@ -287,10 +296,11 @@ def build_aus_food_index(nutrient_df, detail_df, measure_df, nlp):
 
 def build_nz_recipe_index(ingredient_df, food_index):
     """
-    Building an NZ recipe composition index mapping recipe FoodID to a list of weighted ingredients
+    Builds the NZ recipe composition index from INGREDIENT.FT.XLSX.
+    Ingredient weights are stored as percentage fractions in the source and converted to decimals.
     :param ingredient_df: DataFrame from INGREDIENT.FT.XLSX
     :param food_index: Merged food index, used to validate ingredient IDs and resolve names
-    :return: Dict mapping prefixed NZ FoodID -> list of {ingredient_id, ingredient_name, weight_fraction}
+    :return: Dict mapping NZ:FoodID -> list of {ingredient_id, ingredient_name, weight_fraction}
     """
     recipe_index = {}
     if ingredient_df is None:
@@ -316,6 +326,13 @@ def build_nz_recipe_index(ingredient_df, food_index):
     return recipe_index
 
 def build_aus_recipe_index(recipe_df, food_index):
+    """
+    Builds the AU recipe composition index from the AUSNUT recipe xlsx.
+    Ingredient weights are absolute grams per recipe, normalised to weight fractions.
+    :param recipe_df: DataFrame from AUSNUT 2023 - Food nutrient recipes.xlsx
+    :param food_index: Merged food index, used to validate ingredient IDs and resolve names
+    :return: Dict mapping AU:FoodID -> list of {ingredient_id, ingredient_name, weight_fraction}
+    """
     recipe_index = {}
     if recipe_df is None:
         return recipe_index
@@ -354,12 +371,13 @@ def build_aus_recipe_index(recipe_df, food_index):
 
 def build_embedding_index(food_index, model):
     """
-    Builds a FAISS inner product index of L2 normalised sentence embeddings.
+    Builds a FAISS inner product index of L2-normalised sentence embeddings.
 
-    Each food encoded from name, key_term and up to 10 keywords seperated with ' | ' to ensure encoder treats them as seperate
+    Each food is encoded from its name, description, and up to 10 keywords separated with ' | ' so the encoder treats them
+    as distinct fields rather than one long string.
 
-    :param food_index: Primary food index dict
-    :param model: SentanceTransformer model used to encode food text
+    :param food_index: Merged food index dict (NZ + AU entries)
+    :param model: SentenceTransformer model used to encode food text
     :return: Tuple of (faiss_index, ids) where ids[i] is the FoodID for vector i
     """
     ids = list(food_index.keys())
@@ -383,7 +401,7 @@ def build_embedding_index(food_index, model):
 def build_bm25_index(food_index):
     """
     Builds a BM25 index over full food names and all keywords
-    :param food_index: Primary food index dict
+    :param food_index: Merged food index dict (NZ + AU entries)
     :return: Tuple of (bm25, ids) where ids[i] is the FoodID for document i
     """
     ids = list(food_index.keys())
