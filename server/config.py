@@ -68,6 +68,7 @@ respond with ONLY the integer index (1-based) of the best matching candidate.
 If none are a reasonable match, respond with 0.
 Do not explain your choice."""
 
-DATA_BASE = "data/New Zealand FOODfiles 2024"
-PRINCIPAL_XLSX = f"{DATA_BASE}/Principal files/Excel files"
-SUPPORTING_XLSX = f"{DATA_BASE}/Supporting files/Excel files"
+NZ_DATA_BASE = "data/New Zealand FOODfiles 2024"
+PRINCIPAL_XLSX = f"{NZ_DATA_BASE}/Principal files/Excel files"
+SUPPORTING_XLSX = f"{NZ_DATA_BASE}/Supporting files/Excel files"
+AUS_DATA_DIR = "data/AUSNUT 2023"
