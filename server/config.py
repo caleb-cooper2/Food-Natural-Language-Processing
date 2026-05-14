@@ -62,6 +62,7 @@ CLARIFY_LOW_CONFIDENCE = 0.45 # top score too weak
 CLARIFY_AMBIGUOUS_GAP = 8.0 # top 1 and 2 are too close
 CLARIFY_VAGUE_QUERY_LEN = 1 # single token queries are often vague
 
-DATA_BASE = "data/New Zealand FOODfiles 2024"
-PRINCIPAL_XLSX = f"{DATA_BASE}/Principal files/Excel files"
-SUPPORTING_XLSX = f"{DATA_BASE}/Supporting files/Excel files"
+NZ_DATA_BASE = "data/New Zealand FOODfiles 2024"
+PRINCIPAL_XLSX = f"{NZ_DATA_BASE}/Principal files/Excel files"
+SUPPORTING_XLSX = f"{NZ_DATA_BASE}/Supporting files/Excel files"
+AUS_DATA_DIR = "data/AUSNUT 2023"

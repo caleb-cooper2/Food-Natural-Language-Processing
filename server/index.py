@@ -1,5 +1,5 @@
 """
-Builds and perists the food matching indexes
+Builds and persists the food matching indexes
 
 We read the NZ FOODfiles 2024 excel db sources and produces four indexes:
 - food_index.json -> per-food metadata, keywords, nutrients, serving sizes
@@ -7,6 +7,14 @@ We read the NZ FOODfiles 2024 excel db sources and produces four indexes:
 - faiss.index -> dense vector index for semantic search
 - bm25.pkl -> sparse BM25 index for lexical search
 """
+# TODO
+# Fix comments
+# Commit changes, cherry pick into llm rerank branch
+# Ensure all brands are extracted rather than just one
+# More detail needed for aus entries
+# Fix recipe index not working due to indexes
+    # I think essentially have to make nz and au recipe index and merge them? Taking into account prefixes, integrate into scoring
+# Integrate AUS Recipe xlsx
 
 import json
 import math
@@ -21,9 +29,18 @@ import pandas as pd
 import spacy
 from sentence_transformers import SentenceTransformer
 
-from .config import ALL_UNITS, PRINCIPAL_XLSX, SUPPORTING_XLSX
+from config import ALL_UNITS, PRINCIPAL_XLSX, SUPPORTING_XLSX, AUS_DATA_DIR # On rebuilding index, remove the "." before config. It is needed for running server
 
 INDEX_DIR = Path("data/indexes")
+
+AUS_NUTRIENT_MAP = {
+    "Energy with dietary fibre (kJ)": "energy_kj",
+    "Protein (g)": "protein_g",
+    "Total fat (g)": "fat_g",
+    "Available carbohydrate, without sugar alcohols (g)": "carbs_g",
+    "Dietary fibre (g)": "fibre_g",
+    "Sodium (Na) (mg)": "sodium_mg",
+}
 
 def simple_plural(word):
     """
@@ -150,7 +167,14 @@ def extract_name_metadata(name_row):
         "sampling_details": safe("Sampling Details"),
     }
 
-def build_index(food_df, csm_df, name_df, nlp):
+def clean_num(value):
+    try:
+        f = float(value)
+        return None if math.isnan(f) else f
+    except (TypeError, ValueError):
+        return None
+
+def build_nz_food_index(food_df, csm_df, name_df, nlp):
     """
     Builds the primary food index dict keyed by FoodID's
     :param food_df: DataFrame from Unbridged Data.AP.xlsx
@@ -159,34 +183,23 @@ def build_index(food_df, csm_df, name_df, nlp):
     :param nlp: spaCy model used for brand NER during keyword extraction
     :return: Dict mapping FoodID -> {name, key_term, keywords, brands, part, serving_measure, is_recipe, nutrients}
     """
-    csm_df = csm_df.copy()
-    csm_df["FoodID"] = csm_df["FoodID"].astype(str).str.strip()
-    csm_lookup = {
-        fid: grp[["CSM", "Measure"]].to_dict("records")
-        for fid, grp in csm_df.groupby("FoodID")
-    } if "FoodID" in csm_df.columns else {}
-
-    name_lookup = (
-        {str(r.get("FoodID", "")).strip(): r for _, r in name_df.iterrows()}
-        if name_df is not None else {}
-    )
-
-    def clean_num(value):
-        try:
-            f = float(value)
-            return None if math.isnan(f) else f
-        except (TypeError, ValueError):
-            return None
-
     index = {}
+
+    csm_lookup = {
+        str(fid).strip(): grp[["CSM", "Measure"]].to_dict("records")
+        for fid, grp in csm_df.groupby("FoodID")
+    }
+    name_lookup = {str(r.get("FoodID", "")).strip(): r for _, r in name_df.iterrows()}
+
     for _, row in food_df.iterrows():
-        food_id = str(row.get("FoodID", "")).strip()
+        raw_id = str(row.get("FoodID", "")).strip()
+        if not raw_id: continue
+
+        prefixed_id = f"NZ:{raw_id}"
         name = str(row.get("Food Name", "")).strip()
-        if not food_id or not name:
-            continue
 
         keywords = extract_keywords(name)
-        meta = extract_name_metadata(name_lookup[food_id]) if food_id in name_lookup else {}
+        meta = extract_name_metadata(name_lookup.get(raw_id, {}))
 
         # Append curated name varients from NAME.FT in decreasing specificity
         if meta.get("short_name"):
@@ -197,27 +210,17 @@ def build_index(food_df, csm_df, name_df, nlp):
             prefix = f"{meta['kind']} " if meta.get("kind") else ""
             keywords.append(f"{prefix}{meta['generic']}".strip().lower())
 
-        short = meta.get("short_name", "")
-        short_terms = [t.strip().lower() for t in re.split(r'[;,]', short) if t.strip() and len(t.strip()) > 2]
-
-        seen = set()
-        deduped = [k for k in keywords if k and not (k in seen or seen.add(k))]
         brands = extract_brand_keywords(name, meta.get("sampling_details", ""), nlp)
 
-        # Prefer the curated short_name as key_term
-        if short_terms:
-            key_term = short_terms[0]
-        else:
-            key_term = (deduped[0] if deduped else name.split(",")[0].lower())
-
-        index[food_id] = {
+        index[prefixed_id] = {
+            "source": "nz_foodfiles_2024",
             "name": name,
-            "key_term": key_term,
-            "keywords": brands + deduped,
-            "part": meta.get("part") or None,
+            "key_term": keywords[0] if keywords else name.lower(),
+            "description": meta.get("generic", ""),
+            "keywords": list(dict.fromkeys(brands + keywords)),
             "brands": brands,
-            "serving_measure": csm_lookup.get(food_id, []),
-            "is_recipe": food_id.startswith("R"),
+            "serving_measure": csm_lookup.get(raw_id, []),
+            "is_recipe": raw_id.startswith("R"),
             "nutrients": {
                 "energy_kj": clean_num(row.get("Energy, total metabolisable (kJ)")),
                 "protein_g": clean_num(row.get("Protein, total; calculated from total nitrogen")),
@@ -225,7 +228,64 @@ def build_index(food_df, csm_df, name_df, nlp):
                 "carbs_g":   clean_num(row.get("Available carbohydrate, FSANZ")),
                 "fibre_g":   clean_num(row.get("Fibre, total dietary")),
                 "sodium_mg": clean_num(row.get("Sodium")),
-            },
+            }
+        }
+    return index
+
+def build_aus_food_index(nutrient_df, detail_df, measure_df, nlp):
+    index = {}
+
+    measure_lookup = {}
+    for _, row in measure_df.iterrows():
+        fid = str(row.get("Public food key", "")).strip()
+        if not fid:
+            continue
+
+        qty = str(row.get("Quantity", "") or "").strip()
+        descriptors = [
+            str(row.get(f"Descriptor {i}", "") or "").strip()
+            for i in range(1, 5)
+        ]
+        descriptor_str = " ".join(d for d in descriptors if d and d.lower() != "nan")
+
+        measure_lookup.setdefault(fid, []).append({
+            "name": f"{qty} {descriptor_str}".strip(),
+            "grams": clean_num(row.get("Gram amount")),
+            "ml": clean_num(row.get("Volume")),
+        })
+
+    nutrient_lookup = {
+        str(r.get("Public food key")).strip(): r
+        for _, r in nutrient_df.iterrows()
+    }
+
+    for _, row in detail_df.iterrows():
+        raw_id = str(row.get("Public food key", "")).strip()
+        prefixed_id = f"AU:{raw_id}"
+        name = str(row.get("Food name", "")).strip()
+        description = str(row.get("Food description", "")).strip()
+        derivation = str(row.get("Derivation", "") or "").strip()
+
+        nut_row = nutrient_lookup.get(raw_id, {})
+
+        brands = extract_brand_keywords(name, str(row.get("Sampling details", "")), nlp)
+        keywords = extract_keywords(name)
+        if row.get("Food group name"):
+            keywords.append(str(row.get("Food group name")).lower())
+
+        index[prefixed_id] = {
+            "source": "ausnut_2023",
+            "name": name,
+            "description": description,
+            "key_term": keywords[0] if keywords else name.lower(),
+            "keywords": list(dict.fromkeys(brands + keywords)),
+            "brands": brands,
+            "serving_measure": measure_lookup.get(raw_id, []),
+            "is_recipe": derivation.lower() == "recipe",
+            "nutrients": {
+                mapped_key: clean_num(nut_row.get(orig_col))
+                for orig_col, mapped_key in AUS_NUTRIENT_MAP.items()
+            }
         }
     return index
 
@@ -251,7 +311,7 @@ def build_recipe_index(ingredient_df, food_index):
         except (TypeError, ValueError):
             fraction = 0.0
 
-        if recipe_id and ingredient_id and fraction > 0 and ingredient_id in food_index:
+        if recipe_id and ingredient_id and fraction > 0 and ingredient_id in food_index: #ignore the first 3 chars for now of the food ids due to adding nz: and au:
             recipe_index.setdefault(recipe_id, []).append({
                 "ingredient_id": ingredient_id,
                 "ingredient_name": food_index[ingredient_id]["name"],
@@ -274,10 +334,12 @@ def build_embedding_index(food_index, model):
     texts = []
 
     for entry in food_index.values():
-        all_tems = list(dict.fromkeys(
-            [entry["name"]] + [entry["key_term"]] + entry["keywords"]
-        ))
-        text = " | ".join(all_tems[:10])
+        parts = [
+            entry["name"],
+            entry.get("description") or "",
+            " ".join(entry["keywords"][:10])
+        ]
+        text = " | ".join([p.lower() for p in parts if p])
         texts.append(text.lower())
 
     embeddings = model.encode(texts, batch_size=128, show_progress_bar=True)
@@ -343,34 +405,44 @@ def load_indexes():
         bm25, bm25_ids = pickle.load(f)
     return food_index, recipe_index, fi, faiss_ids, bm25, bm25_ids
 
+def normalise_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """Strip whitespace and collapse internal whitespace from all column names."""
+    df.columns = df.columns.str.strip().str.replace(r'\s+', ' ', regex=True)
+    return df
+
 if __name__ == "__main__":
-    print("Loading source data...")
-    csm_df = pd.read_excel(f"{PRINCIPAL_XLSX}/CSM.FT.XLSX", skiprows=1)
-    csm_df.columns = csm_df.columns.str.strip()
+    nlp_ner = spacy.load("en_core_web_md")
 
-    food_df = pd.read_excel(f"{PRINCIPAL_XLSX}/Unabridged/Unabridged DATA.AP.xlsx", skiprows=1)
-    food_df = food_df[food_df["FoodID"] != "FoodID"]
-    food_df.columns = food_df.columns.str.strip()
+    print("Loading NZ source data...")
+    nz_csm_df = pd.read_excel(f"{PRINCIPAL_XLSX}/CSM.FT.XLSX", skiprows=1)
+    nz_food_df = pd.read_excel(f"{PRINCIPAL_XLSX}/Unabridged/Unabridged DATA.AP.xlsx", skiprows=1)
+    nz_name_df = pd.read_excel(f"{SUPPORTING_XLSX}/NAME.FT.XLSX", skiprows=1)
 
-    name_df = pd.read_excel(f"{SUPPORTING_XLSX}/NAME.FT.XLSX", skiprows=1)
-    name_df.columns = name_df.columns.str.strip()
+    nz_index = build_nz_food_index(nz_food_df, nz_csm_df, nz_name_df, nlp_ner)
+
+    print("Loading AUSNUT source data...")
+    aus_nutrition_df = normalise_columns(pd.read_excel(f"{AUS_DATA_DIR}/AUSNUT 2023 - Food nutrient profiles.xlsx", sheet_name=1, skiprows=2))
+    aus_details_df = normalise_columns(pd.read_excel(f"{AUS_DATA_DIR}/AUSNUT-2023-Food-details-4.xlsx", sheet_name=1, skiprows=2))
+    aus_measures_df = normalise_columns(pd.read_excel(f"{AUS_DATA_DIR}/AUSNUT 2023 - Food measures.xlsx", sheet_name=1, skiprows=2))
+
+    aus_index = build_aus_food_index(aus_nutrition_df, aus_details_df, aus_measures_df, nlp_ner)
+
+    print("Merging Indexes...")
+    merged_food_index = {**nz_index, **aus_index}
 
     ingredient_df = pd.read_excel(f"{PRINCIPAL_XLSX}/INGREDIENT.FT.XLSX", skiprows=1)
     ingredient_df.columns = ingredient_df.columns.str.strip()
+    recipe_index = build_recipe_index(ingredient_df, merged_food_index)
 
-    print("Building food index...")
-    nlp_ner = spacy.load("en_core_web_md")
-    food_index = build_index(food_df, csm_df, name_df, nlp_ner)
-    recipe_index = build_recipe_index(ingredient_df, food_index)
-    print(f"{len(food_index)} foods | {len(recipe_index)} recipes")
+    print(f"{len(merged_food_index)} foods | {len(recipe_index)} recipes")
 
     print("Building embedding index...")
     embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
-    faiss_index, faiss_ids = build_embedding_index(food_index, embedding_model)
+    faiss_index, faiss_ids = build_embedding_index(merged_food_index, embedding_model)
     print(f"{len(faiss_ids)} vectors")
 
     print("Building BM25 index")
-    bm25, bm25_ids = build_bm25_index(food_index)
+    bm25, bm25_ids = build_bm25_index(merged_food_index)
     print(f"{len(bm25_ids)} BM25 entries")
 
-    save_indexes(food_index, recipe_index, faiss_index, faiss_ids, bm25, bm25_ids)
+    save_indexes(merged_food_index, recipe_index, faiss_index, faiss_ids, bm25, bm25_ids)

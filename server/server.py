@@ -335,14 +335,12 @@ def rank_candidates(span_text, candidate_ids, limit = 10):
         ) / 100.0
 
         semantic = semantic_map.get(food_id, 0.0)
-
         semantic_weight = 0.4 * min(1.0, max(0.0, (semantic - 0.3) / 0.4))
         score = (1.0 - semantic_weight) * lexical + semantic_weight * semantic
 
         q_toks = len(span_lower.split())
         score += 0.25 * any(b in span_lower for b in entry.get("brands", []))
         score -= (len(entry["key_term"].split()) - 1) * 0.05 * (q_toks == 1)
-        score += 0.05 * (q_toks == 1 and bool(entry.get("part")))
         score += 0.05 * (q_toks >= 2 and food_id in semantic_map)
         scored.append((food_id, max(0.0, min(1.5, score)) * 100))
 
@@ -452,15 +450,18 @@ def resolve_grams(food_id, quantity, unit):
 
     if unit and servings:
         for serving in servings:
-            if unit.lower() in str(serving.get("CSM", "")).lower():
+            label = str(serving.get("CSM") or serving.get("name") or "").lower()
+            if unit.lower() in label:
+                weight = serving.get("Measure") or serving.get("grams")
                 try:
-                    return quantity * float(serving["Measure"])
+                    return quantity * float(weight)
                 except (TypeError, ValueError):
                     pass
 
     if servings:
+        weight = servings[0].get("Measure") or servings[0].get("grams")
         try:
-            return quantity * float(servings[0]["Measure"])
+            return quantity * float(weight)
         except (TypeError, ValueError):
             pass
 
