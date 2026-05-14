@@ -9,12 +9,7 @@ We read the NZ FOODfiles 2024 excel db sources and produces four indexes:
 """
 # TODO
 # Fix comments
-# Commit changes, cherry pick into llm rerank branch
-# Ensure all brands are extracted rather than just one
-# More detail needed for aus entries
-# Fix recipe index not working due to indexes
-    # I think essentially have to make nz and au recipe index and merge them? Taking into account prefixes, integrate into scoring
-# Integrate AUS Recipe xlsx
+# Cherry pick into llm rerank branch
 
 import json
 import math
@@ -29,7 +24,7 @@ import pandas as pd
 import spacy
 from sentence_transformers import SentenceTransformer
 
-from config import ALL_UNITS, PRINCIPAL_XLSX, SUPPORTING_XLSX, AUS_DATA_DIR # On rebuilding index, remove the "." before config. It is needed for running server
+from .config import ALL_UNITS, PRINCIPAL_XLSX, SUPPORTING_XLSX, AUS_DATA_DIR # On rebuilding index, remove the "." before config. It is needed for running server
 
 INDEX_DIR = Path("data/indexes")
 
@@ -290,12 +285,12 @@ def build_aus_food_index(nutrient_df, detail_df, measure_df, nlp):
     return index
 
 
-def build_recipe_index(ingredient_df, food_index):
+def build_nz_recipe_index(ingredient_df, food_index):
     """
-    Building a recipe composition index mapping recipe FoodID to a list of weighted ingredients
+    Building an NZ recipe composition index mapping recipe FoodID to a list of weighted ingredients
     :param ingredient_df: DataFrame from INGREDIENT.FT.XLSX
-    :param food_index: Primary food index, used to validate ingredient IDs and resolve names
-    :return: Dict mapping recipe FoodID -> list of {ingredient_id, ingredient_name, weight_fraction}
+    :param food_index: Merged food index, used to validate ingredient IDs and resolve names
+    :return: Dict mapping prefixed NZ FoodID -> list of {ingredient_id, ingredient_name, weight_fraction}
     """
     recipe_index = {}
     if ingredient_df is None:
@@ -304,14 +299,14 @@ def build_recipe_index(ingredient_df, food_index):
     weight_col = "Weight Fraction(%)" if "Weight Fraction(%)" in ingredient_df.columns else "Weight Fraction (%)"
 
     for _, row in ingredient_df.iterrows():
-        recipe_id = str(row.get("Recipe FoodID", "")).strip()
-        ingredient_id = str(row.get("Ingredient FoodID", "")).strip()
+        recipe_id = f"NZ:{str(row.get('Recipe FoodID', '')).strip()}"
+        ingredient_id = f"NZ:{str(row.get('Ingredient FoodID', '')).strip()}"
         try:
             fraction = float(row.get(weight_col, 0)) / 100.0
         except (TypeError, ValueError):
             fraction = 0.0
 
-        if recipe_id and ingredient_id and fraction > 0 and ingredient_id in food_index: #ignore the first 3 chars for now of the food ids due to adding nz: and au:
+        if recipe_id and ingredient_id and fraction > 0 and ingredient_id in food_index:
             recipe_index.setdefault(recipe_id, []).append({
                 "ingredient_id": ingredient_id,
                 "ingredient_name": food_index[ingredient_id]["name"],
@@ -319,6 +314,43 @@ def build_recipe_index(ingredient_df, food_index):
             })
 
     return recipe_index
+
+def build_aus_recipe_index(recipe_df, food_index):
+    recipe_index = {}
+    if recipe_df is None:
+        return recipe_index
+
+    raw = {}
+    for _, row in recipe_df.iterrows():
+        recipe_id = f"AU:{str(row.get('Public food key', '')).strip()}"
+        ingredient_id = f"AU:{str(row.get('Ingredient public food key', '')).strip()}"
+        try:
+            grams = float(row.get("Ingredient Weight (g)", 0) or 0)
+        except (TypeError, ValueError):
+            grams = 0.0
+
+        if recipe_id and ingredient_id and grams > 0 and ingredient_id in food_index:
+            raw.setdefault(recipe_id, []).append({
+                "ingredient_id": ingredient_id,
+                "ingredient_name": food_index[ingredient_id]["name"],
+                "grams": grams,
+            })
+
+        for recipe_id, ingredients in raw.items():
+            total = sum(i["grams"] for i in ingredients)
+            if total <= 0:
+                continue
+            recipe_index[recipe_id] = [
+                {
+                    "ingredient_id": i["ingredient_id"],
+                    "ingredient_name": i["ingredient_name"],
+                    "weight_fraction": round(i["grams"] / total, 6),
+                }
+                for i in ingredients
+            ]
+
+    return recipe_index
+
 
 def build_embedding_index(food_index, model):
     """
@@ -430,11 +462,16 @@ if __name__ == "__main__":
     print("Merging Indexes...")
     merged_food_index = {**nz_index, **aus_index}
 
-    ingredient_df = pd.read_excel(f"{PRINCIPAL_XLSX}/INGREDIENT.FT.XLSX", skiprows=1)
-    ingredient_df.columns = ingredient_df.columns.str.strip()
-    recipe_index = build_recipe_index(ingredient_df, merged_food_index)
+    print("Building recipe indexes...")
+    nz_ingredient_df = pd.read_excel(f"{PRINCIPAL_XLSX}/INGREDIENT.FT.XLSX", skiprows=1)
 
-    print(f"{len(merged_food_index)} foods | {len(recipe_index)} recipes")
+    aus_recipe_df = normalise_columns(pd.read_excel(f"{AUS_DATA_DIR}/AUSNUT 2023 - Food nutrient recipes.xlsx", sheet_name=1, skiprows=2))
+
+    nz_recipe_index = build_nz_recipe_index(nz_ingredient_df, merged_food_index)
+    aus_recipe_index = build_aus_recipe_index(aus_recipe_df, merged_food_index)
+    recipe_index = {**nz_recipe_index, **aus_recipe_index}
+
+    print(f"{len(merged_food_index)} foods | {len(nz_recipe_index)} NZ recipes | {len(aus_recipe_index)} AU recipes")
 
     print("Building embedding index...")
     embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
