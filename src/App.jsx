@@ -143,8 +143,13 @@ export default function App() {
     const [activeEntity, setActiveEntity] = useState(null)
     const [anchorRect, setAnchorRect] = useState(null)
     const containerRef = useRef(null)
+    const [loading, setLoading] = useState(false)
 
     const handleExtract = () => {
+        setLoading(true)
+        setResult(null)
+        setActiveEntity(null)
+
         fetch("http://localhost:8000/extract", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -153,6 +158,7 @@ export default function App() {
             .then(r => r.json())
             .then(json => { setResult(json); setActiveEntity(null) })
             .catch(console.error)
+            .finally(() => setLoading(false))
     }
 
     const handleEntityClick = (i, e) => {
@@ -172,6 +178,8 @@ export default function App() {
 
     return (
         <div style={{ padding: "40px 48px", textAlign: "left", maxWidth: 720, margin: "0 auto" }}>
+            <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+
             <h1 style={{ marginBottom: 8, paddingBottom: 16 }}>Natural language input</h1>
 
             <div style={{ display: "flex", gap: 8, marginBottom: 32 }}>
@@ -197,6 +205,17 @@ export default function App() {
                     Extract
                 </button>
             </div>
+
+            {loading && (
+                <div style={{ display: "flex", justifyContent: "center", padding: "32px 0" }}>
+                    <div style={{
+                        width: 24, height: 24, borderRadius: "50%",
+                        border: "2px solid var(--border)",
+                        borderTopColor: "var(--accent)",
+                        animation: "spin 0.7s linear infinite",
+                    }} />
+                </div>
+            )}
 
             {result && (
                 <div ref={containerRef} style={{ position: "relative" }}>
