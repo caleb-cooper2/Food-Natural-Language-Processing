@@ -706,9 +706,17 @@ def build_candidate_list(ranked, grams):
         entry = food_index.get(food_id)
         if not entry:
             continue
+
+        display_name = entry["name"]
+        brands = entry.get("brands", [])
+        if food_id.startswith("OFF:") and brands:
+            primary_brand = brands[0]
+            if primary_brand.lower() not in display_name.lower():
+                display_name = f"{primary_brand.title()} – {display_name}"
+
         candidates.append({
             "food_id": food_id,
-            "name": entry["name"],
+            "name": display_name,
             "score": round(score, 2),
             "is_recipe": entry.get("is_recipe", False),
             "recipe_ingredients": [

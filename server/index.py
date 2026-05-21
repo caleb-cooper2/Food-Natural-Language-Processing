@@ -58,6 +58,8 @@ def parse_off_serving(serving_size_str, serving_quantity=None):
     if raw.lower() in ("", "nan", "not indicated.", "not indicated"):
         try:
             grams = float(serving_quantity)
+            if math.isnan(grams):
+                return []
             return [{"name": "1 serving", "grams": grams, "ml": None}]
         except (TypeError, ValueError):
             return []
@@ -296,13 +298,16 @@ def build_aus_food_index(nutrient_df, detail_df, measure_df, nlp):
         if not fid:
             continue
 
-        qty = str(row.get("Quantity", "") or "").strip()
         descriptors = [
             str(row.get(f"Descriptor {i}", "") or "").strip()
             for i in range(1, 5)
         ]
         descriptor_str = " ".join(d for d in descriptors if d and d.lower() != "nan")
 
+        if "density" in descriptor_str.lower():
+            continue
+
+        qty = str(row.get("Quantity", "") or "").strip()
         measure_lookup.setdefault(fid, []).append({
             "name": f"{qty} {descriptor_str}".strip(),
             "grams": clean_num(row.get("Gram amount")),
