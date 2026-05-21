@@ -111,11 +111,24 @@ def find_item_char_positions(item, original_text):
     """
     food = item["food"]
     text_lower = original_text.lower()
-    char_start = text_lower.find(food.lower())
-    if char_start == -1:
-        return None, None, None, None, None
-    char_end = char_start + len(food)
+    food_lower = food.lower()
 
+    char_start = text_lower.find(food.lower())
+
+    if char_start == -1:
+        food_len = len(food_lower)
+        best_score, best_start = 0, 0
+        for i in range(max(1, len(text_lower) - food_len + 1)):
+            window = text_lower[i:i + food_len]
+            score = fuzz.ratio(food_lower, window)
+            if score > best_score:
+                best_score, best_start = score, i
+        if best_score >= 70:
+            char_start = best_start
+        else:
+            return None, None, None, None, None
+
+    char_end = char_start + len(food)
     prefix_lower = original_text[:char_start].lower()
     quantity = item.get("quantity", 1.0)
     unit = item.get("unit")
