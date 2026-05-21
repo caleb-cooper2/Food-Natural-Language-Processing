@@ -1,20 +1,89 @@
 import { useState, useRef, useEffect } from "react"
 
 const POPUP_WIDTH = 280
+const DAILY_VALUES = { energy_kj: 8700, protein_g: 50, fat_g: 70, carbs_g: 310, fibre_g: 30, sodium_mg: 2000 }
+const NUTRIENT_LABELS = [
+    { key: "energy_kj", label: "Energy",  unit: "kJ", color: "#378ADD" },
+    { key: "protein_g", label: "Protein", unit: "g",  color: "#1D9E75" },
+    { key: "fat_g",     label: "Fat",     unit: "g",  color: "#D85A30" },
+    { key: "carbs_g",   label: "Carbs",   unit: "g",  color: "#BA7517" },
+    { key: "fibre_g",   label: "Fibre",   unit: "g",  color: "#639922" },
+    { key: "sodium_mg", label: "Sodium",  unit: "mg", color: "#7F77DD" },
+]
+
+function sumNutrients(entities, selectedCandidates) {
+    const totals = { energy_kj: 0, protein_g: 0, fat_g: 0, carbs_g: 0, fibre_g: 0, sodium_mg: 0 }
+    let hasAny = false
+    entities.forEach((ent, i) => {
+        const cidx = selectedCandidates[i] ?? 0
+        const match = ent.candidates?.[cidx]
+        if (!match?.nutrients) return
+        Object.keys(totals).forEach(k => {
+            const v = match.nutrients[k]
+            if (v != null) { totals[k] = +(totals[k] + v).toFixed(2); hasAny = true }
+        })
+    })
+    return hasAny ? totals : null
+}
+
+function NutrientSummary({ entities, selectedCandidates }) {
+    const totals = sumNutrients(entities, selectedCandidates)
+    if (!totals) return null
+    return (
+        <div style={{ marginTop: 28, borderTop: "1px solid var(--border)", paddingTop: 20 }}>
+            <div style={{ fontSize: 11, color: "var(--text)", marginBottom: 14, textTransform: "uppercase", letterSpacing: 1 }}>
+                Total nutrients
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 10, marginBottom: 20 }}>
+                {NUTRIENT_LABELS.map(({ key, label, unit }) => {
+                    const v = totals[key]
+                    if (v == null) return null
+                    return (
+                        <div key={key} style={{ background: "var(--code-bg)", border: "1px solid var(--border)", borderRadius: 7, padding: "10px 14px" }}>
+                            <div style={{ fontSize: 11, color: "var(--text)", marginBottom: 4 }}>{label}</div>
+                            <div style={{ fontSize: 18, fontWeight: 500, color: "var(--text-h)" }}>
+                                {v % 1 === 0 ? v : v.toFixed(1)}
+                                <span style={{ fontSize: 12, fontWeight: 400, color: "var(--text)", marginLeft: 3 }}>{unit}</span>
+                            </div>
+                        </div>
+                    )
+                })}
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {NUTRIENT_LABELS.map(({ key, label, color }) => {
+                    const v = totals[key]
+                    if (v == null) return null
+                    const pct = Math.min(100, Math.round((v / DAILY_VALUES[key]) * 100))
+                    return (
+                        <div key={key} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                            <div style={{ width: 52, fontSize: 12, color: "var(--text)", textAlign: "right", flexShrink: 0 }}>{label}</div>
+                            <div style={{ flex: 1, height: 6, background: "var(--border)", borderRadius: 3, overflow: "hidden" }}>
+                                <div style={{ width: `${pct}%`, height: "100%", background: color, borderRadius: 3, transition: "width 0.3s ease" }} />
+                            </div>
+                            <div style={{ width: 42, fontSize: 12, color: "var(--text)", flexShrink: 0 }}>{pct}% DV</div>
+                        </div>
+                    )
+                })}
+            </div>
+            <div style={{ fontSize: 11, color: "var(--text)", marginTop: 8 }}>% of estimated daily values</div>
+        </div>
+    )
+}
 
 function NutrientRow({ label, value, unit }) {
     if (value == null) return null
     return (
         <div style={{ display: "flex", justifyContent: "space-between", padding: "3px 0", borderBottom: "1px solid var(--border)", fontSize: 13 }}>
             <span style={{ color: "var(--text)" }}>{label}</span>
-            <span style={{ color: "var(--text-h)", fontFamily: "var(--mono)" }}>{value} {unit}</span>
+            <span style={{ color: "var(--text-h)", fontFamily: "var(--mono)" }}>
+                {typeof value === "number" ? (value % 1 === 0 ? value : value.toFixed(1)) : value} {unit}
+            </span>
         </div>
     )
 }
 
-function Popup({ entity, anchorRect, containerRect, onSelectCandidate }) {
-    const [selected, setSelected] = useState(0)
-    const match = entity.candidates[selected]
+function Popup({ entity, anchorRect, containerRect, selectedIdx, onSelectCandidate }) {
+    const match = entity.candidates[selectedIdx]
 
     const left = Math.min(
         anchorRect.left - containerRect.left,
@@ -40,24 +109,26 @@ function Popup({ entity, anchorRect, containerRect, onSelectCandidate }) {
                 {entity.candidates.length} candidate{entity.candidates.length !== 1 ? "s" : ""}
             </div>
 
-            {/* Candidate selector */}
             <div style={{ display: "flex", flexDirection: "column", gap: 3, marginBottom: 10 }}>
                 {entity.candidates.map((c, i) => (
-                    <button key={c.food_id} onClick={() => { setSelected(i); onSelectCandidate?.(i) }}
+                    <button key={c.food_id}
+                            onClick={() => onSelectCandidate(i)}
                             style={{
-                                textAlign: "left", background: i === selected ? "var(--accent-bg)" : "transparent",
-                                border: i === selected ? "1px solid var(--accent-border)" : "1px solid transparent",
+                                textAlign: "left",
+                                background: i === selectedIdx ? "var(--accent-bg)" : "transparent",
+                                border: i === selectedIdx ? "1px solid var(--accent-border)" : "1px solid transparent",
                                 borderRadius: 5, padding: "4px 8px", cursor: "pointer",
-                                color: i === selected ? "var(--accent)" : "var(--text)",
+                                color: i === selectedIdx ? "var(--accent)" : "var(--text)",
                                 fontSize: 12, lineHeight: "140%",
+                                display: "flex", justifyContent: "space-between", alignItems: "center", gap: 6,
                             }}>
-                        {c.name}
+                        <span style={{ flex: 1 }}>{c.name}</span>
+                        <span style={{ fontSize: 11, opacity: 0.6, flexShrink: 0 }}>{c.score?.toFixed(0)}</span>
                     </button>
                 ))}
             </div>
 
-            {/* Ingredients for recipes */}
-            {match && match.is_recipe && match.recipe_ingredients && match.recipe_ingredients.length > 0 && (
+            {match && match.is_recipe && match.recipe_ingredients?.length > 0 && (
                 <div style={{ marginBottom: 10 }}>
                     <div style={{ fontSize: 11, color: "var(--text)", marginBottom: 4, textTransform: "uppercase", letterSpacing: 1 }}>Ingredients</div>
                     {match.recipe_ingredients.map(ing => (
@@ -68,39 +139,42 @@ function Popup({ entity, anchorRect, containerRect, onSelectCandidate }) {
                 </div>
             )}
 
-            {/* Nutrients */}
             {match && (
                 <div>
-                    <div style={{ fontSize: 11, color: "var(--text)", marginBottom: 4, textTransform: "uppercase", letterSpacing: 1 }}>Nutrition</div>
-                    <NutrientRow label="Energy" value={match.nutrients.energy_kj} unit="kJ" />
-                    <NutrientRow label="Protein" value={match.nutrients.protein_g} unit="g" />
-                    <NutrientRow label="Fat" value={match.nutrients.fat_g} unit="g" />
-                    <NutrientRow label="Carbs" value={match.nutrients.carbs_g} unit="g" />
-                    <NutrientRow label="Fibre" value={match.nutrients.fibre_g} unit="g" />
-                    <NutrientRow label="Sodium" value={match.nutrients.sodium_mg} unit="mg" />
+                    <div style={{ fontSize: 11, color: "var(--text)", marginBottom: 4, textTransform: "uppercase", letterSpacing: 1 }}>
+                        Nutrition · {entity.grams}g
+                    </div>
+                    <NutrientRow label="Energy"  value={match.nutrients.energy_kj}  unit="kJ" />
+                    <NutrientRow label="Protein" value={match.nutrients.protein_g}  unit="g" />
+                    <NutrientRow label="Fat"     value={match.nutrients.fat_g}      unit="g" />
+                    <NutrientRow label="Carbs"   value={match.nutrients.carbs_g}    unit="g" />
+                    <NutrientRow label="Fibre"   value={match.nutrients.fibre_g}    unit="g" />
+                    <NutrientRow label="Sodium"  value={match.nutrients.sodium_mg}  unit="mg" />
                 </div>
             )}
         </div>
     )
 }
 
-function AnnotatedText({ text, entities, onEntityClick, activeEntity }) {
+function AnnotatedText({ text, entities, onEntityClick, activeEntity, selectedCandidates }) {
     if (!text || entities.length === 0) return <span style={{ color: "var(--text)" }}>{text}</span>
 
-    // Build a flat list of annotated regions from entity char spans
-    const regions = [] // {start, end, type: "qty"|"unit"|"food", entityIndex}
+    const regions = []
     entities.forEach((ent, i) => {
         if (ent.quantity_char_start != null)
             regions.push({ start: ent.quantity_char_start, end: ent.quantity_char_end, type: "qty", i })
         if (ent.unit_char_start != null)
             regions.push({ start: ent.unit_char_start, end: ent.unit_char_start + (ent.unit ? ent.unit.length : 0), type: "unit", i })
-        regions.push({ start: ent.char_start, end: ent.char_end, type: "food", i })
+        // guard: skip food regions where server returned null positions (fuzzy match fell below threshold)
+        if (ent.char_start != null && ent.char_end != null)
+            regions.push({ start: ent.char_start, end: ent.char_end, type: "food", i })
     })
     regions.sort((a, b) => a.start - b.start)
 
     const parts = []
     let cursor = 0
     for (const r of regions) {
+        if (r.start < cursor) continue  // skip overlapping regions
         if (r.start > cursor)
             parts.push({ text: text.slice(cursor, r.start), type: "plain" })
         parts.push({ text: text.slice(r.start, r.end), type: r.type, i: r.i })
@@ -111,14 +185,9 @@ function AnnotatedText({ text, entities, onEntityClick, activeEntity }) {
 
     const styles = {
         plain: { color: "var(--text)" },
-        qty: { background: "var(--code-bg)", color: "var(--text-h)", borderRadius: 3, padding: "1px 4px", fontFamily: "var(--mono)", fontSize: "0.9em" },
+        qty:  { background: "var(--code-bg)", color: "var(--text-h)", borderRadius: 3, padding: "1px 4px", fontFamily: "var(--mono)", fontSize: "0.9em" },
         unit: { background: "var(--code-bg)", color: "var(--text-h)", borderRadius: 3, padding: "1px 4px", fontFamily: "var(--mono)", fontSize: "0.9em" },
-        food: {
-            background: "var(--accent-bg)", color: "var(--accent)",
-            borderRadius: 4, padding: "1px 5px",
-            borderBottom: "2px solid var(--accent-border)",
-            cursor: "pointer", fontWeight: 500,
-        },
+        food: { background: "var(--accent-bg)", color: "var(--accent)", borderRadius: 4, padding: "1px 5px", borderBottom: "2px solid var(--accent-border)", cursor: "pointer", fontWeight: 500 },
     }
 
     return (
@@ -127,7 +196,9 @@ function AnnotatedText({ text, entities, onEntityClick, activeEntity }) {
                 <span key={idx}
                       style={{
                           ...styles[p.type],
-                          ...(p.type === "food" && p.i === activeEntity ? { outline: "2px solid var(--accent)" } : {})
+                          ...(p.type === "food" && p.i === activeEntity ? { outline: "2px solid var(--accent)" } : {}),
+                          // dotted underline when a non-default candidate has been selected
+                          ...(p.type === "food" && (selectedCandidates[p.i] ?? 0) > 0 ? { textDecoration: "underline dotted" } : {}),
                       }}
                       onClick={p.type === "food" ? (e) => onEntityClick(p.i, e) : undefined}>
                     {p.text}
@@ -144,11 +215,14 @@ export default function App() {
     const [anchorRect, setAnchorRect] = useState(null)
     const containerRef = useRef(null)
     const [loading, setLoading] = useState(false)
+    // map of entityIndex -> chosen candidateIndex, lives in parent so NutrientSummary can read it
+    const [selectedCandidates, setSelectedCandidates] = useState({})
 
     const handleExtract = () => {
         setLoading(true)
         setResult(null)
         setActiveEntity(null)
+        setSelectedCandidates({})
 
         fetch("http://localhost:8000/extract", {
             method: "POST",
@@ -167,7 +241,10 @@ export default function App() {
         setAnchorRect(e.currentTarget.getBoundingClientRect())
     }
 
-    // Close popup on outside click
+    const handleSelectCandidate = (entityIdx, candidateIdx) => {
+        setSelectedCandidates(prev => ({ ...prev, [entityIdx]: candidateIdx }))
+    }
+
     useEffect(() => {
         const handler = (e) => {
             if (!containerRef.current?.contains(e.target)) setActiveEntity(null)
@@ -219,9 +296,13 @@ export default function App() {
 
             {result && (
                 <div ref={containerRef} style={{ position: "relative" }}>
-                    <h2 style={{ marginBottom: 12 }}>Result</h2>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                        <h2 style={{ margin: 0 }}>Result</h2>
+                        <span style={{ fontSize: 11, color: "var(--text)", background: "var(--code-bg)", border: "1px solid var(--border)", borderRadius: 20, padding: "2px 10px" }}>
+                            via {result.source}
+                        </span>
+                    </div>
 
-                    {/* Annotated input string */}
                     <div style={{
                         fontSize: 20, lineHeight: "160%", marginBottom: 24,
                         padding: "16px 20px", borderRadius: 8,
@@ -232,41 +313,59 @@ export default function App() {
                             entities={result.entities}
                             onEntityClick={handleEntityClick}
                             activeEntity={activeEntity}
+                            selectedCandidates={selectedCandidates}
                         />
                     </div>
 
-                    {/* Popup for active entity */}
                     {activeEntity !== null && anchorRect && containerRef.current && (
                         <Popup
                             entity={result.entities[activeEntity]}
                             anchorRect={anchorRect}
                             containerRect={containerRef.current.getBoundingClientRect()}
-                            onSelectCandidate={() => {}}
+                            selectedIdx={selectedCandidates[activeEntity] ?? 0}
+                            onSelectCandidate={(cidx) => handleSelectCandidate(activeEntity, cidx)}
                         />
                     )}
 
-                    {/* Summary row */}
                     <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                        {result.entities.map((ent, i) => (
-                            <div key={i}
-                                 onClick={(e) => handleEntityClick(i, e)}
-                                 style={{
-                                     padding: "8px 14px", borderRadius: 7, cursor: "pointer",
-                                     border: `1px solid ${i === activeEntity ? "var(--accent)" : "var(--border)"}`,
-                                     background: i === activeEntity ? "var(--accent-bg)" : "var(--code-bg)",
-                                 }}>
-                                <div style={{ color: "var(--accent)", fontWeight: 500, fontSize: 14 }}>{ent.text}</div>
-                                <div style={{ color: "var(--text)", fontSize: 12 }}>
-                                    {ent.unit ? `${ent.quantity} ${ent.unit} (${ent.grams}g)` : ent.quantity !== 1 ? `${ent.quantity} × ${ent.grams}g` : ent.grams != null ? `${ent.grams}g` : "1 serving"}
-                                </div>
-                                {ent.match && (
-                                    <div style={{ color: "var(--text)", fontSize: 11, marginTop: 2 }}>
-                                        {ent.match.nutrients.energy_kj} kJ
+                        {result.entities.map((ent, i) => {
+                            const cidx = selectedCandidates[i] ?? 0
+                            const match = ent.candidates?.[cidx]
+                            const isActive = i === activeEntity
+                            const isOverridden = cidx > 0
+                            return (
+                                <div key={i}
+                                     onClick={(e) => handleEntityClick(i, e)}
+                                     style={{
+                                         padding: "8px 14px", borderRadius: 7, cursor: "pointer",
+                                         border: `1px solid ${isActive ? "var(--accent)" : "var(--border)"}`,
+                                         background: isActive ? "var(--accent-bg)" : "var(--code-bg)",
+                                     }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 1 }}>
+                                        <span style={{ color: "var(--accent)", fontWeight: 500, fontSize: 14 }}>{ent.text}</span>
+                                        {isOverridden && (
+                                            <span style={{ fontSize: 10, color: "var(--text)", background: "var(--border)", borderRadius: 10, padding: "1px 6px" }}>edited</span>
+                                        )}
                                     </div>
-                                )}
-                            </div>
-                        ))}
+                                    <div style={{ color: "var(--text)", fontSize: 12 }}>
+                                        {ent.unit ? `${ent.quantity} ${ent.unit} (${ent.grams}g)` : ent.quantity !== 1 ? `${ent.quantity} × ${ent.grams}g` : ent.grams != null ? `${ent.grams}g` : "1 serving"}
+                                    </div>
+                                    {match && (
+                                        <div style={{ color: "var(--text)", fontSize: 11, marginTop: 2, maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                            {match.name}
+                                        </div>
+                                    )}
+                                    {match?.nutrients?.energy_kj != null && (
+                                        <div style={{ color: "var(--text)", fontSize: 11, marginTop: 1 }}>
+                                            {match.nutrients.energy_kj} kJ
+                                        </div>
+                                    )}
+                                </div>
+                            )
+                        })}
                     </div>
+
+                    <NutrientSummary entities={result.entities} selectedCandidates={selectedCandidates} />
                 </div>
             )}
         </div>
