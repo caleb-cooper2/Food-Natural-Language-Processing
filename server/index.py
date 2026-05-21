@@ -368,16 +368,6 @@ def build_off_food_index(df):
 
         categories_raw = str(row.get("categories_en", "") or "")
         keywords = [k.strip().lower() for k in categories_raw.split(",") if k.strip()]
-
-        ingredients_raw = str(row.get("ingredients_text", "") or "")
-        if ingredients_raw and ingredients_raw.lower() != "nan":
-            ingredient_terms = [
-                t.strip().lower()
-                for t in re.split(r'[,;]', ingredients_raw)
-                if t.strip() and len(t.strip()) > 3
-            ]
-            keywords += ingredient_terms[:20]
-
         keywords = list(dict.fromkeys(keywords))
 
         brands_raw = str(row.get("brands", "") or "")
@@ -386,10 +376,7 @@ def build_off_food_index(df):
             if b.strip() and b.strip().lower() not in ("nan", "")
         ]
 
-        serving_measure = parse_off_serving(
-            row.get("serving_size"),
-            row.get("serving_quantity"),
-        )
+        serving_measure = parse_off_serving(row.get("serving_size"), row.get("serving_quantity"))
 
         # sodium: OFF stores g/100g, pipeline expects mg/100g
         sodium_g = clean_num(row.get("sodium_100g"))

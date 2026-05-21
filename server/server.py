@@ -27,7 +27,7 @@ from text_to_num import alpha2digit
 from rapidfuzz import fuzz
 from sentence_transformers import SentenceTransformer, CrossEncoder
 import numpy as np
-from .logging import get_logger
+from .logging_config import get_logger
 import re
 
 from .config import (
@@ -150,7 +150,13 @@ def build_food_matcher(nlp, food_index):
     term_candidates = {}
 
     for food_id, entry in food_index.items():
-        terms = list(dict.fromkeys([entry["key_term"]] + entry["keywords"]))
+        if food_id.startswith("OFF:"):
+            terms = list(dict.fromkeys(
+                [entry["key_term"]] + entry.get("brands", [])
+            ))
+        else:
+            terms = list(dict.fromkeys([entry["key_term"]] + entry["keywords"]))
+
         for term in terms:
             if len(term) <= 3:
                 continue
@@ -169,7 +175,7 @@ def build_food_matcher(nlp, food_index):
 
 
 @Language.factory("food_ner")
-def create_food_ner(nlp, name, food_index): # spaCy passes this automatically, have to leave name unused as a result
+def create_food_ner(nlp, name): # spaCy passes this automatically, have to leave name unused as a result
     """
     spaCy factory that instantiates FoodNERComponent for the pipeline
     :param nlp: spaCy language model (injected by spaCy)
@@ -218,7 +224,7 @@ if not Span.has_extension("candidates"):
     Span.set_extension("candidates", default=[])
 
 nlp = spacy.load("en_core_web_md", disable=["ner"])
-nlp.add_pipe("food_ner", last=True, config={"food_index": food_index})
+nlp.add_pipe("food_ner", last=True)
 
 
 def candidate_scorer(query, candidate_key_term):
@@ -418,14 +424,22 @@ def resolve_grams(food_id, quantity, unit):
         for serving in servings:
             label = str(serving.get("CSM") or serving.get("name") or "").lower()
             if unit.lower() in label:
-                weight = serving.get("Measure") or serving.get("grams")
+                weight = (
+                        serving.get("Measure")
+                        or serving.get("grams")
+                        or serving.get("ml")
+                )
                 try:
                     return quantity * float(weight)
                 except (TypeError, ValueError):
                     pass
 
     if servings:
-        weight = servings[0].get("Measure") or servings[0].get("grams")
+        weight = (
+                servings[0].get("Measure")
+                or servings[0].get("grams")
+                or servings[0].get("ml")
+        )
         try:
             return quantity * float(weight)
         except (TypeError, ValueError):
@@ -546,7 +560,13 @@ def validate_llm_items(llm_items):
 
         # If confidence is low, try stripping brand names and re-linking
         if item["link_confidence"] < 0.4:
-            brands = extract_brand_keywords(food_name, nlp=nlp)
+            top_id = ranked[0][0] if ranked else ""
+            entry = food_index.get(top_id, {})
+            brands = (
+                entry.get("brands", [])
+                if top_id.startswith("OFF:")
+                else extract_brand_keywords(food_name, nlp=nlp)
+            )
 
             for brand in brands:
                 generic_attempt = food_name.replace(brand, "").strip()
