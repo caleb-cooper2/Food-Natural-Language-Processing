@@ -33,7 +33,7 @@ import re
 from .config import (
     ALL_UNITS, LLM_FEW_SHOT, LLM_SYSTEM_PROMPT, OLLAMA_BASE_URL,
     OLLAMA_MODEL, OLLAMA_TIMEOUT, UNIT_GRAMS, RAG_RERANK_ENABLED,
-    RAG_TOP_N, RAG_SYSTEM_PROMPT, RAG_SCORE_GAP_THRESH
+    RAG_TOP_N, RAG_SYSTEM_PROMPT, RAG_SCORE_GAP_THRESH, ENTITY_MIN_CONFIDENCE
 )
 from .index import (
     extract_brand_keywords, load_indexes, simple_singular, term_variants,
@@ -361,9 +361,19 @@ def rank_candidates(span_text, candidate_ids, limit = 10):
         score = (1.0 - semantic_weight) * lexical + semantic_weight * semantic
 
         q_toks = len(span_lower.split())
-        score += 0.25 * any(b in span_lower for b in entry.get("brands", []))
-        score -= (len(entry["key_term"].split()) - 1) * 0.05 * (q_toks == 1)
-        score += 0.05 * (q_toks >= 2 and food_id in semantic_map)
+        score += 0.25 * any(b in span_lower for b in entry.get("brands", [])) # bonus for brands
+
+        if q_toks <= 3: # penalty for short multi-token queries
+            key_toks = len(entry["key_term"].split())
+            extra = max(0, key_toks - q_toks)
+            score -= extra * 0.04
+
+        score += 0.05 * (q_toks >= 2 and food_id in semantic_map) # bonus for long tokens that are semantically matching
+
+        candidate_key_lower = entry["key_term"].lower()
+        if span_lower in candidate_key_lower or candidate_key_lower in span_lower:
+            score += 0.15 # bonus for substring matches
+
         scored.append((food_id, max(0.0, min(1.5, score)) * 100))
 
     return sorted(scored, key=lambda x: -x[1])[:limit]
@@ -517,6 +527,7 @@ def parse_llm_output(raw):
             "food": str(item.get("food", "")).strip().lower(),
             "quantity": float(item.get("quantity") or 1.0),
             "unit": str(item["unit"]).lower() if item.get("unit") else None,
+            "normalised": str(item["normalised"]).strip().lower() if item.get("normalised") else None
         }
         for item in items
         if isinstance(item, dict) and str(item.get("food", "")).strip()
@@ -650,11 +661,12 @@ def cross_encoder_rerank(query, candidates):
     scores = cross_encoder.predict(pairs)
     return int(np.argmax(scores))
 
-async def llm_rag_rerank(food_description, candidates):
+async def llm_rag_rerank(food_description, candidates, original_text=None):
     """
     Using local LLM to select best matching candidate
     :param food_description: Users food description string
     :param candidates: Ordered list of candidate dicts (name, food_id, key_term, keywords)
+    :param original_text: The entire input text for better semantic understanding
     :return: 0-based index of best candidate
     """
     top = candidates[:RAG_TOP_N]
@@ -666,7 +678,9 @@ async def llm_rag_rerank(food_description, candidates):
         kws = ", ".join(entry.get("keywords", []))
         lines.append(f"{i}. {c['name']}" + (f' ({kws})' if kws else ''))
 
+    context_line = f'Full sentence context: "{original_text}"\n' if original_text else ""
     user_prompt = (
+        f'{context_line}'
         f'Food described: "{food_description}"\n\n'
         f'Candidates:\n' + "\n".join(lines) +
         f'\n\nRespond with only the number of the best match (1-{len(top)}), or 0 if none fit.'
@@ -735,7 +749,7 @@ async def process_llm_item(item, original_text):
     :param original_text: Original input string, used for character position resolution
     :return: Structured entity result dict, or None if no candidates are found
     """
-    food_description = item.get("food_generic") or item["food"]
+    food_description = item.get("food_generic") or item.get("normalised") or item["food"]
     quantity, unit = item["quantity"], item["unit"]
 
     logger.debug(f"[NEL] Retrieving candidates for: '{food_description}'")
@@ -759,7 +773,7 @@ async def process_llm_item(item, original_text):
 
     if score_gap < RERANK_THRESHOLD_GAP:
         if RAG_RERANK_ENABLED:
-            rag_idx = await llm_rag_rerank(food_description, candidates)
+            rag_idx = await llm_rag_rerank(food_description, candidates, original_text)
             best_idx = rag_idx if rag_idx is not None else cross_encoder_rerank(food_description, candidates)
         else:
             best_idx = cross_encoder_rerank(food_description, candidates)
@@ -866,7 +880,7 @@ async def extract(req: ExtractRequest):
         if avg_conf >= 0.5:
             logger.info(f"[Step 3/4] NEL + Reranking")
 
-            results = [r for item in llm_items if (r := await process_llm_item(item, req.text))]
+            results = [r for item in llm_items if (r := await process_llm_item(item, req.text)) and r["confidence"] >= ENTITY_MIN_CONFIDENCE]
             logger.info("LLM used")
             logger.info("---- PIPELINE END ----")
             return {"entities": results, "text": req.text, "source": "llm"}
@@ -877,7 +891,8 @@ async def extract(req: ExtractRequest):
     doc, results, prev_end = nlp(req.text), [], 0
     for ent in (e for e in doc.ents if e.label_ == "FOOD"):
         if result := process_spacy_entity(ent, doc, prev_end):
-            results.append(result)
+            if result["confidence"] >= ENTITY_MIN_CONFIDENCE:
+                results.append(result)
         prev_end = ent.end
 
     logger.info("spaCy used")

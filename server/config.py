@@ -39,9 +39,17 @@ Rules:
   Example: "pie floater — a mince pie in a bowl of pea soup" -> extract "mince pie" and "pea soup", NOT "pie floater".
 - Do NOT generalise, simplify, or rephrase food names.
 - Do NOT split a branded product into brand + generic (e.g. "weet-bix" stays as "weet-bix").
+- Coffee drinks are single items — extract the full compound name: "flat white", "long black", "trim latte".
+- Wine and spirits are food items — extract the full variety name: "sauvignon blanc", "pinot noir", "ginger beer".
+- Multi-word dish names stay together: "chicken satay skewers", "garlic naan", "butter chicken", "pad thai".
+- Tea: always extract the full variety name as the food. For "English Breakfast tea" or bare "cup of tea",
+  add normalised="black tea". For other teas (green, peppermint, herbal) leave normalised absent.
+- Informal slang with an unambiguous food referent: add normalised. "OJ"→"orange juice", "sav"→"sauvignon blanc",
+  "bubbles"→"sparkling wine", "expresso"→"espresso".
+- If the input contains no identifiable food (e.g. "had dinner", "had a drink", "ate something"), return {"items":[]}.
 
 Return format: {"items": [...]}
-Each item: {"food": string, "quantity": number, "unit": string|null}
+Each item: {"food": string, "quantity": number, "unit": string|null, "normalised": string|null (optional)}
 If no quantity stated, use 1. If no unit, use null.
 """
 
@@ -66,8 +74,40 @@ LLM_FEW_SHOT = [
     # Brand without explicit product type
     {"role": "user", "content": "bowl of weet-bix with trim milk"},
     {"role": "assistant", "content": '{"items":[{"food":"weet-bix","quantity":1,"unit":"serving"},{"food":"trim milk","quantity":1,"unit":"serving"}]}'},
+
+    # Coffee drinks — full compound name
+    {"role": "user", "content": "drank a flat white and had a long black after"},
+    {"role": "assistant", "content": '{"items":[{"food":"flat white","quantity":1,"unit":null},{"food":"long black","quantity":1,"unit":null}]}'},
+
+    # Wine varieties
+    {"role": "user", "content": "two glasses of sauvignon blanc with camembert"},
+    {"role": "assistant", "content": '{"items":[{"food":"sauvignon blanc","quantity":2,"unit":"glass"},{"food":"camembert","quantity":1,"unit":"serving"}]}'},
+
+    # Multi-word dish names
+    {"role": "user", "content": "chicken satay skewers with steamed jasmine rice"},
+    {"role": "assistant", "content": '{"items":[{"food":"chicken satay skewers","quantity":1,"unit":"serving"},{"food":"jasmine rice","quantity":1,"unit":"serving"}]}'},
+
+    # Abbreviation normalization
+    {"role": "user", "content": "had some OJ and a sav before dinner"},
+    {"role": "assistant", "content": '{"items":[{"food":"OJ","quantity":1,"unit":"glass","normalised":"orange juice"},{"food":"sav","quantity":1,"unit":"glass","normalised":"sauvignon blanc"}]}'},
+
+    # Tea normalisation
+    {"role": "user", "content": "a cup of English Breakfast tea and a biscuit"},
+    {"role": "assistant", "content": '{"items":[{"food":"English Breakfast tea","quantity":1,"unit":"cup","normalised":"black tea"},{"food":"biscuit","quantity":1,"unit":null}]}'},
+
+    # Slang / informal — bubbles = sparkling wine
+    {"role": "user", "content": "pavlova and a glass of bubbles for dessert"},
+    {"role": "assistant", "content": '{"items":[{"food":"pavlova","quantity":1,"unit":"serving"},{"food":"bubbles","quantity":1,"unit":"glass","normalised":"sparkling wine"}]}'},
+
+    # Vague input — return empty
+    {"role": "user", "content": "had dinner"},
+    {"role": "assistant", "content": '{"items":[]}'},
+
+    {"role": "user", "content": "ate something from the fridge"},
+    {"role": "assistant", "content": '{"items":[]}'},
 ]
 
+ENTITY_MIN_CONFIDENCE = 0.35
 RAG_RERANK_ENABLED = True # Change to false if cross-encoding reranking intended
 RAG_TOP_N = 6 # candidates passed to LLM
 RAG_SCORE_GAP_THRESH = 25 # skip RAG if top candidate leads by this much
