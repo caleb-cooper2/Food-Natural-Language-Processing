@@ -75,7 +75,7 @@ LLM_FEW_SHOT = [
     {"role": "user", "content": "bowl of weet-bix with trim milk"},
     {"role": "assistant", "content": '{"items":[{"food":"weet-bix","quantity":1,"unit":"serving"},{"food":"trim milk","quantity":1,"unit":"serving"}]}'},
 
-    # Coffee drinks — full compound name
+    # Coffee drinks - full compound name
     {"role": "user", "content": "drank a flat white and had a long black after"},
     {"role": "assistant", "content": '{"items":[{"food":"flat white","quantity":1,"unit":null},{"food":"long black","quantity":1,"unit":null}]}'},
 
@@ -95,11 +95,11 @@ LLM_FEW_SHOT = [
     {"role": "user", "content": "a cup of English Breakfast tea and a biscuit"},
     {"role": "assistant", "content": '{"items":[{"food":"English Breakfast tea","quantity":1,"unit":"cup","normalised":"black tea"},{"food":"biscuit","quantity":1,"unit":null}]}'},
 
-    # Slang / informal — bubbles = sparkling wine
+    # Slang / informal - bubbles = sparkling wine
     {"role": "user", "content": "pavlova and a glass of bubbles for dessert"},
     {"role": "assistant", "content": '{"items":[{"food":"pavlova","quantity":1,"unit":"serving"},{"food":"bubbles","quantity":1,"unit":"glass","normalised":"sparkling wine"}]}'},
 
-    # Vague input — return empty
+    # Vague input - return empty
     {"role": "user", "content": "had dinner"},
     {"role": "assistant", "content": '{"items":[]}'},
 
@@ -110,7 +110,6 @@ LLM_FEW_SHOT = [
 ENTITY_MIN_CONFIDENCE = 0.35
 RAG_RERANK_ENABLED = True # Change to false if cross-encoding reranking intended
 RAG_TOP_N = 6 # candidates passed to LLM
-RAG_SCORE_GAP_THRESH = 25 # skip RAG if top candidate leads by this much
 RAG_SYSTEM_PROMPT = """\
 You are a food database expert for NZ FOODfiles 2024.
 Given a user's food description and a numbered list of database candidates, \
