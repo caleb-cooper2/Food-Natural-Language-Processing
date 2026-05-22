@@ -25,7 +25,6 @@ SELECT
     salt_100g
 FROM [all]
 WHERE (countries_en LIKE '%new zealand%' OR countries_en LIKE '%australia%')
-AND unique_scans_n >= 2
 AND (
     "energy-kj_100g" IS NOT NULL
     OR proteins_100g IS NOT NULL
@@ -33,4 +32,7 @@ AND (
     OR carbohydrates_100g IS NOT NULL
     OR sodium_100g IS NOT NULL
     OR salt_100g IS NOT NULL
-);
+)
+AND serving_size IS NOT NULL
+AND serving_size != ''
+AND TRIM(serving_size) != ''
