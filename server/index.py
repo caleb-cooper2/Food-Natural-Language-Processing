@@ -592,12 +592,13 @@ if __name__ == "__main__":
 
     aus_index = build_aus_food_index(aus_nutrition_df, aus_details_df, aus_measures_df, nlp_ner)
 
-    print("Loading OpenFoodFacts data...")
-    off_df = pd.read_csv(OFF_DATA_CSV, low_memory=False, dtype={"code": str})
-    off_index = build_off_food_index(off_df)
+    # print("Loading OpenFoodFacts data...")
+    # off_df = pd.read_csv(OFF_DATA_CSV, low_memory=False, dtype={"code": str})
+    # off_index = build_off_food_index(off_df)
 
     print("Merging Indexes...")
-    merged_food_index = {**off_index, **nz_index, **aus_index}
+    # merged_food_index = {**off_index, **nz_index, **aus_index}
+    merged_food_index = {**nz_index, **aus_index}
 
     print("Building recipe indexes...")
     nz_ingredient_df = pd.read_excel(f"{PRINCIPAL_XLSX}/INGREDIENT.FT.XLSX", skiprows=1)
@@ -608,7 +609,8 @@ if __name__ == "__main__":
     aus_recipe_index = build_aus_recipe_index(aus_recipe_df, merged_food_index)
     recipe_index = {**nz_recipe_index, **aus_recipe_index}
 
-    print(f"{len(merged_food_index)} foods | {len(nz_recipe_index)} NZ recipes | {len(aus_recipe_index)} AU recipes | {len(off_index)} branded OFF products")
+    # print(f"{len(merged_food_index)} foods | {len(nz_recipe_index)} NZ recipes | {len(aus_recipe_index)} AU recipes | {len(off_index)} branded OFF products")
+    print(f"{len(merged_food_index)} foods | {len(nz_recipe_index)} NZ recipes | {len(aus_recipe_index)} AU recipes")
 
     print("Building embedding index...")
     embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
