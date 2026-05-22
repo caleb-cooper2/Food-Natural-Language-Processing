@@ -27,11 +27,13 @@ from text_to_num import alpha2digit
 from rapidfuzz import fuzz
 from sentence_transformers import SentenceTransformer, CrossEncoder
 import numpy as np
-from .logging import get_logger
+from .logging_config import get_logger
+import re
 
 from .config import (
     ALL_UNITS, LLM_FEW_SHOT, LLM_SYSTEM_PROMPT, OLLAMA_BASE_URL,
-    OLLAMA_MODEL, OLLAMA_TIMEOUT, UNIT_GRAMS
+    OLLAMA_MODEL, OLLAMA_TIMEOUT, UNIT_GRAMS, RAG_RERANK_ENABLED,
+    RAG_TOP_N, RAG_SYSTEM_PROMPT, RAG_SCORE_GAP_THRESH
 )
 from .index import (
     extract_brand_keywords, load_indexes, simple_singular, term_variants,
@@ -109,11 +111,24 @@ def find_item_char_positions(item, original_text):
     """
     food = item["food"]
     text_lower = original_text.lower()
-    char_start = text_lower.find(food.lower())
-    if char_start == -1:
-        return None, None, None, None, None
-    char_end = char_start + len(food)
+    food_lower = food.lower()
 
+    char_start = text_lower.find(food.lower())
+
+    if char_start == -1:
+        food_len = len(food_lower)
+        best_score, best_start = 0, 0
+        for i in range(max(1, len(text_lower) - food_len + 1)):
+            window = text_lower[i:i + food_len]
+            score = fuzz.ratio(food_lower, window)
+            if score > best_score:
+                best_score, best_start = score, i
+        if best_score >= 70:
+            char_start = best_start
+        else:
+            return None, None, None, None, None
+
+    char_end = char_start + len(food)
     prefix_lower = original_text[:char_start].lower()
     quantity = item.get("quantity", 1.0)
     unit = item.get("unit")
@@ -148,7 +163,13 @@ def build_food_matcher(nlp, food_index):
     term_candidates = {}
 
     for food_id, entry in food_index.items():
-        terms = list(dict.fromkeys([entry["key_term"]] + entry["keywords"]))
+        if food_id.startswith("OFF:"):
+            terms = list(dict.fromkeys(
+                [entry["key_term"]] + entry.get("brands", [])
+            ))
+        else:
+            terms = list(dict.fromkeys([entry["key_term"]] + entry["keywords"]))
+
         for term in terms:
             if len(term) <= 3:
                 continue
@@ -167,7 +188,7 @@ def build_food_matcher(nlp, food_index):
 
 
 @Language.factory("food_ner")
-def create_food_ner(nlp, name, food_index): # spaCy passes this automatically, have to leave name unused as a result
+def create_food_ner(nlp, name): # spaCy passes this automatically, have to leave name unused as a result
     """
     spaCy factory that instantiates FoodNERComponent for the pipeline
     :param nlp: spaCy language model (injected by spaCy)
@@ -216,7 +237,7 @@ if not Span.has_extension("candidates"):
     Span.set_extension("candidates", default=[])
 
 nlp = spacy.load("en_core_web_md", disable=["ner"])
-nlp.add_pipe("food_ner", last=True, config={"food_index": food_index})
+nlp.add_pipe("food_ner", last=True)
 
 
 def candidate_scorer(query, candidate_key_term):
@@ -342,7 +363,6 @@ def rank_candidates(span_text, candidate_ids, limit = 10):
         q_toks = len(span_lower.split())
         score += 0.25 * any(b in span_lower for b in entry.get("brands", []))
         score -= (len(entry["key_term"].split()) - 1) * 0.05 * (q_toks == 1)
-        score += 0.05 * (q_toks == 1 and bool(entry.get("part")))
         score += 0.05 * (q_toks >= 2 and food_id in semantic_map)
         scored.append((food_id, max(0.0, min(1.5, score)) * 100))
 
@@ -415,15 +435,26 @@ def resolve_grams(food_id, quantity, unit):
 
     if unit and servings:
         for serving in servings:
-            if unit.lower() in str(serving.get("CSM", "")).lower():
+            label = str(serving.get("CSM") or serving.get("name") or "").lower()
+            if unit.lower() in label:
+                weight = (
+                        serving.get("Measure")
+                        or serving.get("grams")
+                        or serving.get("ml")
+                )
                 try:
-                    return quantity * float(serving["Measure"])
+                    return quantity * float(weight)
                 except (TypeError, ValueError):
                     pass
 
     if servings:
+        weight = (
+                servings[0].get("Measure")
+                or servings[0].get("grams")
+                or servings[0].get("ml")
+        )
         try:
-            return quantity * float(servings[0]["Measure"])
+            return quantity * float(weight)
         except (TypeError, ValueError):
             pass
 
@@ -542,7 +573,13 @@ def validate_llm_items(llm_items):
 
         # If confidence is low, try stripping brand names and re-linking
         if item["link_confidence"] < 0.4:
-            brands = extract_brand_keywords(food_name, nlp=nlp)
+            top_id = ranked[0][0] if ranked else ""
+            entry = food_index.get(top_id, {})
+            brands = (
+                entry.get("brands", [])
+                if top_id.startswith("OFF:")
+                else extract_brand_keywords(food_name, nlp=nlp)
+            )
 
             for brand in brands:
                 generic_attempt = food_name.replace(brand, "").strip()
@@ -613,6 +650,50 @@ def cross_encoder_rerank(query, candidates):
     scores = cross_encoder.predict(pairs)
     return int(np.argmax(scores))
 
+async def llm_rag_rerank(food_description, candidates):
+    """
+    Using local LLM to select best matching candidate
+    :param food_description: Users food description string
+    :param candidates: Ordered list of candidate dicts (name, food_id, key_term, keywords)
+    :return: 0-based index of best candidate
+    """
+    top = candidates[:RAG_TOP_N]
+
+    # Build a context block for each candidate
+    lines = []
+    for i, c in enumerate(top, 1):
+        entry = food_index.get(c["food_id"], {})
+        kws = ", ".join(entry.get("keywords", []))
+        lines.append(f"{i}. {c['name']}" + (f' ({kws})' if kws else ''))
+
+    user_prompt = (
+        f'Food described: "{food_description}"\n\n'
+        f'Candidates:\n' + "\n".join(lines) +
+        f'\n\nRespond with only the number of the best match (1-{len(top)}), or 0 if none fit.'
+    )
+
+    payload = {
+        "model": OLLAMA_MODEL,
+        "messages": [
+            {"role": "system", "content": RAG_SYSTEM_PROMPT},
+            {"role": "user",   "content": user_prompt},
+        ],
+        "stream": False,
+        "options": {"temperature": 0, "num_predict": 8},  # we only need a single digit
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=OLLAMA_TIMEOUT) as client:
+            resp = await client.post(f"{OLLAMA_BASE_URL}/api/chat", json=payload)
+            resp.raise_for_status()
+        raw = resp.json()["message"]["content"].strip()
+        idx = int(re.search(r'\d+', raw).group())
+        if 1 <= idx <= len(top):
+            return idx - 1 # convert to 0-based
+    except Exception as exc:
+        logger.warning(f"[RAG rerank] failed ({exc}), falling back to cross-encoder")
+    return None # None signals fallback
+
 def build_candidate_list(ranked, grams):
     """
     Builds the full candidate response list from ranked (food_id, score) pairs
@@ -625,9 +706,17 @@ def build_candidate_list(ranked, grams):
         entry = food_index.get(food_id)
         if not entry:
             continue
+
+        display_name = entry["name"]
+        brands = entry.get("brands", [])
+        if food_id.startswith("OFF:") and brands:
+            primary_brand = brands[0]
+            if primary_brand.lower() not in display_name.lower():
+                display_name = f"{primary_brand.title()} – {display_name}"
+
         candidates.append({
             "food_id": food_id,
-            "name": entry["name"],
+            "name": display_name,
             "score": round(score, 2),
             "is_recipe": entry.get("is_recipe", False),
             "recipe_ingredients": [
@@ -665,11 +754,15 @@ async def process_llm_item(item, original_text):
     provisional_grams = resolve_grams(ranked[0][0], quantity, unit)
     candidates = build_candidate_list(ranked, provisional_grams)
 
-    best_idx = (
-        cross_encoder_rerank(food_description, candidates)
-        if score_gap < RERANK_THRESHOLD_GAP
-        else 0
-    )
+    rag_idx = None
+    best_idx = 0
+
+    if score_gap < RERANK_THRESHOLD_GAP:
+        if RAG_RERANK_ENABLED:
+            rag_idx = await llm_rag_rerank(food_description, candidates)
+            best_idx = rag_idx if rag_idx is not None else cross_encoder_rerank(food_description, candidates)
+        else:
+            best_idx = cross_encoder_rerank(food_description, candidates)
 
     logger.debug(
         f"[rerank] before='{candidates[0]['name']}' "
@@ -698,6 +791,7 @@ async def process_llm_item(item, original_text):
         "confidence": confidence,
         "match": candidates[0] if candidates else None,
         "candidates": candidates,
+        "rerank_source": "rag" if rag_idx is not None else "cross_encoder",
         "source": "llm",
     }
 
