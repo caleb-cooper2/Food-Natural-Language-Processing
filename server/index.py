@@ -23,9 +23,9 @@ import spacy
 from sentence_transformers import SentenceTransformer
 
 try:
-    from .config import ALL_UNITS, PRINCIPAL_XLSX, SUPPORTING_XLSX, AUS_DATA_DIR
+    from .config import ALL_UNITS, PRINCIPAL_XLSX, SUPPORTING_XLSX, AUS_DATA_DIR, OFF_DATA_CSV
 except ImportError:
-    from config import ALL_UNITS, PRINCIPAL_XLSX, SUPPORTING_XLSX, AUS_DATA_DIR
+    from config import ALL_UNITS, PRINCIPAL_XLSX, SUPPORTING_XLSX, AUS_DATA_DIR, OFF_DATA_CSV
 
 INDEX_DIR = Path("data/indexes")
 
@@ -37,6 +37,59 @@ AUS_NUTRIENT_MAP = {
     "Dietary fibre (g)": "fibre_g",
     "Sodium (Na) (mg)": "sodium_mg",
 }
+
+OFF_NUTRIENT_MAP ={
+    "energy-kj_100g": "energy_kj",
+    "proteins_100g": "protein_g",
+    "fat_100g": "fat_g",
+    "carbohydrates_100g": "carbs_g",
+    "fiber_100g": "fibre_g",
+    "sodium_100g": "sodium_mg",  # g/100g -> needs ×1000
+}
+
+def parse_off_serving(serving_size_str, serving_quantity=None):
+    """
+    Attempt to parse a OFF serving_size. It starts as a free-text string so we try to standardise it.
+    :param serving_size_str: Raw OFF serving_size string
+    :param serving_quantity: Numeric serving_quantity field as fallback gram weight
+    :return: List with one serving measure dict, or [] if unparseable
+    """
+    raw = str(serving_size_str).strip() if serving_size_str else ""
+    if raw.lower() in ("", "nan", "not indicated.", "not indicated"):
+        try:
+            grams = float(serving_quantity)
+            if math.isnan(grams):
+                return []
+            return [{"name": "1 serving", "grams": grams, "ml": None}]
+        except (TypeError, ValueError):
+            return []
+
+    label = raw
+    s = raw.replace(",", ".") # replace European decimals
+
+    grams = ml = None
+
+    match = re.search(r'\((\d+\.?\d*)\s*g\)', s, re.IGNORECASE)
+    if match:
+        grams = float(match.group(1))
+
+    if grams is None:
+        match = re.match(r'^(\d+\.?\d*)\s*g\b', s, re.IGNORECASE)
+        if match:
+            grams = float(match.group(1))
+
+    if grams is None:
+        match = re.search(r'(\d+\.?\d*)\s*ml\b', s, re.IGNORECASE)
+        if match:
+            ml = float(match.group(1))
+
+    if grams is None and ml is None:
+        try:
+            grams = float(serving_quantity)
+        except (TypeError, ValueError):
+            return []
+
+    return [{"name": label, "grams": grams, "ml": ml}]
 
 def simple_plural(word):
     """
@@ -245,13 +298,16 @@ def build_aus_food_index(nutrient_df, detail_df, measure_df, nlp):
         if not fid:
             continue
 
-        qty = str(row.get("Quantity", "") or "").strip()
         descriptors = [
             str(row.get(f"Descriptor {i}", "") or "").strip()
             for i in range(1, 5)
         ]
         descriptor_str = " ".join(d for d in descriptors if d and d.lower() != "nan")
 
+        if "density" in descriptor_str.lower():
+            continue
+
+        qty = str(row.get("Quantity", "") or "").strip()
         measure_lookup.setdefault(fid, []).append({
             "name": f"{qty} {descriptor_str}".strip(),
             "grams": clean_num(row.get("Gram amount")),
@@ -291,6 +347,65 @@ def build_aus_food_index(nutrient_df, detail_df, measure_df, nlp):
                 for orig_col, mapped_key in AUS_NUTRIENT_MAP.items()
             }
         }
+    return index
+
+def build_off_food_index(df):
+    """
+    Builds the OFF food index dict
+    :param df: DataFrame from the openfoodfacts CSV export
+    :return: Dict mapping OFF:barcode -> food index entry
+    """
+    index = {}
+
+    for _, row in df.iterrows():
+        code = str(row.get("code", "") or "").strip()
+        if not code:
+            continue
+
+        name = str(row.get("product_name", "") or "").strip()
+        if not name or name.lower() == "nan":
+            continue
+
+        prefixed_id = f"OFF:{code}"
+
+        generic = str(row.get("generic_name", "") or "").strip()
+        generic = "" if generic.lower() == "nan" else generic
+
+        categories_raw = str(row.get("categories_en", "") or "")
+        keywords = [k.strip().lower() for k in categories_raw.split(",") if k.strip()]
+        keywords = list(dict.fromkeys(keywords))
+
+        brands_raw = str(row.get("brands", "") or "")
+        brands = [
+            b.strip().lower() for b in brands_raw.split(",")
+            if b.strip() and b.strip().lower() not in ("nan", "")
+        ]
+
+        serving_measure = parse_off_serving(row.get("serving_size"), row.get("serving_quantity"))
+
+        # sodium: OFF stores g/100g, pipeline expects mg/100g
+        sodium_g = clean_num(row.get("sodium_100g"))
+        sodium_mg = round(sodium_g * 1000, 3) if sodium_g is not None else None
+
+        index[prefixed_id] = {
+            "source": "openfoodfacts",
+            "name": name,
+            "key_term": keywords[0] if keywords else name.lower(),
+            "description": generic,
+            "keywords": list(dict.fromkeys(brands + keywords)),
+            "brands": brands,
+            "serving_measure": serving_measure,
+            "is_recipe": False,
+            "nutrients": {
+                "energy_kj": clean_num(row.get("energy-kj_100g")),
+                "protein_g": clean_num(row.get("proteins_100g")),
+                "fat_g": clean_num(row.get("fat_100g")),
+                "carbs_g": clean_num(row.get("carbohydrates_100g")),
+                "fibre_g": clean_num(row.get("fiber_100g")),
+                "sodium_mg": sodium_mg,
+            },
+        }
+
     return index
 
 
@@ -477,8 +592,12 @@ if __name__ == "__main__":
 
     aus_index = build_aus_food_index(aus_nutrition_df, aus_details_df, aus_measures_df, nlp_ner)
 
+    print("Loading OpenFoodFacts data...")
+    off_df = pd.read_csv(OFF_DATA_CSV, low_memory=False, dtype={"code": str})
+    off_index = build_off_food_index(off_df)
+
     print("Merging Indexes...")
-    merged_food_index = {**nz_index, **aus_index}
+    merged_food_index = {**off_index, **nz_index, **aus_index}
 
     print("Building recipe indexes...")
     nz_ingredient_df = pd.read_excel(f"{PRINCIPAL_XLSX}/INGREDIENT.FT.XLSX", skiprows=1)
@@ -489,7 +608,7 @@ if __name__ == "__main__":
     aus_recipe_index = build_aus_recipe_index(aus_recipe_df, merged_food_index)
     recipe_index = {**nz_recipe_index, **aus_recipe_index}
 
-    print(f"{len(merged_food_index)} foods | {len(nz_recipe_index)} NZ recipes | {len(aus_recipe_index)} AU recipes")
+    print(f"{len(merged_food_index)} foods | {len(nz_recipe_index)} NZ recipes | {len(aus_recipe_index)} AU recipes | {len(off_index)} branded OFF products")
 
     print("Building embedding index...")
     embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
