@@ -581,7 +581,7 @@ if __name__ == "__main__":
     print("Loading NZ source data...")
     nz_csm_df = pd.read_excel(f"{PRINCIPAL_XLSX}/CSM.FT.XLSX", skiprows=1)
     nz_food_df = pd.read_excel(f"{PRINCIPAL_XLSX}/Unabridged/Unabridged DATA.AP.xlsx", skiprows=1)
-    nz_name_df = pd.read_excel(f"{SUPPORTING_XLSX}/NAME.FT.XLSX", skiprows=1)
+    nz_name_df = pd.read_excel(f"{SUPPORTING_XLSX}/NAME.FT.xlsx", skiprows=1)
 
     nz_index = build_nz_food_index(nz_food_df, nz_csm_df, nz_name_df, nlp_ner)
 
