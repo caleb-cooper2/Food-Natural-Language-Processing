@@ -6,7 +6,7 @@ A web application for processing unstructured food input.
 
 ### Prerequisites
 - Node.js
-- Python 3.x
+- Python 3.10+
 - [Ollama](https://ollama.com) with `qwen2.5:7b-instruct-q4_K_M`
 
 ```bash
@@ -43,3 +43,27 @@ uvicorn server.server:app --reload
 ```
 
 > **Note:** The frontend, backend, and Ollama must all be running concurrently for the application to function properly.
+
+### Hugging Face Authentication (optional)
+Two models are downloaded automatically from Hugging Face on first run: `sentence-transformers/all-MiniLM-L6-v2` (semantic embeddings) and `cross-encoder/ms-marco-MiniLM-L-6-v2` (reranking). Both are publicly available and require no access approval.
+
+Authentication is not required, but setting a Hugging Face token is recommended to avoid anonymous rate limits on Hub downloads, which can cause timeouts if the models aren't already cached locally.
+
+Generate a read token at [https://huggingface.co/settings/tokens](https://huggingface.co/settings/tokens), then either log in via the CLI (persists across sessions):
+
+```bash
+hf auth login
+```
+
+Or export for the current session:
+
+```bash
+export HF_TOKEN=hf_your_token_here
+```
+
+Models are cached to `~/.cache/huggingface/` after the first download.
+
+
+## API
+### `POST /extract`
+Accepts a JSON body and returns matched food entities with nutrients.
