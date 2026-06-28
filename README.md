@@ -19,6 +19,15 @@ git clone <repository-url>
 cd unstructured-food-input
 ```
 
+### Set up .env file (Optional)
+If you would like to use OpenRouter, create a `.env` file in the root directory with the following content:
+```env
+OPENROUTER_API_KEY=<api_key_here>
+OPENROUTER_MODEL=claude-opus-4.8
+USE_LOCAL_LLM=False
+```
+> USE_LOCAL_LLM defaults to `True` and will use the local Ollama model if no `.env` file is present.
+
 ### Build the Search Indexes
 Required once before running the backend, and after any changes to the source data.
 ```bash
