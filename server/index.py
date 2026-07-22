@@ -223,6 +223,16 @@ def clean_num(value):
     except (TypeError, ValueError):
         return None
 
+def find_first_measured_density(serving_measures):
+    """
+    Returns the first measured density in a list of serving measures, or None if none are measured
+    """
+    for measure in serving_measures:
+        density = measure.get("density_g_per_ml")
+        if density is not None:
+            return density
+    return None
+
 def build_nz_food_index(food_df, csm_df, name_df, nlp):
     """
     Builds the primary food index dict keyed by FoodID's
@@ -234,10 +244,22 @@ def build_nz_food_index(food_df, csm_df, name_df, nlp):
     """
     index = {}
 
+    csm_columns = ["CSM", "Measure"]
+    if "Density (g/cm3)" in csm_df.columns:
+        csm_columns.append("Density (g/cm3)")
+
     csm_lookup = {
-        str(fid).strip(): grp[["CSM", "Measure"]].to_dict("records")
-        for fid, grp in csm_df.groupby("FoodID")
+        str(food_id).strip(): [
+            {
+                "CSM": record["CSM"],
+                "Measure": record["Measure"],
+                "density_g_per_ml": clean_num(record["Density (g/cm3)"])
+            }
+            for record in group[csm_columns].to_dict("records")
+        ]
+        for food_id, group in csm_df.groupby("FoodID")
     }
+
     name_lookup = {str(r.get("FoodID", "")).strip(): r for _, r in name_df.iterrows()}
 
     for _, row in food_df.iterrows():
@@ -269,6 +291,7 @@ def build_nz_food_index(food_df, csm_df, name_df, nlp):
             "keywords": list(dict.fromkeys(brands + keywords)),
             "brands": brands,
             "serving_measure": csm_lookup.get(raw_id, []),
+            "measured_density_g_per_ml": find_first_measured_density(csm_lookup.get(raw_id, [])),
             "is_recipe": raw_id.startswith("R"),
             "nutrients": {
                 "energy_kj": clean_num(row.get("Energy, total metabolisable (kJ)")),
@@ -293,6 +316,7 @@ def build_aus_food_index(nutrient_df, detail_df, measure_df, nlp):
     index = {}
 
     measure_lookup = {}
+    aus_density_lookup = {}
     for _, row in measure_df.iterrows():
         fid = str(row.get("Public food key", "")).strip()
         if not fid:
@@ -305,6 +329,9 @@ def build_aus_food_index(nutrient_df, detail_df, measure_df, nlp):
         descriptor_str = " ".join(d for d in descriptors if d and d.lower() != "nan")
 
         if "density" in descriptor_str.lower():
+            density = clean_num(row.get("Gram amount"))
+            if density is not None:
+                aus_density_lookup[fid] = density
             continue
 
         qty = str(row.get("Quantity", "") or "").strip()
@@ -341,6 +368,7 @@ def build_aus_food_index(nutrient_df, detail_df, measure_df, nlp):
             "keywords": list(dict.fromkeys(brands + keywords)),
             "brands": brands,
             "serving_measure": measure_lookup.get(raw_id, []),
+            "measured_density_g_per_ml": aus_density_lookup.get(raw_id),
             "is_recipe": derivation.lower() == "recipe",
             "nutrients": {
                 mapped_key: clean_num(nut_row.get(orig_col))
