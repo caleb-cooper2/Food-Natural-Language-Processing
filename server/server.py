@@ -924,6 +924,14 @@ def process_spacy_entity(entity, doc, prev_end):
         "source": "spacy"
     }
 
+async def unload_ollama_model():
+    """Asks Ollama to drop the model from VRAM immediately"""
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            await client.post(f"{OLLAMA_BASE_URL}/api/generate", json={"model": OLLAMA_MODEL, "keep_alive": 0})
+    except httpx.HTTPError as exc:
+        logger.warning(f"Could not unload Ollama model: {exc}")
+
 
 app = FastAPI(title="Food NLP API")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
@@ -965,6 +973,9 @@ async def extract(req: ExtractRequest):
             results = [r for item in llm_items if (r := await process_llm_item(item, req.text, use_local_llm)) and r["confidence"] >= ENTITY_MIN_CONFIDENCE]
             logger.info("LLM used")
             logger.info("---- PIPELINE END ----")
+
+            await unload_ollama_model()
+
             return {"entities": results, "text": req.text, "source": "llm"}
         else:
             logger.warning("Low confidence -> spaCy fallback")
@@ -979,4 +990,7 @@ async def extract(req: ExtractRequest):
 
     logger.info("spaCy used")
     logger.info("---- PIPELINE END ----")
+
+    await unload_ollama_model()
+
     return {"entities": results, "text": req.text, "source": "spacy"}
