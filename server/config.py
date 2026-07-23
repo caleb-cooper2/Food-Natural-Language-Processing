@@ -42,6 +42,9 @@ Rules:
 - Coffee drinks are single items — extract the full compound name: "flat white", "long black", "trim latte".
 - Wine and spirits are food items — extract the full variety name: "sauvignon blanc", "pinot noir", "ginger beer".
 - Multi-word dish names stay together: "chicken satay skewers", "garlic naan", "butter chicken", "pad thai".
+- If a food's physical form or preparation is stated, add prep=<that word>, copied verbatim from the
+  input (e.g. "carrot sticks" -> prep "sticks"; "grated cheese" -> prep "grated"; "whole apple" ->
+  prep "whole"; "mashed potato" -> prep "mashed"). If no form is stated, omit prep. Do NOT guess a form.
 - Tea: always extract the full variety name as the food. For "English Breakfast tea" or bare "cup of tea",
   add normalised="black tea". For other teas (green, peppermint, herbal) leave normalised absent.
 - Informal slang with an unambiguous food referent: add normalised. "OJ"→"orange juice", "sav"→"sauvignon blanc",
@@ -49,7 +52,7 @@ Rules:
 - If the input contains no identifiable food (e.g. "had dinner", "had a drink", "ate something"), return {"items":[]}.
 
 Return format: {"items": [...]}
-Each item: {"food": string, "quantity": number, "unit": string|null, "normalised": string|null (optional)}
+Each item: {"food": string, "quantity": number, "unit": string|null, "normalised": string|null (optional), "prep": string|null (optional)}
 If no quantity stated, use 1. If no unit, use null.
 """
 
@@ -105,6 +108,14 @@ LLM_FEW_SHOT = [
 
     {"role": "user", "content": "ate something from the fridge"},
     {"role": "assistant", "content": '{"items":[]}'},
+
+    # Preparation / form extraction
+    {"role": "user", "content": "carrot sticks and a handful of grated cheese"},
+    {"role": "assistant", "content": '{"items":[{"food":"carrot sticks","quantity":1,"unit":null,"prep":"sticks"},{"food":"grated cheese","quantity":1,"unit":"handful","prep":"grated"}]}'},
+
+    # No form stated -> no prep field
+    {"role": "user", "content": "an apple and a banana"},
+    {"role": "assistant", "content": '{"items":[{"food":"apple","quantity":1,"unit":null},{"food":"banana","quantity":1,"unit":null}]}'}
 ]
 
 ENTITY_MIN_CONFIDENCE = 0.35

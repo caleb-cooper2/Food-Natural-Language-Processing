@@ -37,9 +37,7 @@ from .config import (
     OLLAMA_MODEL, OLLAMA_TIMEOUT, UNIT_GRAMS, RAG_RERANK_ENABLED,
     RAG_TOP_N, RAG_SYSTEM_PROMPT, ENTITY_MIN_CONFIDENCE
 )
-from .index import (
-    extract_brand_keywords, load_indexes, simple_singular, term_variants,
-)
+from .index import extract_brand_keywords, load_indexes, simple_singular, term_variants
 
 load_dotenv()
 
@@ -82,10 +80,10 @@ def extract_quantity(doc, span_start, prev_end=0):
             quantity = float(converted_word)
             consumed = len(original_words) - len(converted_words) + 1
             start_tok = original_tokens[original_index]
-            end_tok   = original_tokens[min(original_index + consumed - 1, len(original_tokens) - 1)]
+            end_tok = original_tokens[min(original_index + consumed - 1, len(original_tokens) - 1)]
             quantity_char_start = start_tok.idx
-            quantity_char_end   = end_tok.idx + len(end_tok.text)
-            original_index     += consumed
+            quantity_char_end = end_tok.idx + len(end_tok.text)
+            original_index += consumed
             break
         except ValueError:
             original_index += 1
@@ -531,7 +529,8 @@ def parse_llm_output(raw):
             "food": str(item.get("food", "")).strip().lower(),
             "quantity": float(item.get("quantity") or 1.0),
             "unit": str(item["unit"]).lower() if item.get("unit") else None,
-            "normalised": str(item["normalised"]).strip().lower() if item.get("normalised") else None
+            "normalised": str(item["normalised"]).strip().lower() if item.get("normalised") else None,
+            "prep": str(item["prep"]).strip().lower() if item.get("prep") else None
         }
         for item in items
         if isinstance(item, dict) and str(item.get("food", "")).strip()
@@ -625,12 +624,12 @@ async def openrouter_extract(text):
 
     headers = {
         "Authorization": f"Bearer {os.getenv('OPENROUT_API_KEY')}",
-        "Content-Type": "application/json",
+        "Content-Type": "application/json"
     }
     payload = {
         "model": openrouter_model,
         "messages": [{"role": "system", "content": LLM_SYSTEM_PROMPT}, *LLM_FEW_SHOT, {"role": "user", "content": text}],
-        "temperature": 0,
+        "temperature": 0
     }
 
     async with httpx.AsyncClient(timeout=OLLAMA_TIMEOUT) as client:
@@ -653,7 +652,7 @@ async def llm_extract(text, use_local=True):
         "messages": [{"role": "system", "content": LLM_SYSTEM_PROMPT}, *LLM_FEW_SHOT, {"role": "user", "content": text}],
         "stream": False,
         "format": "json",
-        "options": {"temperature": 0, "num_predict": 512},
+        "options": {"temperature": 0, "num_predict": 512}
     }
     try:
         logger.info("Using local LLM") if use_local else logger.info("Using OpenRouter")
@@ -729,10 +728,10 @@ async def llm_rag_rerank(food_description, candidates, original_text=None, use_l
         "model": OLLAMA_MODEL if use_local else os.getenv("OPENROUTER_MODEL"),
         "messages": [
             {"role": "system", "content": RAG_SYSTEM_PROMPT},
-            {"role": "user",   "content": user_prompt},
+            {"role": "user",   "content": user_prompt}
         ],
         "stream": False,
-        "options": {"temperature": 0, "num_predict": 8},  # we only need a single digit
+        "options": {"temperature": 0, "num_predict": 8}  # we only need a single digit
     }
 
     try:
@@ -793,7 +792,7 @@ def build_candidate_list(ranked, grams):
                 {"food_id": c["ingredient_id"], "name": c["ingredient_name"], "weight_fraction": c["weight_fraction"]}
                 for c in recipe_index.get(food_id, [])
             ],
-            "nutrients": resolve_recipe_nutrients(food_id, grams),
+            "nutrients": resolve_recipe_nutrients(food_id, grams)
         })
     return candidates
 
@@ -863,7 +862,7 @@ async def process_llm_item(item, original_text, use_local_llm):
         "match": candidates[0] if candidates else None,
         "candidates": candidates,
         "rerank_source": "rag" if rag_idx is not None else "cross_encoder",
-        "source": "llm",
+        "source": "llm"
     }
 
 
@@ -900,7 +899,7 @@ def process_spacy_entity(entity, doc, prev_end):
         "confidence": confidence,
         "match": candidates[0] if candidates else None,
         "candidates": candidates,
-        "source": "spacy",
+        "source": "spacy"
     }
 
 
