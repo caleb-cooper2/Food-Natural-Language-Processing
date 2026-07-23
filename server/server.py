@@ -50,6 +50,9 @@ logger = get_logger("food-nlp")
 logger.info(f"Food index: {len(food_index)} entries | Recipes: {len(recipe_index)}")
 logger.info(f"FAISS index: {len(faiss_ids)} vectors")
 
+from .known_densities import compute_global_median_density, derive_density
+global_median_density = compute_global_median_density(food_index)
+
 def extract_quantity(doc, span_start, prev_end=0):
     """
     Extracts quantity, unit and their char position from the tokens prior to a identified food in text
@@ -797,6 +800,23 @@ def build_candidate_list(ranked, grams):
     return candidates
 
 
+def attach_density(match, prep):
+    """
+    Resolves a density for a matched candidate and attaches it in place
+    :param match: The chosen candidate dict (has food_id); mutated to gain a "density" block
+    :param prep: Preparation word found by the LLM (e.g. "sticks", "grated", "whole"), or None
+    """
+    if not match:
+        return
+    entry = food_index.get(match["food_id"], {})
+    density, log_sigma, source = derive_density(entry, global_median_density, prep)
+    match["density"] = {
+        "density_g_per_ml": round(density, 4),
+        "density_log_sigma": round(log_sigma, 4),
+        "density_source": source
+    }
+
+
 async def process_llm_item(item, original_text, use_local_llm):
     """
     Resolves a single LLM-extracted food item to a matched database entry with nutrients
@@ -845,6 +865,7 @@ async def process_llm_item(item, original_text, use_local_llm):
 
     grams = resolve_grams(candidates[0]["food_id"], quantity, unit)
     candidates[0]["nutrients"] = resolve_recipe_nutrients(candidates[0]["food_id"], grams)
+    attach_density(candidates[0] if candidates else None, item.get("prep"))
 
     char_start, char_end, qty_cs, qty_ce, unit_cs = find_item_char_positions(item, original_text)
     return {
@@ -885,6 +906,7 @@ def process_spacy_entity(entity, doc, prev_end):
     best_id = ranked[0][0]
     grams = resolve_grams(best_id, quantity, unit)
     candidates = build_candidate_list(ranked, grams)
+    attach_density(candidates[0] if candidates else None, None)
 
     return {
         "text": entity.text,
