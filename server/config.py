@@ -47,8 +47,9 @@ Rules:
   prep "whole"; "mashed potato" -> prep "mashed"). If no form is stated, omit prep. Do NOT guess a form.
 - Tea: always extract the full variety name as the food. For "English Breakfast tea" or bare "cup of tea",
   add normalised="black tea". For other teas (green, peppermint, herbal) leave normalised absent.
-- Informal slang with an unambiguous food referent: add normalised. "OJ"→"orange juice", "sav"→"sauvignon blanc",
-  "bubbles"→"sparkling wine", "expresso"→"espresso".
+- Informal slang, abbreviations, and contractions (single or multi-word): keep the user's exact
+  wording in "food" and put the expansion in "normalised". NEVER replace "food" with the expansion.
+  "OJ"->"orange juice", "sav"->"sauvignon blanc", "spag bol"->"spaghetti bolognaise".
 - If the input contains no identifiable food (e.g. "had dinner", "had a drink", "ate something"), return {"items":[]}.
 
 Return format: {"items": [...]}
@@ -101,6 +102,10 @@ LLM_FEW_SHOT = [
     # Slang / informal - bubbles = sparkling wine
     {"role": "user", "content": "pavlova and a glass of bubbles for dessert"},
     {"role": "assistant", "content": '{"items":[{"food":"pavlova","quantity":1,"unit":"serving"},{"food":"bubbles","quantity":1,"unit":"glass","normalised":"sparkling wine"}]}'},
+
+    # Multi-word contraction - verbatim in food, expansion in normalised
+    {"role": "user", "content": "spag bol for dinner"},
+    {"role": "assistant", "content": '{"items":[{"food":"spag bol","quantity":1,"unit":"serving","normalised":"spaghetti bolognaise"}]}'},
 
     # Vague input - return empty
     {"role": "user", "content": "had dinner"},
