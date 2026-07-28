@@ -1,3 +1,10 @@
+"""
+Density priors derived for a matched food, so a volume estimate can be eventually turned into a mass
+
+Sources are tried strongest first (a density measured against the food itself, then one implied by a grams/mL serving
+pair, then the global median) and each carries its own uncertainty, widening as the source weakens
+"""
+
 import math
 import statistics
 
@@ -46,7 +53,7 @@ def measured_values(entry):
 
 def reduce_measured(values):
     """
-    Reduces several measured densities to a point estimate and a spread-based relative sigma (Fix 1)
+    Reduces several measured densities to a point estimate and a spread-based relative sigma
     :param values: List of plausible density floats
     :return: Tuple of (median_density, relative_sigma)
     """
@@ -143,27 +150,3 @@ def compute_global_median_density(food_index):
     median = statistics.median(densities)
     logger.info(f"Global median density found {median:.3f} g/cm3 from {len(densities)} foods with data")
     return median
-
-
-def build_known_densities(food_index):
-    """
-    Builds food label to density lookup, keyed by food id
-    :param food_index: Combined NZ/AUS/OFF food index dict
-    :return: Dict of FoodID -> {density_g_per_ml, density_log_sigma, density_source}
-    """
-    global_median = compute_global_median_density(food_index)
-
-    known = {}
-    sources = {"measured": 0, "ratio": 0, "global_median": 0}
-    for food_id, entry in food_index.items():
-        density, log_sigma, source = derive_density(entry, global_median)
-        sources[source] = sources.get(source, 0) + 1
-        known[food_id] = {
-            "density_g_per_ml": round(density, 4),
-            "density_log_sigma": round(log_sigma, 4),
-            "density_source": source,
-            "measured_densities": entry.get("measured_densities", [])
-        }
-
-    logger.info(f"Built known density index for {len(known)} foods (measured={sources['measured']}, ratio={sources['ratio']}, fallback={sources['global_median']})")
-    return known

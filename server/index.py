@@ -27,6 +27,7 @@ try:
 except ImportError:
     from config import ALL_UNITS, PRINCIPAL_XLSX, SUPPORTING_XLSX, AUS_DATA_DIR, OFF_DATA_CSV
 
+# Paths are relative to the repo root, so both building (`python -m server.index`) and serving run from there
 INDEX_DIR = Path("data/indexes")
 
 AUS_NUTRIENT_MAP = {
@@ -499,18 +500,19 @@ def build_aus_recipe_index(recipe_df, food_index):
                 "grams": grams,
             })
 
-        for recipe_id, ingredients in raw.items():
-            total = sum(i["grams"] for i in ingredients)
-            if total <= 0:
-                continue
-            recipe_index[recipe_id] = [
-                {
-                    "ingredient_id": i["ingredient_id"],
-                    "ingredient_name": i["ingredient_name"],
-                    "weight_fraction": round(i["grams"] / total, 6),
-                }
-                for i in ingredients
-            ]
+    # Normalise once every row has been collected, absolute grams -> fraction of the recipe's total weight
+    for recipe_id, ingredients in raw.items():
+        total = sum(i["grams"] for i in ingredients)
+        if total <= 0:
+            continue
+        recipe_index[recipe_id] = [
+            {
+                "ingredient_id": i["ingredient_id"],
+                "ingredient_name": i["ingredient_name"],
+                "weight_fraction": round(i["grams"] / total, 6)
+            }
+            for i in ingredients
+        ]
 
     return recipe_index
 
@@ -582,7 +584,7 @@ def load_indexes():
     """
     Load all pre-built indexes from INDEX_DIR.
 
-    :raises FileNotFoundError: If any index is missing (i.e. index.py has not been run).
+    :raises FileNotFoundError: If any index is missing (i.e. the index builder has not been run).
     :return: Tuple of (food_index, recipe_index, faiss_index, faiss_ids, bm25, bm25_ids).
     """
     missing = [
@@ -590,9 +592,7 @@ def load_indexes():
         if not (INDEX_DIR / p).exists()
     ]
     if missing:
-        raise FileNotFoundError(
-            f"Missing index files: {missing}. Run `python index.py` to build them."
-        )
+        raise FileNotFoundError(f"Missing index files: {missing}. Run `python -m server.index` to build them.")
     food_index = json.loads((INDEX_DIR / "food_index.json").read_text())
     recipe_index = json.loads((INDEX_DIR / "recipe_index.json").read_text())
     fi = faiss.read_index(str(INDEX_DIR / "faiss.index"))
