@@ -1,0 +1,16 @@
+fastapi==0.135.3
+uvicorn==0.44.0
+pydantic==2.12.5
+python-dotenv==1.2.2
+httpx==0.28.1
+rich==14.3.3
+spacy==3.8.13
+en_core_web_md @ https://github.com/explosion/spacy-models/releases/download/en_core_web_md-3.8.0/en_core_web_md-3.8.0-py3-none-any.whl
+text2num==3.0.1
+rapidfuzz==3.14.5
+sentence-transformers==5.4.1
+faiss-cpu==1.13.2
+rank-bm25==0.2.2
+numpy==2.4.4
+pandas==3.0.2
+openpyxl==3.1.5
