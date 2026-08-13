@@ -45,7 +45,7 @@ python -m server.index
 ### Run the Backend Server
 ```bash
 source .venv/bin/activate  # if not already active
-uvicorn server.server:app --reload --port 8000
+uvicorn server.server:app --port 8000
 ```
 
 ### Run the Frontend
