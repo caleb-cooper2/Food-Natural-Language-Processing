@@ -176,7 +176,8 @@ async def extract(req: ExtractRequest):
             logger.info("LLM used")
             logger.info("---- PIPELINE END ----")
 
-            await unload_ollama_model()
+            if use_local_llm:
+                await unload_ollama_model()
 
             return {"entities": results, "text": req.text, "source": "llm"}
         else:
@@ -193,6 +194,7 @@ async def extract(req: ExtractRequest):
     logger.info("spaCy used")
     logger.info("---- PIPELINE END ----")
 
-    await unload_ollama_model()
+    if use_local_llm:
+        await unload_ollama_model()
 
     return {"entities": results, "text": req.text, "source": "spacy"}
