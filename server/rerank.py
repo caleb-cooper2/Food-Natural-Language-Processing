@@ -95,5 +95,5 @@ async def openrouter_rag_rerank(payload):
     async with httpx.AsyncClient(timeout=OLLAMA_TIMEOUT) as client:
         resp = await client.post(OPENROUTER_CHAT_URL, headers=openrouter_headers(), json=payload)
         resp.raise_for_status()
-    logger.info(f"rerank openrouter output: {resp.json()}")
+    logger.debug(f"rerank openrouter output: {resp.json()}")
     return resp

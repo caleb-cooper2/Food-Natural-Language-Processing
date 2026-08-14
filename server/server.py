@@ -50,11 +50,11 @@ async def process_llm_item(item, original_text, use_local_llm):
 
     logger.debug(f"[NEL] Retrieving candidates for: '{food_description}'")
 
-    ranked = rank_candidates(food_description, retrieve_candidates(food_description))
+    ranked = rank_candidates(food_description, retrieve_candidates(food_description), limit=15)
     if not ranked:
         return None
 
-    logger.debug(f"[NEL] Top candidates: {[fid for fid, _ in ranked[:5]]}")
+    logger.debug(f"[NEL] Top candidates: {[fid for fid, _ in ranked]}")
 
     confidence = compute_confidence([s for _, s in ranked])
 

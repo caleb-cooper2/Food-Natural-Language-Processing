@@ -95,7 +95,7 @@ def build_candidate_list(ranked, grams):
     :return: List of candidate dicts with food_id, name, score, is_recipe, recipe_ingredients, nutrients
     """
     candidates = []
-    for food_id, score in ranked[:10]:
+    for food_id, score in ranked[:15]:
         entry = food_index.get(food_id)
         if not entry:
             continue

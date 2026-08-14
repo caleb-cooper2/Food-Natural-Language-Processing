@@ -29,7 +29,7 @@ ALL_UNITS = set(UNIT_GRAMS.keys()) | CSM_UNITS
 
 OLLAMA_BASE_URL = "http://localhost:11434"
 OLLAMA_MODEL = "qwen2.5:7b-instruct-q4_K_M"
-OLLAMA_TIMEOUT = 20.0 # how many secs before giving up and going to spacy if needed
+OLLAMA_TIMEOUT = 60.0 # how many secs before giving up and going to spacy if needed
 
 OPENROUTER_CHAT_URL = "https://openrouter.ai/api/v1/chat/completions"
 
@@ -130,7 +130,7 @@ LLM_FEW_SHOT = [
 ENTITY_MIN_CONFIDENCE = 0.35
 RERANK_THRESHOLD_GAP = 20 # skip reranking if the first candidate leads by this margin
 RAG_RERANK_ENABLED = True # Change to false if cross-encoding reranking intended
-RAG_TOP_N = 6 # candidates passed to LLM
+RAG_TOP_N = 15 # candidates passed to LLM
 RAG_SYSTEM_PROMPT = """\
 You are a food database expert for NZ FOODfiles 2024.
 Given a user's food description and a numbered list of database candidates, \
