@@ -134,9 +134,9 @@ RAG_TOP_N = 15 # candidates passed to LLM
 RAG_SYSTEM_PROMPT = """\
 You are a food database expert for NZ FOODfiles 2024.
 Given a user's food description and a numbered list of database candidates, \
-respond with ONLY the integer index (1-based) of the best matching candidate.
-If none are a reasonable match, respond with 0.
-Do not explain your choice."""
+re-rank all candidates from most relevant to least relevant.
+Respond with ONLY a comma-separated list of the 1-based candidate numbers in order of relevance (e.g. 5, 3, 2, 1, 4).
+Do not explain your choice or include any additional text."""
 
 NZ_DATA_BASE = "data/New Zealand FOODfiles 2024"
 PRINCIPAL_XLSX = f"{NZ_DATA_BASE}/Principal files/Excel files"

@@ -64,23 +64,23 @@ async def process_llm_item(item, original_text, use_local_llm):
     candidates = build_candidate_list(ranked, provisional_grams)
 
     rag_idx = None
-    best_idx = 0
+    before_name = candidates[0]['name'] if candidates else ""
 
     if score_gap < RERANK_THRESHOLD_GAP:
         if RAG_RERANK_ENABLED:
-            rag_idx = await llm_rag_rerank(food_description, candidates, original_text, use_local_llm)
-            best_idx = rag_idx if rag_idx is not None else cross_encoder_rerank(food_description, candidates)
+            reordered = await llm_rag_rerank(food_description, candidates, original_text, use_local_llm)
+            if reordered is not None:
+                candidates = reordered
+                rag_idx = 0
+            else:
+                candidates = cross_encoder_rerank(food_description, candidates)
         else:
-            best_idx = cross_encoder_rerank(food_description, candidates)
+            candidates = cross_encoder_rerank(food_description, candidates)
 
     logger.debug(
-        f"[rerank] before='{candidates[0]['name']}' "
-        f"after='{candidates[best_idx]['name']}'"
+        f"[rerank] before='{before_name}' "
+        f"after='{candidates[0]['name'] if candidates else ''}'"
     )
-
-    # Reorder so best candidate is always at index 0
-    if best_idx != 0:
-        candidates.insert(0, candidates.pop(best_idx))
 
     grams = resolve_grams(candidates[0]["food_id"], quantity, unit)
     candidates[0]["nutrients"] = resolve_recipe_nutrients(candidates[0]["food_id"], grams)
