@@ -4,7 +4,7 @@ Stage 5 of the pipeline: turns a matched FoodID plus a quantity into grams, nutr
 Recipes get resolved through their ingredient list so a composite dish adds up from its parts rather than a single row
 """
 
-from .config import UNIT_GRAMS
+from .config import UNIT_GRAMS, RAG_TOP_N
 from .known_densities import derive_density
 from .resources import food_index, global_median_density, recipe_index
 
@@ -95,7 +95,7 @@ def build_candidate_list(ranked, grams):
     :return: List of candidate dicts with food_id, name, score, is_recipe, recipe_ingredients, nutrients
     """
     candidates = []
-    for food_id, score in ranked[:15]:
+    for food_id, score in ranked[:RAG_TOP_N]:
         entry = food_index.get(food_id)
         if not entry:
             continue

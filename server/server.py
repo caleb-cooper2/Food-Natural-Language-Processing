@@ -20,7 +20,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from .config import ENTITY_MIN_CONFIDENCE, RAG_RERANK_ENABLED, RERANK_THRESHOLD_GAP
+from .config import ENTITY_MIN_CONFIDENCE, RAG_RERANK_ENABLED, RERANK_THRESHOLD_GAP, RAG_TOP_N
 from .extraction import extract_quantity, find_item_char_positions, llm_extract, unload_ollama_model
 from .logging_config import get_logger
 from .nutrition import attach_density, build_candidate_list, resolve_grams, resolve_recipe_nutrients
@@ -50,7 +50,7 @@ async def process_llm_item(item, original_text, use_local_llm):
 
     logger.debug(f"[NEL] Retrieving candidates for: '{food_description}'")
 
-    ranked = rank_candidates(food_description, retrieve_candidates(food_description), limit=15)
+    ranked = rank_candidates(food_description, retrieve_candidates(food_description), limit=RAG_TOP_N)
     if not ranked:
         return None
 
