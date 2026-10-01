@@ -11,7 +11,14 @@ import re
 import httpx
 import numpy as np
 
-from .config import OLLAMA_BASE_URL, OLLAMA_MODEL, OLLAMA_TIMEOUT, OPENROUTER_CHAT_URL, RAG_SYSTEM_PROMPT, RAG_TOP_N
+from .config import (
+    OLLAMA_BASE_URL,
+    OLLAMA_MODEL,
+    OLLAMA_TIMEOUT,
+    OPENROUTER_CHAT_URL,
+    RAG_RERANK_TOP_N,
+    RAG_SYSTEM_PROMPT
+)
 from .extraction import openrouter_headers
 from .logging_config import get_logger
 from .resources import cross_encoder, food_index
@@ -47,8 +54,7 @@ async def llm_rag_rerank(food_description, candidates, original_text=None, use_l
     :param original_text: The entire input text for better semantic understanding
     :return: Reordered list of candidate dicts, or None to signal the caller should fall back
     """
-    top = candidates[:RAG_TOP_N]
-    rest = candidates[RAG_TOP_N:]
+    top = candidates
 
     # Build a context block for each candidate
     lines = []
@@ -62,8 +68,10 @@ async def llm_rag_rerank(food_description, candidates, original_text=None, use_l
         f'{context_line}'
         f'Food described: "{food_description}"\n\n'
         f'Candidates:\n' + "\n".join(lines) +
-        f'\n\nRe-rank the candidate numbers (1-{len(top)}) from most relevant to least relevant. '
-        f'Respond with ONLY a comma-separated list of numbers (e.g. 5, 3, 2, 1, 4).'
+        f'\n\nSelect and order up to {min(RAG_RERANK_TOP_N, len(top))} candidate numbers '
+        f'(1-{len(top)}) from most relevant to least relevant. '
+        f'Respond with ONLY a comma-separated list of up to {min(RAG_RERANK_TOP_N, len(top))} numbers '
+        f'(e.g. 5, 3, 2, 1, 4).'
     )
 
     payload = {
@@ -91,17 +99,21 @@ async def llm_rag_rerank(food_description, candidates, original_text=None, use_l
         ordered_top = []
         for idx in indices:
             zero_based = idx - 1
-            if 0 <= zero_based < len(top) and zero_based not in seen:
+            if (
+                0 <= zero_based < len(top)
+                and zero_based not in seen
+                and len(ordered_top) < RAG_RERANK_TOP_N
+            ):
                 seen.add(zero_based)
                 ordered_top.append(top[zero_based])
 
-        # If LLM omitted any candidates, preserve them in their original relative order at the end
+        # Keep candidates not selected by the LLM in their original relative order
         for i, candidate in enumerate(top):
             if i not in seen:
                 ordered_top.append(candidate)
 
         if seen:
-            return ordered_top + rest
+            return ordered_top
     except Exception as exc:
         logger.warning(f"[RAG rerank] failed ({exc}), falling back to cross-encoder")
     return None # None signals fallback

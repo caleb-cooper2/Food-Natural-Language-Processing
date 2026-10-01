@@ -131,10 +131,11 @@ ENTITY_MIN_CONFIDENCE = 0.35
 RERANK_THRESHOLD_GAP = 20 # skip reranking if the first candidate leads by this margin
 RAG_RERANK_ENABLED = True # Change to false if cross-encoding reranking intended
 RAG_TOP_N = 15 # candidates passed to LLM
+RAG_RERANK_TOP_N = 10 # maximum candidates reordered by the LLM reranker
 RAG_SYSTEM_PROMPT = """\
 You are a food database expert for NZ FOODfiles 2024.
 Given a user's food description and a numbered list of database candidates, \
-re-rank all candidates from most relevant to least relevant.
+select and re-rank up to 10 candidates from most relevant to least relevant.
 Respond with ONLY a comma-separated list of the 1-based candidate numbers in order of relevance (e.g. 5, 3, 2, 1, 4).
 Do not explain your choice or include any additional text."""
 
