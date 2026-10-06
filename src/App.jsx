@@ -1,5 +1,10 @@
+/*
+ * Note: Claude was used to generate the frontend in this directory. The UI has been reviewed and integrated against the project's API.
+ */
+
 import { useState, useRef, useEffect, useCallback } from "react"
 
+const API_URL = import.meta.env.VITE_NLP_API_URL ?? "http://localhost:8000"
 const POPUP_WIDTH = 280
 const DAILY_VALUES = { energy_kj: 8700, protein_g: 50, fat_g: 70, carbs_g: 310, fibre_g: 30, sodium_mg: 2000 }
 const NUTRIENT_LABELS = [
@@ -11,7 +16,7 @@ const NUTRIENT_LABELS = [
     { key: "sodium_mg", label: "Sodium",  unit: "mg", color: "#7F77DD" },
 ]
 
-// ─── existing helper components (unchanged) ───────────────────────────────────
+// Presentation helpers
 
 function sumNutrients(entities, selectedCandidates) {
     const totals = { energy_kj: 0, protein_g: 0, fat_g: 0, carbs_g: 0, fibre_g: 0, sodium_mg: 0 }
@@ -205,15 +210,9 @@ function ResultView({ result }) {
     const [tab, setTab] = useState("annotated")
     const [activeEntity, setActiveEntity] = useState(null)
     const [anchorRect, setAnchorRect] = useState(null)
+    const [containerRect, setContainerRect] = useState(null)
     const [selectedCandidates, setSelectedCandidates] = useState({})
     const containerRef = useRef(null)
-
-    // reset per-result state when result changes
-    useEffect(() => {
-        setTab("annotated")
-        setActiveEntity(null)
-        setSelectedCandidates({})
-    }, [result])
 
     useEffect(() => {
         const handler = (e) => {
@@ -224,9 +223,14 @@ function ResultView({ result }) {
     }, [])
 
     const handleEntityClick = (i, e) => {
-        if (activeEntity === i) { setActiveEntity(null); return }
+        if (activeEntity === i) {
+            setActiveEntity(null)
+            setContainerRect(null)
+            return
+        }
         setActiveEntity(i)
         setAnchorRect(e.currentTarget.getBoundingClientRect())
+        setContainerRect(containerRef.current?.getBoundingClientRect() ?? null)
     }
 
     const TAB_STYLE = (active) => ({
@@ -269,11 +273,11 @@ function ResultView({ result }) {
                         />
                     </div>
 
-                    {activeEntity !== null && anchorRect && containerRef.current && (
+                    {activeEntity !== null && anchorRect && containerRect && (
                         <Popup
                             entity={result.entities[activeEntity]}
                             anchorRect={anchorRect}
-                            containerRect={containerRef.current.getBoundingClientRect()}
+                            containerRect={containerRect}
                             selectedIdx={selectedCandidates[activeEntity] ?? 0}
                             onSelectCandidate={(cidx) => setSelectedCandidates(prev => ({ ...prev, [activeEntity]: cidx }))}
                         />
@@ -376,11 +380,12 @@ function BulkTestPanel() {
         for (let i = 0; i < lines.length; i++) {
             if (abortRef.current) break
             try {
-                const resp = await fetch("http://localhost:8000/extract", {
+                const resp = await fetch(`${API_URL}/extract`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ text: lines[i] }),
                 })
+                if (!resp.ok) throw new Error(`The API returned ${resp.status}`)
                 acc[i] = await resp.json()
             } catch (err) {
                 acc[i] = { error: String(err), text: lines[i], entities: [], source: "error" }
@@ -510,7 +515,7 @@ function BulkTestPanel() {
                                     <button key={i} onClick={() => setCursor(i)}
                                             title={sentences[i]}
                                             style={{
-                                                width: 26, height: 26, borderRadius: 5, border: "none",
+                                                width: 26, height: 26, borderRadius: 5,
                                                 fontSize: 11, cursor: "pointer", fontFamily: "var(--mono)",
                                                 background: i === cursor
                                                     ? "var(--accent)"
@@ -552,7 +557,7 @@ function BulkTestPanel() {
                             Waiting…
                         </div>
                     ) : (
-                        <ResultView result={results[cursor]} />
+                        <ResultView key={`${cursor}-${results[cursor].text}`} result={results[cursor]} />
                     )}
                 </>
             )}
@@ -567,19 +572,28 @@ export default function App() {
     const [input, setInput] = useState("")
     const [result, setResult] = useState(null)
     const [loading, setLoading] = useState(false)
+    const [error, setError] = useState("")
 
-    const handleExtract = () => {
+    const handleExtract = async () => {
+        const text = input.trim()
+        if (!text || loading) return
+
         setLoading(true)
         setResult(null)
-        fetch("http://localhost:8000/extract", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text: input }),
-        })
-            .then(r => r.json())
-            .then(setResult)
-            .catch(console.error)
-            .finally(() => setLoading(false))
+        setError("")
+        try {
+            const response = await fetch(`${API_URL}/extract`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text }),
+            })
+            if (!response.ok) throw new Error(`The API returned ${response.status}`)
+            setResult(await response.json())
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Unable to contact the API.")
+        } finally {
+            setLoading(false)
+        }
     }
 
     const MODE_TAB = (active) => ({
@@ -620,9 +634,11 @@ export default function App() {
                         />
                         <button
                             onClick={handleExtract}
+                            disabled={!input.trim() || loading}
                             style={{
                                 padding: "10px 20px", borderRadius: 7, border: "none",
-                                background: "var(--accent)", color: "#fff", cursor: "pointer",
+                                background: !input.trim() || loading ? "var(--border)" : "var(--accent)",
+                                color: "#fff", cursor: !input.trim() || loading ? "default" : "pointer",
                                 fontFamily: "var(--sans)", fontSize: 15, fontWeight: 500,
                             }}>
                             Extract
@@ -639,12 +655,18 @@ export default function App() {
                         </div>
                     )}
 
+                    {error && (
+                        <p style={{ color: "#b42318", marginTop: 0 }} role="alert">
+                            Could not extract food items: {error}
+                        </p>
+                    )}
+
                     {result && (
                         <>
                             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
                                 <h2 style={{ margin: 0 }}>Result</h2>
                             </div>
-                            <ResultView result={result} />
+                            <ResultView key={result.text} result={result} />
                         </>
                     )}
                 </>

@@ -1,6 +1,7 @@
 # Unstructured Food Input
 
-A web application for processing unstructured food input.
+A web application for turning free-text food descriptions into matched food database entries, estimated quantities, and scaled nutrients. 
+The FastAPI backend contains the extraction and retrieval pipeline; `src/` is a small Vite interface for exercising that API during development.
 
 ### Prerequisites
 - Node.js
@@ -55,6 +56,8 @@ npm run dev
 ```
 
 > **Note:** The frontend, backend, and Ollama must all be running concurrently for the application to function properly.
+
+The frontend calls `http://localhost:8000` by default. For a backend on another host, create a `.env.local` file containing `VITE_NLP_API_URL=http://host:port` before running the Vite server.
 
 ### Hugging Face Authentication (optional)
 Two models are downloaded automatically from Hugging Face on first run: `sentence-transformers/all-MiniLM-L6-v2` (semantic embeddings) and `cross-encoder/ms-marco-MiniLM-L-6-v2` (reranking). Both are publicly available and require no access approval.

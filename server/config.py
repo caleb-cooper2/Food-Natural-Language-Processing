@@ -130,7 +130,7 @@ LLM_FEW_SHOT = [
 ENTITY_MIN_CONFIDENCE = 0.35
 RERANK_THRESHOLD_GAP = 20 # skip reranking if the first candidate leads by this margin
 RAG_RERANK_ENABLED = True # Change to false if cross-encoding reranking intended
-RAG_TOP_N = 15 # candidates passed to LLM
+RAG_TOP_N = 50 # candidates retained for retrieval and response
 RAG_RERANK_TOP_N = 10 # maximum candidates reordered by the LLM reranker
 RAG_SYSTEM_PROMPT = """\
 You are a food database expert for NZ FOODfiles 2024.
