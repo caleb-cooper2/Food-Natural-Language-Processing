@@ -1,4 +1,4 @@
-# Unstructured Food Input
+# Food Natural Language Processing
 
 A web application for turning free-text food descriptions into matched food database entries, estimated quantities, and scaled nutrients. 
 The FastAPI backend contains the extraction and retrieval pipeline; `src/` is a small Vite interface for exercising that API during development.
