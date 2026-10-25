@@ -17,7 +17,7 @@ ollama pull qwen2.5:7b-instruct-q4_K_M
 ### Clone the Repository
 ```bash
 git clone <repository-url>
-cd unstructured-food-input
+cd Food-Natural-Language-Processing
 ```
 
 ### Create a Virtual Environment and Install Dependencies
